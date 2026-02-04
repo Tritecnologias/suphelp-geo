@@ -1,0 +1,44 @@
+feat: Implementar Worker de Enriquecimento e Endpoint de Contatos
+
+## Principais Mudanças
+
+### Worker de Enriquecimento
+- Criado src/worker_enrich_contacts.py baseado no código do Diego
+- Integração com Google Place Details API (New)
+- Busca telefone, website, rating e total de avaliações
+- Retry automático com backoff exponencial (3 tentativas)
+- Criação automática de colunas no banco (phone, website, rating, user_ratings_total)
+- Atualização de registros existentes
+- Logging estruturado e estatísticas de enriquecimento
+
+### API REST
+- Adicionado endpoint POST /api/enrich-contacts
+- Suporte a enriquecimento em lote (all) ou específico (place_ids)
+- Retorna estatísticas (total, enriched, not_found, errors, api_calls)
+- Validação de parâmetros
+
+### Banco de Dados
+- Adicionadas colunas: phone, website, rating, user_ratings_total
+- Criação automática via ALTER TABLE
+- Suporte a dados enriquecidos
+
+### Testes
+- Criado src/test_enriched.js para validar dados enriquecidos
+- Criado test_enrich_api.ps1 para testar endpoint
+- Testado e validado: 5 lugares enriquecidos com sucesso
+
+### Documentação
+- Atualizado API_DOCUMENTATION.md com novo endpoint
+- Criado RESUMO_DIA2.md
+- Atualizado STATUS_VISUAL.md
+
+## Estatísticas
+- 5 lugares enriquecidos no banco
+- 8 chamadas à API Google (~$0.136)
+- 90% da Fase 1 concluída
+
+## Próximos Passos
+- CRUD completo de lugares
+- Filtros geoespaciais (busca por raio)
+- Autenticação JWT
+- Deploy na VPS

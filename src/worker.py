@@ -3,17 +3,19 @@ import sys
 import os
 import psycopg2
 
-# 1. Pega as configurações do ambiente (passadas pelo Docker)
-DB_HOST = "db"  # Nome do serviço no docker-compose
-DB_NAME = os.getenv("POSTGRES_DB", "suphelp_geo")
-DB_USER = os.getenv("POSTGRES_USER", "admin")
-DB_PASS = os.getenv("POSTGRES_PASSWORD", "***REMOVED***")
+# 1. Pega as configurações do ambiente
+DB_HOST = os.getenv("DB_HOST", "76.13.173.70")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "suphelp_geo")
+DB_USER = os.getenv("DB_USER", "admin")
+DB_PASS = os.getenv("DB_PASS", "***REMOVED***")
 
 def run_import():
     try:
         # 2. Conecta no Banco
         conn = psycopg2.connect(
             host=DB_HOST,
+            port=DB_PORT,
             database=DB_NAME,
             user=DB_USER,
             password=DB_PASS

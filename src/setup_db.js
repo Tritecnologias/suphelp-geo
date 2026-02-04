@@ -1,4 +1,5 @@
 // backend/src/setup_db.js
+require('dotenv').config();
 const pool = require('./db');
 
 const createTables = async () => {

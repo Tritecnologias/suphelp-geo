@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SupHelp Geo - Painel de Testes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #10b981;
+            color: white;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            color: #333;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .input-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5568d3;
+        }
+        
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .result pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .success {
+            border-left-color: #10b981;
+        }
+        
+        .error {
+            border-left-color: #ef4444;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .badge.get { background: #10b981; }
+        .badge.post { background: #3b82f6; }
+        .badge.put { background: #f59e0b; }
+        .badge.delete { background: #ef4444; }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-box h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-box p {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ SupHelp Geo</h1>
+            <p>Painel de Testes - Fase 1</p>
+            <div class="status" id="apiStatus">Verificando API...</div>
+        </div>
+
+        <div class="grid">
+            <!-- Health Check -->
+            <div class="card">
+                <h2><span class="badge get">GET</span> Health Check</h2>
+                <p>Verifica se a API está funcionando</p>
+                <button onclick="healthCheck()">Testar Conexão</button>
+                <div id="health-result" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Listar Lugares -->
+            <div class="card">
+                <h2><span class="badge get">GET</span> Listar Lugares</h2>
+                <p>Lista todos os lugares cadastrados</p>
+                <div class="input-group">
+                    <label>Limite:</label>
+                    <input type="number" id="list-limit" value="10" min="1" max="100">
+                </div>
+                <button onclick="listPlaces()">Listar</button>
+                <div id="list-result" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Buscar por ID -->
+            <div class="card">
+                <h2><span class="badge get">GET</span> Buscar por ID</h2>
+                <p>Busca um lugar específico pelo ID</p>
+                <div class="input-group">
+                    <label>ID do Lugar:</label>
+                    <input type="number" id="get-id" value="1" min="1">
+                </div>
+                <button onclick="getPlaceById()">Buscar</button>
+                <div id="get-result" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Busca por Raio -->
+            <div class="card">
+                <h2><span class="badge get">GET</span> Busca por Raio</h2>
+                <p>Busca lugares próximos a uma coordenada</p>
+                <div class="input-group">
+                    <label>Latitude:</label>
+                    <input type="text" id="nearby-lat" value="-23.1865" placeholder="-23.1865">
+                </div>
+                <div class="input-group">
+                    <label>Longitude:</label>
+                    <input type="text" id="nearby-lng" value="-46.8917" placeholder="-46.8917">
+                </div>
+                <div class="input-group">
+                    <label>Raio (metros):</label>
+                    <input type="number" id="nearby-radius" value="5000" min="100">
+                </div>
+                <button onclick="searchNearby()">Buscar Próximos</button>
+                <div id="nearby-result" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Busca Avançada -->
+            <div class="card">
+                <h2><span class="badge get">GET</span> Busca Avançada</h2>
+                <p>Busca com múltiplos filtros</p>
+                <div class="input-group">
+                    <label>Buscar por nome:</label>
+                    <input type="text" id="search-q" placeholder="Ex: Padaria">
+                </div>
+                <div class="input-group">
+                    <label>Categoria:</label>
+                    <input type="text" id="search-category" placeholder="Ex: farmácia">
+                </div>
+                <div class="input-group">
+                    <label>Rating mínimo:</label>
+                    <input type="number" id="search-rating" min="0" max="5" step="0.1" placeholder="Ex: 4.0">
+                </div>
+                <button onclick="searchAdvanced()">Buscar</button>
+                <div id="search-result" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Criar Lugar -->
+            <div class="card">
+                <h2><span class="badge post">POST</span> Criar Lugar</h2>
+                <p>Adiciona um novo lugar no banco</p>
+                <div class="input-group">
+                    <label>Nome:</label>
+                    <input type="text" id="create-name" placeholder="Ex: Padaria do Bairro">
+                </div>
+                <div class="input-group">
+                    <label>Endereço:</label>
+                    <input type="text" id="create-address" placeholder="Rua Teste, 123">
+                </div>
+                <div class="input-group">
+                    <label>Categoria:</label>
+                    <input type="text" id="create-category" placeholder="Ex: Padaria">
+                </div>
+                <div class="input-group">
+                    <label>Latitude:</label>
+                    <input type="text" id="create-lat" placeholder="-23.1865">
+                </div>
+                <div class="input-group">
+                    <label>Longitude:</label>
+                    <input type="text" id="create-lng" placeholder="-46.8917">
+                </div>
+                <button onclick="createPlace()">Criar</button>
+                <div id="create-result" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Importar Places API -->
+            <div class="card">
+                <h2><span class="badge post">POST</span> Importar Places API</h2>
+                <p>Busca lugares via Google Places API</p>
+                <div class="input-group">
+                    <label>Cidade:</label>
+                    <input type="text" id="import-city" value="Jundiaí, SP">
+                </div>
+                <div class="input-group">
+                    <label>Keywords (separadas por vírgula):</label>
+                    <input type="text" id="import-keywords" value="farmácia">
+                </div>
+                <div class="input-group">
+                    <label>Máximo de resultados:</label>
+                    <input type="number" id="import-max" value="5" min="1" max="50">
+                </div>
+                <button onclick="importPlaces()">Importar</button>
+                <div id="import-result" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Enriquecer Contatos -->
+            <div class="card">
+                <h2><span class="badge post">POST</span> Enriquecer Contatos</h2>
+                <p>Adiciona telefone, website e rating</p>
+                <div class="input-group">
+                    <label>Limite:</label>
+                    <input type="number" id="enrich-limit" value="5" min="1" max="50">
+                </div>
+                <button onclick="enrichContacts()">Enriquecer</button>
+                <div id="enrich-result" class="result" style="display:none;"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Estatísticas do Banco</h2>
+            <button onclick="getStats()">Atualizar Estatísticas</button>
+            <div class="stats" id="stats-container" style="display:none;">
+                <div class="stat-box">
+                    <h3 id="stat-total">0</h3>
+                    <p>Total de Lugares</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="stat-enriched">0</h3>
+                    <p>Com Telefone</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="stat-rated">0</h3>
+                    <p>Com Rating</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        // Verifica status da API ao carregar
+        window.onload = async () => {
+            try {
+                const response = await fetch(`${API_URL}/`);
+                const data = await response.json();
+                document.getElementById('apiStatus').textContent = '✅ API Online';
+                document.getElementById('apiStatus').style.background = '#10b981';
+                getStats();
+            } catch (error) {
+                document.getElementById('apiStatus').textContent = '❌ API Offline';
+                document.getElementById('apiStatus').style.background = '#ef4444';
+            }
+        };
+
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${isError ? 'error' : 'success'}`;
+            element.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        async function healthCheck() {
+            try {
+                const response = await fetch(`${API_URL}/`);
+                const data = await response.json();
+                showResult('health-result', data);
+            } catch (error) {
+                showResult('health-result', { error: error.message }, true);
+            }
+        }
+
+        async function listPlaces() {
+            try {
+                const limit = document.getElementById('list-limit').value;
+                const response = await fetch(`${API_URL}/api/places?limit=${limit}`);
+                const data = await response.json();
+                showResult('list-result', data);
+            } catch (error) {
+                showResult('list-result', { error: error.message }, true);
+            }
+        }
+
+        async function getPlaceById() {
+            try {
+                const id = document.getElementById('get-id').value;
+                const response = await fetch(`${API_URL}/api/places/${id}`);
+                const data = await response.json();
+                showResult('get-result', data, response.status !== 200);
+            } catch (error) {
+                showResult('get-result', { error: error.message }, true);
+            }
+        }
+
+        async function searchNearby() {
+            try {
+                const lat = document.getElementById('nearby-lat').value;
+                const lng = document.getElementById('nearby-lng').value;
+                const radius = document.getElementById('nearby-radius').value;
+                const response = await fetch(`${API_URL}/api/places/nearby?lat=${lat}&lng=${lng}&radius=${radius}&limit=10`);
+                const data = await response.json();
+                showResult('nearby-result', data, response.status !== 200);
+            } catch (error) {
+                showResult('nearby-result', { error: error.message }, true);
+            }
+        }
+
+        async function searchAdvanced() {
+            try {
+                const q = document.getElementById('search-q').value;
+                const category = document.getElementById('search-category').value;
+                const rating = document.getElementById('search-rating').value;
+                
+                let url = `${API_URL}/api/places/search?limit=10`;
+                if (q) url += `&q=${encodeURIComponent(q)}`;
+                if (category) url += `&category=${encodeURIComponent(category)}`;
+                if (rating) url += `&minRating=${rating}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                showResult('search-result', data, response.status !== 200);
+            } catch (error) {
+                showResult('search-result', { error: error.message }, true);
+            }
+        }
+
+        async function createPlace() {
+            try {
+                const body = {
+                    name: document.getElementById('create-name').value,
+                    address: document.getElementById('create-address').value,
+                    category: document.getElementById('create-category').value,
+                    lat: parseFloat(document.getElementById('create-lat').value),
+                    lng: parseFloat(document.getElementById('create-lng').value)
+                };
+                
+                const response = await fetch(`${API_URL}/api/places`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json();
+                showResult('create-result', data, response.status !== 201);
+                if (response.status === 201) getStats();
+            } catch (error) {
+                showResult('create-result', { error: error.message }, true);
+            }
+        }
+
+        async function importPlaces() {
+            try {
+                const body = {
+                    city: document.getElementById('import-city').value,
+                    keywords: document.getElementById('import-keywords').value.split(',').map(k => k.trim()),
+                    maxResults: parseInt(document.getElementById('import-max').value)
+                };
+                
+                const response = await fetch(`${API_URL}/api/import-places-api`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json();
+                showResult('import-result', data, response.status !== 200);
+                if (response.status === 200) getStats();
+            } catch (error) {
+                showResult('import-result', { error: error.message }, true);
+            }
+        }
+
+        async function enrichContacts() {
+            try {
+                const body = {
+                    placeIds: 'all',
+                    limit: parseInt(document.getElementById('enrich-limit').value)
+                };
+                
+                const response = await fetch(`${API_URL}/api/enrich-contacts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json();
+                showResult('enrich-result', data, response.status !== 200);
+                if (response.status === 200) getStats();
+            } catch (error) {
+                showResult('enrich-result', { error: error.message }, true);
+            }
+        }
+
+        async function getStats() {
+            try {
+                const response = await fetch(`${API_URL}/api/places?limit=1000`);
+                const data = await response.json();
+                
+                const total = data.pagination.total;
+                const enriched = data.data.filter(p => p.phone).length;
+                const rated = data.data.filter(p => p.rating).length;
+                
+                document.getElementById('stat-total').textContent = total;
+                document.getElementById('stat-enriched').textContent = enriched;
+                document.getElementById('stat-rated').textContent = rated;
+                document.getElementById('stats-container').style.display = 'grid';
+            } catch (error) {
+                console.error('Erro ao buscar estatísticas:', error);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -6,10 +6,11 @@ import pandas as pd
 import json
 
 # Configurações do Banco
-DB_HOST = "db"
-DB_NAME = os.getenv("POSTGRES_DB", "suphelp_geo")
-DB_USER = os.getenv("POSTGRES_USER", "admin")
-DB_PASS = os.getenv("POSTGRES_PASSWORD", "***REMOVED***")
+DB_HOST = os.getenv("DB_HOST", "76.13.173.70")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "suphelp_geo")
+DB_USER = os.getenv("DB_USER", "admin")
+DB_PASS = os.getenv("DB_PASS", "***REMOVED***")
 
 def import_csv(file_path):
     conn = None
@@ -19,7 +20,7 @@ def import_csv(file_path):
         print(f"📄 Lendo arquivo: {len(df)} registros encontrados.")
 
         # 2. Conecta no Banco
-        conn = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS)
+        conn = psycopg2.connect(host=DB_HOST, port=DB_PORT, database=DB_NAME, user=DB_USER, password=DB_PASS)
         cur = conn.cursor()
 
         sucesso = 0

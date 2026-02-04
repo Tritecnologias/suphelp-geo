@@ -1,0 +1,48 @@
+feat: Implementar Worker Google Places API e Endpoint de Importação
+
+## Principais Mudanças
+
+### Worker Google Places API
+- Criado src/worker_places_api.py baseado no código do Diego
+- Integração com Google Places API (New) - places:searchText
+- Retry automático com backoff exponencial (3 tentativas)
+- Remoção de duplicatas por place_id
+- Salvamento no PostgreSQL com geometria PostGIS
+- UPSERT inteligente (insere novos ou atualiza existentes)
+- Logging estruturado e estatísticas de importação
+
+### API REST
+- Adicionado endpoint POST /api/import-places-api
+- Suporte a múltiplas keywords
+- Retorna estatísticas (success, duplicates, errors, api_calls)
+- Validação de parâmetros obrigatórios
+
+### Configuração
+- Atualizado .env com credenciais corretas do Diego
+- PORT alterada de 4000 para 5000
+- Configurado GOOGLE_PLACES_API_KEY
+- Configurado JWT_SECRET
+
+### Testes
+- Criado src/test_places.js para validar dados no banco
+- Criado test_api.ps1 para testar endpoints
+- Testado e validado: 29 lugares importados com sucesso
+
+### Documentação
+- Criado API_DOCUMENTATION.md com documentação completa
+- Criado ANALISE_ARQUIVOS_DIEGO.md
+- Criado CONFIGURACAO_ENV.md
+- Criado STATUS_INTEGRACAO.md
+- Criado RESUMO_DIA1.md
+- Atualizado README.md e FASE1_STATUS.md
+
+## Estatísticas
+- 29 lugares cadastrados no banco
+- 4 chamadas à API Google (~$0.068)
+- 80% da Fase 1 concluída
+
+## Próximos Passos
+- Worker de Enriquecimento (telefone/contatos)
+- CRUD completo de lugares
+- Filtros geoespaciais (busca por raio)
+- Autenticação JWT
