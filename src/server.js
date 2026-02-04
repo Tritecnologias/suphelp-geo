@@ -10,9 +10,6 @@ const port = process.env.PORT || 5000;
 // Middleware para processar JSON
 app.use(express.json());
 
-// Servir arquivos estáticos (interface web)
-app.use(express.static('public'));
-
 // --- Rota 1: Health Check (Ver se está vivo) ---
 app.get('/', (req, res) => {
   res.json({ message: 'SupHelp Geo API - Sistema Operacional 🚀' });
@@ -672,6 +669,9 @@ app.delete('/api/places/:id', async (req, res) => {
     res.status(500).json({ error: "Erro ao deletar lugar" });
   }
 });
+
+// --- Servir Interface Web (depois de todas as rotas da API) ---
+app.use(express.static('public'));
 
 // --- Inicialização do Servidor ---
 app.listen(port, () => {
