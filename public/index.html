@@ -263,20 +263,17 @@
             <!-- Busca por Raio -->
             <div class="card">
                 <h2><span class="badge get">GET</span> Busca por Raio</h2>
-                <p>Busca lugares próximos a uma coordenada</p>
+                <p>Busca lugares próximos a um endereço</p>
                 <div class="input-group">
-                    <label>Latitude:</label>
-                    <input type="text" id="nearby-lat" value="-23.1865" placeholder="-23.1865">
-                </div>
-                <div class="input-group">
-                    <label>Longitude:</label>
-                    <input type="text" id="nearby-lng" value="-46.8917" placeholder="-46.8917">
+                    <label>Endereço:</label>
+                    <input type="text" id="nearby-address" value="Jundiaí, SP" placeholder="Ex: Rua XV de Novembro, 123, Jundiaí, SP">
                 </div>
                 <div class="input-group">
                     <label>Raio (metros):</label>
                     <input type="number" id="nearby-radius" value="5000" min="100">
                 </div>
-                <button onclick="searchNearby()">Buscar Próximos</button>
+                <button onclick="searchNearby()" id="nearby-btn">Buscar Próximos</button>
+                <div id="nearby-coords" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
                 <div id="nearby-result" class="result" style="display:none;"></div>
             </div>
 
@@ -439,14 +436,47 @@
 
         async function searchNearby() {
             try {
-                const lat = document.getElementById('nearby-lat').value;
-                const lng = document.getElementById('nearby-lng').value;
+                const address = document.getElementById('nearby-address').value;
                 const radius = document.getElementById('nearby-radius').value;
+                const btn = document.getElementById('nearby-btn');
+                const coordsDiv = document.getElementById('nearby-coords');
+                
+                if (!address) {
+                    showResult('nearby-result', { error: 'Por favor, informe um endereço' }, true);
+                    return;
+                }
+                
+                // Desabilita botão durante a busca
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading"></span> Geocodificando...';
+                coordsDiv.textContent = 'Convertendo endereço em coordenadas...';
+                
+                // Faz geocoding do endereço
+                const geocodeResponse = await fetch(`${API_URL}/api/geocode?address=${encodeURIComponent(address)}`);
+                const geocodeData = await geocodeResponse.json();
+                
+                if (!geocodeResponse.ok || !geocodeData.success) {
+                    throw new Error(geocodeData.error || 'Erro ao geocodificar endereço');
+                }
+                
+                const { lat, lng } = geocodeData.data;
+                coordsDiv.textContent = `📍 Coordenadas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                
+                // Busca lugares próximos
+                btn.innerHTML = '<span class="loading"></span> Buscando lugares...';
                 const response = await fetch(`${API_URL}/api/places/nearby?lat=${lat}&lng=${lng}&radius=${radius}&limit=10`);
                 const data = await response.json();
+                
                 showResult('nearby-result', data, response.status !== 200);
+                
+                // Restaura botão
+                btn.disabled = false;
+                btn.textContent = 'Buscar Próximos';
             } catch (error) {
                 showResult('nearby-result', { error: error.message }, true);
+                document.getElementById('nearby-btn').disabled = false;
+                document.getElementById('nearby-btn').textContent = 'Buscar Próximos';
+                document.getElementById('nearby-coords').textContent = '';
             }
         }
 

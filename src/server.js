@@ -205,7 +205,62 @@ app.post('/api/enrich-contacts', (req, res) => {
   });
 });
 
-// --- Rota 6: Busca por Raio (Nearby) ---
+// --- Rota 6: Geocoding (Converter endereço em coordenadas) ---
+app.get('/api/geocode', async (req, res) => {
+  try {
+    const { address } = req.query;
+    
+    if (!address) {
+      return res.status(400).json({ 
+        success: false,
+        error: "Parâmetro obrigatório: address" 
+      });
+    }
+    
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    
+    if (!apiKey) {
+      return res.status(500).json({ 
+        success: false,
+        error: "API Key do Google Maps não configurada" 
+      });
+    }
+    
+    // Faz requisição para Google Geocoding API
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.status !== 'OK' || !data.results || data.results.length === 0) {
+      return res.status(404).json({ 
+        success: false,
+        error: "Endereço não encontrado",
+        details: data.status
+      });
+    }
+    
+    const location = data.results[0].geometry.location;
+    const formattedAddress = data.results[0].formatted_address;
+    
+    res.json({
+      success: true,
+      data: {
+        lat: location.lat,
+        lng: location.lng,
+        formatted_address: formattedAddress
+      }
+    });
+  } catch (err) {
+    console.error('Erro no geocoding:', err);
+    res.status(500).json({ 
+      success: false,
+      error: "Erro ao geocodificar endereço" 
+    });
+  }
+});
+
+// --- Rota 7: Busca por Raio (Nearby) ---
 app.get('/api/places/nearby', async (req, res) => {
   try {
     const { lat, lng, radius = 5000, limit = 50 } = req.query;
@@ -270,7 +325,7 @@ app.get('/api/places/nearby', async (req, res) => {
   }
 });
 
-// --- Rota 7: Busca Avançada com Filtros ---
+// --- Rota 8: Busca Avançada com Filtros ---
 app.get('/api/places/search', async (req, res) => {
   try {
     const { 
@@ -397,7 +452,7 @@ app.get('/api/places/search', async (req, res) => {
   }
 });
 
-// --- Rota 8: Listar Lugares (com paginação e filtros) ---
+// --- Rota 9: Listar Lugares (com paginação e filtros) ---
 app.get('/api/places', async (req, res) => {
   try {
     const { limit = 50, offset = 0, category, city } = req.query;
@@ -460,7 +515,7 @@ app.get('/api/places', async (req, res) => {
   }
 });
 
-// --- Rota 9: Buscar Lugar por ID ---
+// --- Rota 10: Buscar Lugar por ID ---
 app.get('/api/places/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -495,7 +550,7 @@ app.get('/api/places/:id', async (req, res) => {
   }
 });
 
-// --- Rota 10: Criar Novo Lugar ---
+// --- Rota 11: Criar Novo Lugar ---
 app.post('/api/places', async (req, res) => {
   try {
     const { name, address, category, lat, lng, phone, website, rating } = req.body;
@@ -550,7 +605,7 @@ app.post('/api/places', async (req, res) => {
   }
 });
 
-// --- Rota 11: Atualizar Lugar ---
+// --- Rota 12: Atualizar Lugar ---
 app.put('/api/places/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -648,7 +703,7 @@ app.put('/api/places/:id', async (req, res) => {
   }
 });
 
-// --- Rota 12: Deletar Lugar ---
+// --- Rota 13: Deletar Lugar ---
 app.delete('/api/places/:id', async (req, res) => {
   try {
     const { id } = req.params;
