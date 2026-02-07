@@ -453,6 +453,15 @@
                 
                 // Faz geocoding do endereço
                 const geocodeResponse = await fetch(`${API_URL}/api/geocode?address=${encodeURIComponent(address)}`);
+                
+                // Verifica se a resposta é JSON
+                const contentType = geocodeResponse.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    const textResponse = await geocodeResponse.text();
+                    console.error('Resposta não é JSON:', textResponse);
+                    throw new Error('Servidor retornou resposta inválida. Verifique se o servidor está rodando corretamente.');
+                }
+                
                 const geocodeData = await geocodeResponse.json();
                 
                 if (!geocodeResponse.ok || !geocodeData.success) {

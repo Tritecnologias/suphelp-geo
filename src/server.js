@@ -207,11 +207,14 @@ app.post('/api/enrich-contacts', (req, res) => {
 });
 
 // --- Rota 6: Geocoding (Converter endereço em coordenadas) ---
-app.get('/api/geocode', async (req, res) => {
+app.get('/api/geocode', (req, res) => {
+  console.log('🗺️ Requisição de geocoding recebida:', req.query);
+  
   try {
     const { address } = req.query;
     
     if (!address) {
+      console.log('❌ Endereço não fornecido');
       return res.status(400).json({ 
         success: false,
         error: "Parâmetro obrigatório: address" 
@@ -221,11 +224,14 @@ app.get('/api/geocode', async (req, res) => {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
     
     if (!apiKey) {
+      console.log('❌ API Key não configurada');
       return res.status(500).json({ 
         success: false,
         error: "API Key do Google Maps não configurada" 
       });
     }
+    
+    console.log('🔍 Geocodificando:', address);
     
     // Faz requisição para Google Geocoding API usando https nativo
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
@@ -241,7 +247,10 @@ app.get('/api/geocode', async (req, res) => {
         try {
           const jsonData = JSON.parse(data);
           
+          console.log('📍 Status do Google:', jsonData.status);
+          
           if (jsonData.status !== 'OK' || !jsonData.results || jsonData.results.length === 0) {
+            console.log('❌ Endereço não encontrado:', jsonData.status);
             return res.status(404).json({ 
               success: false,
               error: "Endereço não encontrado",
@@ -252,6 +261,8 @@ app.get('/api/geocode', async (req, res) => {
           const location = jsonData.results[0].geometry.location;
           const formattedAddress = jsonData.results[0].formatted_address;
           
+          console.log('✅ Geocoding bem-sucedido:', location);
+          
           res.json({
             success: true,
             data: {
@@ -261,7 +272,7 @@ app.get('/api/geocode', async (req, res) => {
             }
           });
         } catch (parseError) {
-          console.error('Erro ao parsear resposta do Google:', parseError);
+          console.error('❌ Erro ao parsear resposta do Google:', parseError);
           res.status(500).json({ 
             success: false,
             error: "Erro ao processar resposta da API de geocoding" 
@@ -269,14 +280,14 @@ app.get('/api/geocode', async (req, res) => {
         }
       });
     }).on('error', (err) => {
-      console.error('Erro na requisição ao Google:', err);
+      console.error('❌ Erro na requisição ao Google:', err);
       res.status(500).json({ 
         success: false,
         error: "Erro ao conectar com API de geocoding" 
       });
     });
   } catch (err) {
-    console.error('Erro no geocoding:', err);
+    console.error('❌ Erro no geocoding:', err);
     res.status(500).json({ 
       success: false,
       error: "Erro ao geocodificar endereço" 
