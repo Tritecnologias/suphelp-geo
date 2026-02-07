@@ -2,6 +2,7 @@
 require('dotenv').config();
 const express = require('express');
 const { spawn } = require('child_process');
+const https = require('https');
 const pool = require('./db');
 
 const app = express();
@@ -226,30 +227,53 @@ app.get('/api/geocode', async (req, res) => {
       });
     }
     
-    // Faz requisição para Google Geocoding API
+    // Faz requisição para Google Geocoding API usando https nativo
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
     
-    const response = await fetch(url);
-    const data = await response.json();
-    
-    if (data.status !== 'OK' || !data.results || data.results.length === 0) {
-      return res.status(404).json({ 
-        success: false,
-        error: "Endereço não encontrado",
-        details: data.status
+    https.get(url, (apiResponse) => {
+      let data = '';
+      
+      apiResponse.on('data', (chunk) => {
+        data += chunk;
       });
-    }
-    
-    const location = data.results[0].geometry.location;
-    const formattedAddress = data.results[0].formatted_address;
-    
-    res.json({
-      success: true,
-      data: {
-        lat: location.lat,
-        lng: location.lng,
-        formatted_address: formattedAddress
-      }
+      
+      apiResponse.on('end', () => {
+        try {
+          const jsonData = JSON.parse(data);
+          
+          if (jsonData.status !== 'OK' || !jsonData.results || jsonData.results.length === 0) {
+            return res.status(404).json({ 
+              success: false,
+              error: "Endereço não encontrado",
+              details: jsonData.status
+            });
+          }
+          
+          const location = jsonData.results[0].geometry.location;
+          const formattedAddress = jsonData.results[0].formatted_address;
+          
+          res.json({
+            success: true,
+            data: {
+              lat: location.lat,
+              lng: location.lng,
+              formatted_address: formattedAddress
+            }
+          });
+        } catch (parseError) {
+          console.error('Erro ao parsear resposta do Google:', parseError);
+          res.status(500).json({ 
+            success: false,
+            error: "Erro ao processar resposta da API de geocoding" 
+          });
+        }
+      });
+    }).on('error', (err) => {
+      console.error('Erro na requisição ao Google:', err);
+      res.status(500).json({ 
+        success: false,
+        error: "Erro ao conectar com API de geocoding" 
+      });
     });
   } catch (err) {
     console.error('Erro no geocoding:', err);
