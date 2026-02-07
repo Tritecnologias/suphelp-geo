@@ -261,19 +261,57 @@
             </div>
 
             <!-- Busca por Raio -->
-            <div class="card">
+            <div class="card" style="grid-column: 1 / -1;">
                 <h2><span class="badge get">GET</span> Busca por Raio</h2>
                 <p>Busca lugares próximos a um endereço</p>
-                <div class="input-group">
-                    <label>Endereço:</label>
-                    <input type="text" id="nearby-address" value="Jundiaí, SP" placeholder="Ex: Rua XV de Novembro, 123, Jundiaí, SP">
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="input-group" style="margin-bottom: 0;">
+                        <label>Endereço:</label>
+                        <input type="text" id="nearby-address" value="Jundiaí, SP" placeholder="Ex: Rua XV de Novembro, 123, Jundiaí, SP">
+                    </div>
+                    <div class="input-group" style="margin-bottom: 0;">
+                        <label>Raio (metros):</label>
+                        <input type="number" id="nearby-radius" value="5000" min="100">
+                    </div>
+                    <div class="input-group" style="margin-bottom: 0;">
+                        <label>&nbsp;</label>
+                        <button onclick="searchNearby()" id="nearby-btn">Buscar Próximos</button>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label>Raio (metros):</label>
-                    <input type="number" id="nearby-radius" value="5000" min="100">
-                </div>
-                <button onclick="searchNearby()" id="nearby-btn">Buscar Próximos</button>
                 <div id="nearby-coords" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
+                
+                <!-- Resultados em Tabela -->
+                <div id="nearby-results-container" style="display:none; margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="color: #667eea; margin: 0;">📍 <span id="results-count">0</span> lugares encontrados</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="exportToExcel()" style="width: auto; padding: 8px 20px; background: #10b981;">
+                                📊 Exportar Excel
+                            </button>
+                            <button onclick="exportToPDF()" style="width: auto; padding: 8px 20px; background: #3b82f6;">
+                                📄 Exportar PDF
+                            </button>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto; max-height: 500px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <table id="results-table" style="width: 100%; border-collapse: collapse;">
+                            <thead style="background: #f9fafb; position: sticky; top: 0;">
+                                <tr>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">#</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Nome</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Endereço</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Categoria</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Telefone</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Distância</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
                 <div id="nearby-result" class="result" style="display:none;"></div>
             </div>
 
@@ -434,17 +472,23 @@
             }
         }
 
+        let currentResults = []; // Armazena os resultados atuais para exportação
+
         async function searchNearby() {
             try {
                 const address = document.getElementById('nearby-address').value;
                 const radius = document.getElementById('nearby-radius').value;
                 const btn = document.getElementById('nearby-btn');
                 const coordsDiv = document.getElementById('nearby-coords');
+                const resultsContainer = document.getElementById('nearby-results-container');
                 
                 if (!address) {
                     showResult('nearby-result', { error: 'Por favor, informe um endereço' }, true);
                     return;
                 }
+                
+                // Esconde resultados anteriores
+                resultsContainer.style.display = 'none';
                 
                 // Desabilita botão durante a busca
                 btn.disabled = true;
@@ -468,15 +512,59 @@
                     throw new Error(geocodeData.error || 'Erro ao geocodificar endereço');
                 }
                 
-                const { lat, lng } = geocodeData.data;
-                coordsDiv.textContent = `📍 Coordenadas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                const { lat, lng, formatted_address } = geocodeData.data;
+                coordsDiv.textContent = `📍 ${formatted_address} (${lat.toFixed(6)}, ${lng.toFixed(6)})`;
                 
                 // Busca lugares próximos
                 btn.innerHTML = '<span class="loading"></span> Buscando lugares...';
-                const response = await fetch(`${API_URL}/api/places/nearby?lat=${lat}&lng=${lng}&radius=${radius}&limit=10`);
+                const response = await fetch(`${API_URL}/api/places/nearby?lat=${lat}&lng=${lng}&radius=${radius}&limit=100`);
                 const data = await response.json();
                 
-                showResult('nearby-result', data, response.status !== 200);
+                if (response.status !== 200 || !data.data || data.data.length === 0) {
+                    showResult('nearby-result', { message: 'Nenhum lugar encontrado neste raio' }, true);
+                    btn.disabled = false;
+                    btn.textContent = 'Buscar Próximos';
+                    return;
+                }
+                
+                // Armazena resultados para exportação
+                currentResults = data.data.map((place, index) => ({
+                    numero: index + 1,
+                    nome: place.name || 'Sem nome',
+                    endereco: place.address || 'Sem endereço',
+                    categoria: place.category || 'Sem categoria',
+                    telefone: place.phone || 'Não informado',
+                    distancia: place.distance_km + ' km',
+                    rating: place.rating ? place.rating + ' ⭐' : 'Sem avaliação',
+                    lat: place.lat,
+                    lng: place.lng
+                }));
+                
+                // Popula a tabela
+                const tbody = document.getElementById('results-tbody');
+                tbody.innerHTML = '';
+                
+                currentResults.forEach((place) => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${place.numero}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 500;">${place.nome}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-size: 13px;">${place.endereco}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
+                            <span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                ${place.categoria}
+                            </span>
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${place.telefone}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 500; color: #667eea;">${place.distancia}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${place.rating}</td>
+                    `;
+                });
+                
+                // Mostra resultados
+                document.getElementById('results-count').textContent = currentResults.length;
+                resultsContainer.style.display = 'block';
+                document.getElementById('nearby-result').style.display = 'none';
                 
                 // Restaura botão
                 btn.disabled = false;
@@ -487,6 +575,109 @@
                 document.getElementById('nearby-btn').textContent = 'Buscar Próximos';
                 document.getElementById('nearby-coords').textContent = '';
             }
+        }
+
+        function exportToExcel() {
+            if (currentResults.length === 0) {
+                alert('Nenhum resultado para exportar');
+                return;
+            }
+            
+            // Cria CSV
+            let csv = 'Número,Nome,Endereço,Categoria,Telefone,Distância,Rating,Latitude,Longitude\n';
+            
+            currentResults.forEach(place => {
+                csv += `${place.numero},"${place.nome}","${place.endereco}","${place.categoria}","${place.telefone}","${place.distancia}","${place.rating}",${place.lat},${place.lng}\n`;
+            });
+            
+            // Download
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `lugares_proximos_${new Date().getTime()}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportToPDF() {
+            if (currentResults.length === 0) {
+                alert('Nenhum resultado para exportar');
+                return;
+            }
+            
+            // Cria uma nova janela para impressão
+            const printWindow = window.open('', '', 'height=600,width=800');
+            
+            let html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Lugares Próximos - SupHelp Geo</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { color: #667eea; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th { background: #667eea; color: white; padding: 10px; text-align: left; }
+                        td { padding: 8px; border-bottom: 1px solid #ddd; }
+                        tr:nth-child(even) { background: #f9fafb; }
+                        .footer { margin-top: 20px; font-size: 12px; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <h1>🗺️ SupHelp Geo - Lugares Próximos</h1>
+                    <p><strong>Endereço de busca:</strong> ${document.getElementById('nearby-coords').textContent}</p>
+                    <p><strong>Raio:</strong> ${document.getElementById('nearby-radius').value} metros</p>
+                    <p><strong>Total de lugares:</strong> ${currentResults.length}</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nome</th>
+                                <th>Endereço</th>
+                                <th>Categoria</th>
+                                <th>Telefone</th>
+                                <th>Distância</th>
+                                <th>Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            currentResults.forEach(place => {
+                html += `
+                    <tr>
+                        <td>${place.numero}</td>
+                        <td>${place.nome}</td>
+                        <td>${place.endereco}</td>
+                        <td>${place.categoria}</td>
+                        <td>${place.telefone}</td>
+                        <td>${place.distancia}</td>
+                        <td>${place.rating}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                    <div class="footer">
+                        <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+                        <p>SupHelp Geo - Sistema de Geolocalização</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            printWindow.document.write(html);
+            printWindow.document.close();
+            
+            // Aguarda carregar e imprime
+            printWindow.onload = function() {
+                printWindow.print();
+            };
         }
 
         async function searchAdvanced() {
