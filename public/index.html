@@ -583,11 +583,12 @@
                 return;
             }
             
-            // Cria CSV
-            let csv = 'Número,Nome,Endereço,Categoria,Telefone,Distância,Rating,Latitude,Longitude\n';
+            // Cria CSV com BOM UTF-8 para Excel reconhecer acentos corretamente
+            let csv = '\uFEFF'; // BOM UTF-8
+            csv += 'Número;Nome;Endereço;Categoria;Telefone;Distância;Rating;Latitude;Longitude\n';
             
             currentResults.forEach(place => {
-                csv += `${place.numero},"${place.nome}","${place.endereco}","${place.categoria}","${place.telefone}","${place.distancia}","${place.rating}",${place.lat},${place.lng}\n`;
+                csv += `${place.numero};${place.nome};${place.endereco};${place.categoria};${place.telefone};${place.distancia};${place.rating};${place.lat};${place.lng}\n`;
             });
             
             // Download
