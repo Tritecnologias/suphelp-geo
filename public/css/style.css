@@ -291,6 +291,7 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 30px;
     margin-top: 50px;
+    align-items: stretch;
 }
 
 .plan-card {
@@ -302,6 +303,7 @@ body {
     transition: all 0.3s;
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .plan-card:hover {
