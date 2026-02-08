@@ -3,6 +3,8 @@ require('dotenv').config();
 const express = require('express');
 const { spawn } = require('child_process');
 const https = require('https');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const pool = require('./db');
 
 const app = express();
@@ -16,7 +18,172 @@ app.get('/', (req, res) => {
   res.json({ message: 'SupHelp Geo API - Sistema Operacional 🚀' });
 });
 
-// --- Rota 2: Disparar Worker de Teste (worker.py) ---
+// --- Middleware de Autenticação ---
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Token não fornecido' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Token inválido' });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// --- Rota 2: Registro de Usuário ---
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { nome, email, senha, telefone, empresa, plano } = req.body;
+
+    // Validações
+    if (!nome || !email || !senha || !plano) {
+      return res.status(400).json({ 
+        error: 'Campos obrigatórios: nome, email, senha, plano' 
+      });
+    }
+
+    // Verifica se email já existe
+    const existingUser = await pool.query(
+      'SELECT id FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ 
+        error: 'Email já cadastrado' 
+      });
+    }
+
+    // Hash da senha
+    const senhaHash = await bcrypt.hash(senha, 10);
+
+    // Define limites por plano
+    const limits = {
+      'basico': 100,
+      'profissional': 1000,
+      'enterprise': 999999
+    };
+
+    // Insere usuário
+    const result = await pool.query(`
+      INSERT INTO users (nome, email, senha_hash, telefone, empresa, plano, searches_limit, status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
+      RETURNING id, nome, email, telefone, empresa, plano, status, created_at
+    `, [nome, email, senhaHash, telefone || null, empresa || null, plano, limits[plano] || 100]);
+
+    const user = result.rows[0];
+
+    console.log(`✅ Novo usuário cadastrado: ${email} - Plano: ${plano}`);
+
+    res.status(201).json({
+      success: true,
+      message: 'Usuário cadastrado com sucesso',
+      user: {
+        id: user.id,
+        nome: user.nome,
+        email: user.email,
+        plano: user.plano,
+        status: user.status
+      }
+    });
+  } catch (err) {
+    console.error('Erro no registro:', err);
+    res.status(500).json({ error: 'Erro ao cadastrar usuário' });
+  }
+});
+
+// --- Rota 3: Login ---
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, senha } = req.body;
+
+    if (!email || !senha) {
+      return res.status(400).json({ 
+        error: 'Email e senha são obrigatórios' 
+      });
+    }
+
+    // Busca usuário
+    const result = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ 
+        error: 'Email ou senha incorretos' 
+      });
+    }
+
+    const user = result.rows[0];
+
+    // Verifica senha
+    const senhaValida = await bcrypt.compare(senha, user.senha_hash);
+
+    if (!senhaValida) {
+      return res.status(401).json({ 
+        error: 'Email ou senha incorretos' 
+      });
+    }
+
+    // Gera token JWT
+    const token = jwt.sign(
+      { 
+        id: user.id, 
+        email: user.email,
+        plano: user.plano 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    console.log(`✅ Login realizado: ${email}`);
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        nome: user.nome,
+        email: user.email,
+        plano: user.plano,
+        status: user.status,
+        searches_used: user.searches_used,
+        searches_limit: user.searches_limit
+      }
+    });
+  } catch (err) {
+    console.error('Erro no login:', err);
+    res.status(500).json({ error: 'Erro ao fazer login' });
+  }
+});
+
+// --- Rota 4: Perfil do Usuário (Protegida) ---
+app.get('/api/auth/profile', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, nome, email, telefone, empresa, plano, status, searches_used, searches_limit, created_at FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Erro ao buscar perfil:', err);
+    res.status(500).json({ error: 'Erro ao buscar perfil' });
+  }
+});
+
+// --- Rota 5: Disparar Worker de Teste (worker.py) ---
 app.post('/api/import-test', (req, res) => {
   console.log('🔄 Iniciando Worker Python de Teste...');
 
