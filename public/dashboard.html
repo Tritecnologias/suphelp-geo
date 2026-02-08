@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SupHelp Geo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #10b981;
+            color: white;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            color: #333;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .input-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5568d3;
+        }
+        
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .result pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .success {
+            border-left-color: #10b981;
+        }
+        
+        .error {
+            border-left-color: #ef4444;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .badge.get { background: #10b981; }
+        .badge.post { background: #3b82f6; }
+        .badge.put { background: #f59e0b; }
+        .badge.delete { background: #ef4444; }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-box h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-box p {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header do Dashboard -->
+    <div style="background: white; padding: 15px 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="margin: 0; color: #667eea;">🗺️ SupHelp Geo</h2>
+            <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">Dashboard</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="text-align: right;">
+                <p style="margin: 0; font-weight: 600; color: #333;" id="user-name">Carregando...</p>
+                <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;" id="user-plan">Plano: ...</p>
+            </div>
+            <button onclick="logout()" style="background: #ef4444; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                Sair
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ SupHelp Geo</h1>
+            <p>Painel de Testes - Fase 1</p>
+            <div class="status" id="apiStatus">Verificando API...</div>
+        </div>
+
+        <div class="grid">
+            <!-- Health Check -->
+            <div class="card">
+                <h2><span class="badge get">GET</span> Health Check</h2>
+                <p>Verifica se a API está funcionando</p>
+                <button onclick="healthCheck()">Testar Conexão</button>
+                <div id="health-result" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Listar Lugares -->
+            <div class="card">
+                <h2><span class="badge get">GET</span> Listar Lugares</h2>
+                <p>Lista todos os lugares cadastrados</p>
+                <div class="input-group">
+                    <label>Limite:</label>
+                    <input type="number" id="list-limit" value="10" min="1" max="100">
+                </div>
+                <button onclick="listPlaces()">Listar</button>
+                <div id="list-result" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Buscar por ID -->
+            <div class="card">
+                <h2><span class="badge get">GET</span> Buscar por ID</h2>
+                <p>Busca um lugar específico pelo ID</p>
+                <div class="input-group">
+                    <label>ID do Lugar:</label>
+                    <input type="number" id="get-id" value="1" min="1">
+                </div>
+                <button onclick="getPlaceById()">Buscar</button>
+                <div id="get-result" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Busca por Raio -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <h2><span class="badge get">GET</span> Busca por Raio</h2>
+                <p>Busca lugares próximos a um endereço</p>
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="input-group" style="margin-bottom: 0;">
+                        <label>Endereço:</label>
+                        <input type="text" id="nearby-address" value="Jundiaí, SP" placeholder="Ex: Rua XV de Novembro, 123, Jundiaí, SP">
+                    </div>
+                    <div class="input-group" style="margin-bottom: 0;">
+                        <label>Raio (metros):</label>
+                        <input type="number" id="nearby-radius" value="5000" min="100">
+                    </div>
+                    <div class="input-group" style="margin-bottom: 0;">
+                        <label>&nbsp;</label>
+                        <button onclick="searchNearby()" id="nearby-btn">Buscar Próximos</button>
+                    </div>
+                </div>
+                <div id="nearby-coords" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
+                
+                <!-- Resultados em Tabela -->
+                <div id="nearby-results-container" style="display:none; margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="color: #667eea; margin: 0;">📍 <span id="results-count">0</span> lugares encontrados</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="exportToExcel()" style="width: auto; padding: 8px 20px; background: #10b981;">
+                                📊 Exportar Excel
+                            </button>
+                            <button onclick="exportToPDF()" style="width: auto; padding: 8px 20px; background: #3b82f6;">
+                                📄 Exportar PDF
+                            </button>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto; max-height: 500px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <table id="results-table" style="width: 100%; border-collapse: collapse;">
+                            <thead style="background: #f9fafb; position: sticky; top: 0;">
+                                <tr>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">#</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Nome</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Endereço</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Categoria</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Telefone</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Distância</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="nearby-result" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Busca Avançada -->
+            <div class="card">
+                <h2><span class="badge get">GET</span> Busca Avançada</h2>
+                <p>Busca com múltiplos filtros</p>
+                <div class="input-group">
+                    <label>Buscar por nome:</label>
+                    <input type="text" id="search-q" placeholder="Ex: Padaria">
+                </div>
+                <div class="input-group">
+                    <label>Categoria:</label>
+                    <input type="text" id="search-category" placeholder="Ex: farmácia">
+                </div>
+                <div class="input-group">
+                    <label>Rating mínimo:</label>
+                    <input type="number" id="search-rating" min="0" max="5" step="0.1" placeholder="Ex: 4.0">
+                </div>
+                <button onclick="searchAdvanced()">Buscar</button>
+                <div id="search-result" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Criar Lugar -->
+            <div class="card">
+                <h2><span class="badge post">POST</span> Criar Lugar</h2>
+                <p>Adiciona um novo lugar no banco</p>
+                <div class="input-group">
+                    <label>Nome:</label>
+                    <input type="text" id="create-name" placeholder="Ex: Padaria do Bairro">
+                </div>
+                <div class="input-group">
+                    <label>Endereço:</label>
+                    <input type="text" id="create-address" placeholder="Rua Teste, 123">
+                </div>
+                <div class="input-group">
+                    <label>Categoria:</label>
+                    <input type="text" id="create-category" placeholder="Ex: Padaria">
+                </div>
+                <div class="input-group">
+                    <label>Latitude:</label>
+                    <input type="text" id="create-lat" placeholder="-23.1865">
+                </div>
+                <div class="input-group">
+                    <label>Longitude:</label>
+                    <input type="text" id="create-lng" placeholder="-46.8917">
+                </div>
+                <button onclick="createPlace()">Criar</button>
+                <div id="create-result" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Importar Places API -->
+            <div class="card">
+                <h2><span class="badge post">POST</span> Importar Places API</h2>
+                <p>Busca lugares via Google Places API</p>
+                <div class="input-group">
+                    <label>Cidade:</label>
+                    <input type="text" id="import-city" value="Jundiaí, SP">
+                </div>
+                <div class="input-group">
+                    <label>Keywords (separadas por vírgula):</label>
+                    <input type="text" id="import-keywords" value="farmácia">
+                </div>
+                <div class="input-group">
+                    <label>Máximo de resultados:</label>
+                    <input type="number" id="import-max" value="5" min="1" max="50">
+                </div>
+                <button onclick="importPlaces()">Importar</button>
+                <div id="import-result" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Enriquecer Contatos -->
+            <div class="card">
+                <h2><span class="badge post">POST</span> Enriquecer Contatos</h2>
+                <p>Adiciona telefone, website e rating</p>
+                <div class="input-group">
+                    <label>Limite:</label>
+                    <input type="number" id="enrich-limit" value="5" min="1" max="50">
+                </div>
+                <button onclick="enrichContacts()">Enriquecer</button>
+                <div id="enrich-result" class="result" style="display:none;"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Estatísticas do Banco</h2>
+            <button onclick="getStats()">Atualizar Estatísticas</button>
+            <div class="stats" id="stats-container" style="display:none;">
+                <div class="stat-box">
+                    <h3 id="stat-total">0</h3>
+                    <p>Total de Lugares</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="stat-enriched">0</h3>
+                    <p>Com Telefone</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="stat-rated">0</h3>
+                    <p>Com Rating</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        // Verifica autenticação
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+
+            if (!token || !user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Exibe informações do usuário
+            const userData = JSON.parse(user);
+            document.getElementById('user-name').textContent = userData.nome;
+            
+            const plans = {
+                'basico': 'Básico',
+                'profissional': 'Profissional',
+                'enterprise': 'Enterprise'
+            };
+            document.getElementById('user-plan').textContent = `Plano: ${plans[userData.plano] || userData.plano}`;
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        // Executa verificação ao carregar
+        checkAuth();
+
+        // Verifica status da API ao carregar
+        window.onload = async () => {
+            try {
+                const response = await fetch(`${API_URL}/`);
+                const data = await response.json();
+                document.getElementById('apiStatus').textContent = '✅ API Online';
+                document.getElementById('apiStatus').style.background = '#10b981';
+                getStats();
+            } catch (error) {
+                document.getElementById('apiStatus').textContent = '❌ API Offline';
+                document.getElementById('apiStatus').style.background = '#ef4444';
+            }
+        };
+
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${isError ? 'error' : 'success'}`;
+            element.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        async function healthCheck() {
+            try {
+                const response = await fetch(`${API_URL}/`);
+                const data = await response.json();
+                showResult('health-result', data);
+            } catch (error) {
+                showResult('health-result', { error: error.message }, true);
+            }
+        }
+
+        async function listPlaces() {
+            try {
+                const limit = document.getElementById('list-limit').value;
+                const response = await fetch(`${API_URL}/api/places?limit=${limit}`);
+                const data = await response.json();
+                showResult('list-result', data);
+            } catch (error) {
+                showResult('list-result', { error: error.message }, true);
+            }
+        }
+
+        async function getPlaceById() {
+            try {
+                const id = document.getElementById('get-id').value;
+                const response = await fetch(`${API_URL}/api/places/${id}`);
+                const data = await response.json();
+                showResult('get-result', data, response.status !== 200);
+            } catch (error) {
+                showResult('get-result', { error: error.message }, true);
+            }
+        }
+
+        let currentResults = []; // Armazena os resultados atuais para exportação
+
+        async function searchNearby() {
+            try {
+                const address = document.getElementById('nearby-address').value;
+                const radius = document.getElementById('nearby-radius').value;
+                const btn = document.getElementById('nearby-btn');
+                const coordsDiv = document.getElementById('nearby-coords');
+                const resultsContainer = document.getElementById('nearby-results-container');
+                
+                if (!address) {
+                    showResult('nearby-result', { error: 'Por favor, informe um endereço' }, true);
+                    return;
+                }
+                
+                // Esconde resultados anteriores
+                resultsContainer.style.display = 'none';
+                
+                // Desabilita botão durante a busca
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading"></span> Geocodificando...';
+                coordsDiv.textContent = 'Convertendo endereço em coordenadas...';
+                
+                // Faz geocoding do endereço
+                const geocodeResponse = await fetch(`${API_URL}/api/geocode?address=${encodeURIComponent(address)}`);
+                
+                // Verifica se a resposta é JSON
+                const contentType = geocodeResponse.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    const textResponse = await geocodeResponse.text();
+                    console.error('Resposta não é JSON:', textResponse);
+                    throw new Error('Servidor retornou resposta inválida. Verifique se o servidor está rodando corretamente.');
+                }
+                
+                const geocodeData = await geocodeResponse.json();
+                
+                if (!geocodeResponse.ok || !geocodeData.success) {
+                    throw new Error(geocodeData.error || 'Erro ao geocodificar endereço');
+                }
+                
+                const { lat, lng, formatted_address } = geocodeData.data;
+                coordsDiv.textContent = `📍 ${formatted_address} (${lat.toFixed(6)}, ${lng.toFixed(6)})`;
+                
+                // Busca lugares próximos
+                btn.innerHTML = '<span class="loading"></span> Buscando lugares...';
+                const response = await fetch(`${API_URL}/api/places/nearby?lat=${lat}&lng=${lng}&radius=${radius}&limit=100`);
+                const data = await response.json();
+                
+                if (response.status !== 200 || !data.data || data.data.length === 0) {
+                    showResult('nearby-result', { message: 'Nenhum lugar encontrado neste raio' }, true);
+                    btn.disabled = false;
+                    btn.textContent = 'Buscar Próximos';
+                    return;
+                }
+                
+                // Armazena resultados para exportação
+                currentResults = data.data.map((place, index) => ({
+                    numero: index + 1,
+                    nome: place.name || 'Sem nome',
+                    endereco: place.address || 'Sem endereço',
+                    categoria: place.category || 'Sem categoria',
+                    telefone: place.phone || 'Não informado',
+                    distancia: place.distance_km + ' km',
+                    rating: place.rating ? place.rating + ' ⭐' : 'Sem avaliação',
+                    lat: place.lat,
+                    lng: place.lng
+                }));
+                
+                // Popula a tabela
+                const tbody = document.getElementById('results-tbody');
+                tbody.innerHTML = '';
+                
+                currentResults.forEach((place) => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${place.numero}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 500;">${place.nome}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-size: 13px;">${place.endereco}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
+                            <span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                ${place.categoria}
+                            </span>
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${place.telefone}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 500; color: #667eea;">${place.distancia}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${place.rating}</td>
+                    `;
+                });
+                
+                // Mostra resultados
+                document.getElementById('results-count').textContent = currentResults.length;
+                resultsContainer.style.display = 'block';
+                document.getElementById('nearby-result').style.display = 'none';
+                
+                // Restaura botão
+                btn.disabled = false;
+                btn.textContent = 'Buscar Próximos';
+            } catch (error) {
+                showResult('nearby-result', { error: error.message }, true);
+                document.getElementById('nearby-btn').disabled = false;
+                document.getElementById('nearby-btn').textContent = 'Buscar Próximos';
+                document.getElementById('nearby-coords').textContent = '';
+            }
+        }
+
+        function exportToExcel() {
+            if (currentResults.length === 0) {
+                alert('Nenhum resultado para exportar');
+                return;
+            }
+            
+            // Cria CSV com BOM UTF-8 para Excel reconhecer acentos corretamente
+            let csv = '\uFEFF'; // BOM UTF-8
+            csv += 'Número;Nome;Endereço;Categoria;Telefone;Distância;Rating;Latitude;Longitude\n';
+            
+            currentResults.forEach(place => {
+                csv += `${place.numero};${place.nome};${place.endereco};${place.categoria};${place.telefone};${place.distancia};${place.rating};${place.lat};${place.lng}\n`;
+            });
+            
+            // Download
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `lugares_proximos_${new Date().getTime()}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportToPDF() {
+            if (currentResults.length === 0) {
+                alert('Nenhum resultado para exportar');
+                return;
+            }
+            
+            // Cria uma nova janela para impressão
+            const printWindow = window.open('', '', 'height=600,width=800');
+            
+            let html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Lugares Próximos - SupHelp Geo</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { color: #667eea; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th { background: #667eea; color: white; padding: 10px; text-align: left; }
+                        td { padding: 8px; border-bottom: 1px solid #ddd; }
+                        tr:nth-child(even) { background: #f9fafb; }
+                        .footer { margin-top: 20px; font-size: 12px; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <h1>🗺️ SupHelp Geo - Lugares Próximos</h1>
+                    <p><strong>Endereço de busca:</strong> ${document.getElementById('nearby-coords').textContent}</p>
+                    <p><strong>Raio:</strong> ${document.getElementById('nearby-radius').value} metros</p>
+                    <p><strong>Total de lugares:</strong> ${currentResults.length}</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nome</th>
+                                <th>Endereço</th>
+                                <th>Categoria</th>
+                                <th>Telefone</th>
+                                <th>Distância</th>
+                                <th>Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            currentResults.forEach(place => {
+                html += `
+                    <tr>
+                        <td>${place.numero}</td>
+                        <td>${place.nome}</td>
+                        <td>${place.endereco}</td>
+                        <td>${place.categoria}</td>
+                        <td>${place.telefone}</td>
+                        <td>${place.distancia}</td>
+                        <td>${place.rating}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                    <div class="footer">
+                        <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+                        <p>SupHelp Geo - Sistema de Geolocalização</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            printWindow.document.write(html);
+            printWindow.document.close();
+            
+            // Aguarda carregar e imprime
+            printWindow.onload = function() {
+                printWindow.print();
+            };
+        }
+
+        async function searchAdvanced() {
+            try {
+                const q = document.getElementById('search-q').value;
+                const category = document.getElementById('search-category').value;
+                const rating = document.getElementById('search-rating').value;
+                
+                let url = `${API_URL}/api/places/search?limit=10`;
+                if (q) url += `&q=${encodeURIComponent(q)}`;
+                if (category) url += `&category=${encodeURIComponent(category)}`;
+                if (rating) url += `&minRating=${rating}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                showResult('search-result', data, response.status !== 200);
+            } catch (error) {
+                showResult('search-result', { error: error.message }, true);
+            }
+        }
+
+        async function createPlace() {
+            try {
+                const body = {
+                    name: document.getElementById('create-name').value,
+                    address: document.getElementById('create-address').value,
+                    category: document.getElementById('create-category').value,
+                    lat: parseFloat(document.getElementById('create-lat').value),
+                    lng: parseFloat(document.getElementById('create-lng').value)
+                };
+                
+                const response = await fetch(`${API_URL}/api/places`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json();
+                showResult('create-result', data, response.status !== 201);
+                if (response.status === 201) getStats();
+            } catch (error) {
+                showResult('create-result', { error: error.message }, true);
+            }
+        }
+
+        async function importPlaces() {
+            try {
+                const body = {
+                    city: document.getElementById('import-city').value,
+                    keywords: document.getElementById('import-keywords').value.split(',').map(k => k.trim()),
+                    maxResults: parseInt(document.getElementById('import-max').value)
+                };
+                
+                const response = await fetch(`${API_URL}/api/import-places-api`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json();
+                showResult('import-result', data, response.status !== 200);
+                if (response.status === 200) getStats();
+            } catch (error) {
+                showResult('import-result', { error: error.message }, true);
+            }
+        }
+
+        async function enrichContacts() {
+            try {
+                const body = {
+                    placeIds: 'all',
+                    limit: parseInt(document.getElementById('enrich-limit').value)
+                };
+                
+                const response = await fetch(`${API_URL}/api/enrich-contacts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json();
+                showResult('enrich-result', data, response.status !== 200);
+                if (response.status === 200) getStats();
+            } catch (error) {
+                showResult('enrich-result', { error: error.message }, true);
+            }
+        }
+
+        async function getStats() {
+            try {
+                const response = await fetch(`${API_URL}/api/places?limit=1000`);
+                const data = await response.json();
+                
+                const total = data.pagination.total;
+                const enriched = data.data.filter(p => p.phone).length;
+                const rated = data.data.filter(p => p.rating).length;
+                
+                document.getElementById('stat-total').textContent = total;
+                document.getElementById('stat-enriched').textContent = enriched;
+                document.getElementById('stat-rated').textContent = rated;
+                document.getElementById('stats-container').style.display = 'grid';
+            } catch (error) {
+                console.error('Erro ao buscar estatísticas:', error);
+            }
+        }
+    </script>
+</body>
+</html>

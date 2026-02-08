@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - SupHelp Geo</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h1 {
+            font-size: 28px;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .auth-header p {
+            color: var(--gray);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .plan-selected {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .plan-selected h3 {
+            margin-bottom: 5px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--gray);
+        }
+
+        .auth-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>🗺️ Criar Conta</h1>
+                <p>Comece a usar o SupHelp Geo hoje</p>
+            </div>
+
+            <div id="alert-container"></div>
+
+            <div id="plan-info" class="plan-selected" style="display: none;">
+                <h3 id="selected-plan-name"></h3>
+                <p id="selected-plan-price"></p>
+            </div>
+
+            <form id="cadastro-form">
+                <div class="form-group">
+                    <label for="nome">Nome Completo *</label>
+                    <input type="text" id="nome" name="nome" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
+                    <small>Usaremos este email para login</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone">Telefone *</label>
+                    <input type="tel" id="telefone" name="telefone" placeholder="(11) 99999-9999" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="empresa">Empresa</label>
+                    <input type="text" id="empresa" name="empresa">
+                    <small>Opcional</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="senha">Senha *</label>
+                    <input type="password" id="senha" name="senha" minlength="6" required>
+                    <small>Mínimo 6 caracteres</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmar-senha">Confirmar Senha *</label>
+                    <input type="password" id="confirmar-senha" name="confirmar-senha" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="plano">Plano *</label>
+                    <select id="plano" name="plano" required>
+                        <option value="">Selecione um plano</option>
+                        <option value="basico">Básico - R$ 49/mês</option>
+                        <option value="profissional">Profissional - R$ 149/mês</option>
+                        <option value="enterprise">Enterprise - R$ 499/mês</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btn-submit">
+                    Criar Conta
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                Já tem uma conta? <a href="login.html">Fazer Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        // Verifica se veio de um plano específico
+        const urlParams = new URLSearchParams(window.location.search);
+        const planParam = urlParams.get('plan');
+        
+        if (planParam) {
+            document.getElementById('plano').value = planParam;
+            showPlanInfo(planParam);
+        }
+
+        // Mostra informações do plano selecionado
+        document.getElementById('plano').addEventListener('change', function() {
+            showPlanInfo(this.value);
+        });
+
+        function showPlanInfo(plan) {
+            const planInfo = document.getElementById('plan-info');
+            const planName = document.getElementById('selected-plan-name');
+            const planPrice = document.getElementById('selected-plan-price');
+
+            const plans = {
+                'basico': { name: 'Plano Básico', price: 'R$ 49/mês - 100 buscas' },
+                'profissional': { name: 'Plano Profissional', price: 'R$ 149/mês - 1.000 buscas' },
+                'enterprise': { name: 'Plano Enterprise', price: 'R$ 499/mês - Ilimitado' }
+            };
+
+            if (plan && plans[plan]) {
+                planName.textContent = plans[plan].name;
+                planPrice.textContent = plans[plan].price;
+                planInfo.style.display = 'block';
+            } else {
+                planInfo.style.display = 'none';
+            }
+        }
+
+        // Submissão do formulário
+        document.getElementById('cadastro-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const senha = document.getElementById('senha').value;
+            const confirmarSenha = document.getElementById('confirmar-senha').value;
+
+            if (senha !== confirmarSenha) {
+                showAlert('As senhas não coincidem', 'error');
+                return;
+            }
+
+            const formData = {
+                nome: document.getElementById('nome').value,
+                email: document.getElementById('email').value,
+                telefone: document.getElementById('telefone').value,
+                empresa: document.getElementById('empresa').value,
+                senha: senha,
+                plano: document.getElementById('plano').value
+            };
+
+            const btnSubmit = document.getElementById('btn-submit');
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'Criando conta...';
+
+            try {
+                const response = await fetch(`${API_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('Conta criada com sucesso! Redirecionando...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'login.html?registered=true';
+                    }, 2000);
+                } else {
+                    showAlert(data.error || 'Erro ao criar conta', 'error');
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = 'Criar Conta';
+                }
+            } catch (error) {
+                showAlert('Erro ao conectar com o servidor', 'error');
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'Criar Conta';
+            }
+        });
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alert-container');
+            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
