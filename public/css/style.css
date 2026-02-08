@@ -116,8 +116,8 @@ body {
 }
 
 .btn-hero {
-    background: var(--gradient-primary);
-    color: var(--white);
+    background: var(--white);
+    color: var(--primary);
     padding: 15px 40px;
     border-radius: 10px;
     text-decoration: none;
@@ -125,19 +125,20 @@ body {
     font-size: 18px;
     display: inline-block;
     transition: transform 0.3s, box-shadow 0.3s;
-    box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 .btn-hero:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0, 188, 212, 0.4);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+    background: var(--white);
 }
 
 .btn-secondary {
     background: transparent;
-    color: var(--primary);
+    color: var(--white);
     padding: 15px 40px;
-    border: 2px solid var(--primary);
+    border: 2px solid var(--white);
     border-radius: 10px;
     text-decoration: none;
     font-weight: 600;
@@ -147,8 +148,8 @@ body {
 }
 
 .btn-secondary:hover {
-    background: var(--primary);
-    color: var(--white);
+    background: var(--white);
+    color: var(--primary);
 }
 
 /* Hero Section */
@@ -470,7 +471,7 @@ body {
     font-weight: 600;
     font-size: 18px;
     display: inline-block;
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
     position: relative;
     z-index: 1;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
@@ -478,7 +479,8 @@ body {
 
 .btn-cta:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+    background: rgba(255,255,255,0.95);
 }
 
 /* Footer */
