@@ -6,21 +6,22 @@
 }
 
 :root {
-    /* Cores do Logo SupHelp */
+    /* Cores do Logo SupHelp - Versão Suave */
     --primary: #00BCD4;        /* Azul Ciano do logo */
     --primary-dark: #0097A7;   /* Azul mais escuro */
-    --secondary: #8BC34A;      /* Verde Limão do logo */
-    --accent: #FFEB3B;         /* Amarelo do logo */
-    --success: #4CAF50;        /* Verde sucesso */
+    --primary-light: #B2EBF2;  /* Azul claro */
+    --secondary: #00ACC1;      /* Azul-verde suave */
+    --accent: #26C6DA;         /* Ciano claro */
+    --success: #4CAF50;
     --danger: #ef4444;
-    --warning: #FFC107;        /* Amarelo aviso */
+    --warning: #FFC107;
     --dark: #1f2937;
     --gray: #6b7280;
     --light-gray: #f3f4f6;
     --white: #ffffff;
     
-    /* Gradientes do Logo */
-    --gradient-primary: linear-gradient(135deg, #00BCD4 0%, #8BC34A 50%, #FFEB3B 100%);
+    /* Gradientes Suaves */
+    --gradient-primary: linear-gradient(135deg, #00BCD4 0%, #26C6DA 100%);
     --gradient-card: linear-gradient(135deg, #00BCD4 0%, #0097A7 100%);
 }
 
