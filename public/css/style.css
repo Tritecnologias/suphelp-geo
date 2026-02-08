@@ -300,6 +300,8 @@ body {
     padding: 40px;
     position: relative;
     transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
 }
 
 .plan-card:hover {
@@ -361,6 +363,7 @@ body {
 .plan-features {
     list-style: none;
     margin-bottom: 30px;
+    flex-grow: 1;
 }
 
 .plan-features li {
@@ -379,6 +382,7 @@ body {
     text-decoration: none;
     font-weight: 600;
     transition: transform 0.3s;
+    margin-top: auto;
 }
 
 .btn-plan:hover {
