@@ -54,13 +54,13 @@ body {
 }
 
 .logo-img {
-    width: 150px;
-    height: 150px;
+    width: 100px;
+    height: 100px;
     object-fit: contain;
 }
 
 .logo-text {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 700;
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     -webkit-background-clip: text;
