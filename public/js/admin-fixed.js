@@ -99,6 +99,7 @@ function showSection(sectionId) {
         search: 'Buscar por Raio',
         cms: 'Editor do Site',
         admins: 'Gerenciar Administradores',
+        profile: 'Meu Perfil',
         import: 'Importar Dados',
         enrich: 'Enriquecer Contatos',
         settings: 'Configurações'
@@ -110,6 +111,7 @@ function showSection(sectionId) {
     if (sectionId === 'places') loadPlaces();
     if (sectionId === 'cms') loadCMS();
     if (sectionId === 'admins') loadAdmins();
+    if (sectionId === 'profile') loadProfile();
 }
 
 // Dashboard
@@ -651,6 +653,143 @@ async function createAdmin() {
         }
     } catch (error) {
         alert('❌ Erro ao criar administrador: ' + error.message);
+    }
+}
+
+// Perfil do Administrador
+async function loadProfile() {
+    try {
+        const response = await authenticatedFetch(`${API_URL}/api/admin/profile`);
+        const profile = await response.json();
+        
+        displayProfile(profile);
+    } catch (error) {
+        console.error('Erro ao carregar perfil:', error);
+        alert('Erro ao carregar perfil');
+    }
+}
+
+function displayProfile(profile) {
+    const container = document.getElementById('profile-content');
+    if (!container) return;
+    
+    const createdAt = new Date(profile.created_at).toLocaleString('pt-BR');
+    const lastLogin = profile.last_login ? 
+        new Date(profile.last_login).toLocaleString('pt-BR') : 'Nunca';
+    
+    let html = `
+        <div class="profile-info">
+            <h3 style="margin-bottom: 20px;">ℹ️ Informações do Perfil</h3>
+            <div class="profile-field">
+                <span class="profile-label">Nome:</span>
+                <span class="profile-value">${profile.nome}</span>
+            </div>
+            <div class="profile-field">
+                <span class="profile-label">Email:</span>
+                <span class="profile-value">${profile.email}</span>
+            </div>
+            <div class="profile-field">
+                <span class="profile-label">Role:</span>
+                <span class="profile-value">
+                    <span class="badge ${profile.role === 'super_admin' ? 'warning' : 'info'}">${profile.role}</span>
+                </span>
+            </div>
+            <div class="profile-field">
+                <span class="profile-label">Status:</span>
+                <span class="profile-value">
+                    <span class="badge ${profile.status === 'active' ? 'success' : 'danger'}">${profile.status}</span>
+                </span>
+            </div>
+            <div class="profile-field">
+                <span class="profile-label">Criado em:</span>
+                <span class="profile-value">${createdAt}</span>
+            </div>
+            <div class="profile-field">
+                <span class="profile-label">Último login:</span>
+                <span class="profile-value">${lastLogin}</span>
+            </div>
+        </div>
+        
+        <div class="change-password-form">
+            <h3 style="margin-bottom: 20px;">🔐 Alterar Senha</h3>
+            <form id="change-password-form">
+                <div class="password-field">
+                    <label for="current-password">Senha Atual</label>
+                    <input type="password" id="current-password" name="senhaAtual" required>
+                </div>
+                
+                <div class="password-field">
+                    <label for="new-password">Nova Senha</label>
+                    <input type="password" id="new-password" name="novaSenha" required minlength="6">
+                    <div class="password-requirements">Mínimo de 6 caracteres</div>
+                </div>
+                
+                <div class="password-field">
+                    <label for="confirm-password">Confirmar Nova Senha</label>
+                    <input type="password" id="confirm-password" name="confirmarSenha" required minlength="6">
+                </div>
+                
+                <button type="submit" class="btn-change-password" id="change-password-btn">
+                    🔐 Alterar Senha
+                </button>
+            </form>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+    
+    // Adiciona event listener para o formulário
+    document.getElementById('change-password-form').addEventListener('submit', handleChangePassword);
+}
+
+async function handleChangePassword(e) {
+    e.preventDefault();
+    
+    const senhaAtual = document.getElementById('current-password').value;
+    const novaSenha = document.getElementById('new-password').value;
+    const confirmarSenha = document.getElementById('confirm-password').value;
+    const btn = document.getElementById('change-password-btn');
+    
+    // Validações
+    if (!senhaAtual || !novaSenha || !confirmarSenha) {
+        alert('Preencha todos os campos');
+        return;
+    }
+    
+    if (novaSenha !== confirmarSenha) {
+        alert('Nova senha e confirmação não coincidem');
+        return;
+    }
+    
+    if (novaSenha.length < 6) {
+        alert('Nova senha deve ter pelo menos 6 caracteres');
+        return;
+    }
+    
+    // Desabilita botão
+    btn.disabled = true;
+    btn.textContent = '🔄 Alterando...';
+    
+    try {
+        const response = await authenticatedFetch(`${API_URL}/api/admin/change-password`, {
+            method: 'PUT',
+            body: JSON.stringify({ senhaAtual, novaSenha })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('✅ Senha alterada com sucesso!');
+            // Limpa formulário
+            document.getElementById('change-password-form').reset();
+        } else {
+            alert('❌ Erro: ' + data.error);
+        }
+    } catch (error) {
+        alert('❌ Erro ao alterar senha: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🔐 Alterar Senha';
     }
 }
 

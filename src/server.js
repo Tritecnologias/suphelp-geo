@@ -370,6 +370,66 @@ app.get('/api/admin/profile', authenticateAdmin, async (req, res) => {
   }
 });
 
+// --- Rota 9: Alterar Senha do Administrador (Protegida) ---
+app.put('/api/admin/change-password', authenticateAdmin, async (req, res) => {
+  try {
+    const { senhaAtual, novaSenha } = req.body;
+
+    // Validações
+    if (!senhaAtual || !novaSenha) {
+      return res.status(400).json({ 
+        error: 'Senha atual e nova senha são obrigatórias' 
+      });
+    }
+
+    if (novaSenha.length < 6) {
+      return res.status(400).json({ 
+        error: 'Nova senha deve ter pelo menos 6 caracteres' 
+      });
+    }
+
+    // Busca administrador atual
+    const adminResult = await pool.query(
+      'SELECT * FROM admins WHERE id = $1',
+      [req.admin.id]
+    );
+
+    if (adminResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Administrador não encontrado' });
+    }
+
+    const admin = adminResult.rows[0];
+
+    // Verifica senha atual
+    const senhaAtualValida = await bcrypt.compare(senhaAtual, admin.senha_hash);
+
+    if (!senhaAtualValida) {
+      return res.status(400).json({ 
+        error: 'Senha atual incorreta' 
+      });
+    }
+
+    // Gera hash da nova senha
+    const novaSenhaHash = await bcrypt.hash(novaSenha, 10);
+
+    // Atualiza senha no banco
+    await pool.query(
+      'UPDATE admins SET senha_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+      [novaSenhaHash, req.admin.id]
+    );
+
+    console.log(`✅ Senha alterada para admin: ${admin.email}`);
+
+    res.json({
+      success: true,
+      message: 'Senha alterada com sucesso'
+    });
+  } catch (err) {
+    console.error('Erro ao alterar senha:', err);
+    res.status(500).json({ error: 'Erro ao alterar senha' });
+  }
+});
+
 // --- Rota 5: Disparar Worker de Teste (worker.py) ---
 app.post('/api/import-test', (req, res) => {
   console.log('🔄 Iniciando Worker Python de Teste...');
