@@ -141,16 +141,221 @@ function loadCMSSection(section) {
         html += '<div class="cms-field-description">Caminho para a imagem do logo</div>';
         html += '</div>';
         html += '</div>';
+        
+        html += '<div class="form-grid">';
+        html += '<div class="cms-field">';
+        html += '<label>Menu Item 1</label>';
+        html += '<input type="text" data-key="menu_item_1" value="' + (sectionData.menu_item_1?.value || '') + '" placeholder="Recursos">';
+        html += '</div>';
+        html += '<div class="cms-field">';
+        html += '<label>Link Menu Item 1</label>';
+        html += '<input type="text" data-key="menu_item_1_link" value="' + (sectionData.menu_item_1_link?.value || '') + '" placeholder="#features">';
+        html += '</div>';
+        html += '</div>';
+        
+        html += '<div class="form-grid">';
+        html += '<div class="cms-field">';
+        html += '<label>Menu Item 2</label>';
+        html += '<input type="text" data-key="menu_item_2" value="' + (sectionData.menu_item_2?.value || '') + '" placeholder="Planos">';
+        html += '</div>';
+        html += '<div class="cms-field">';
+        html += '<label>Link Menu Item 2</label>';
+        html += '<input type="text" data-key="menu_item_2_link" value="' + (sectionData.menu_item_2_link?.value || '') + '" placeholder="#plans">';
+        html += '</div>';
+        html += '</div>';
+        
+        html += '<div class="form-grid">';
+        html += '<div class="cms-field">';
+        html += '<label>Texto Login</label>';
+        html += '<input type="text" data-key="login_text" value="' + (sectionData.login_text?.value || '') + '" placeholder="Login">';
+        html += '</div>';
+        html += '<div class="cms-field">';
+        html += '<label>Texto Cadastro</label>';
+        html += '<input type="text" data-key="signup_text" value="' + (sectionData.signup_text?.value || '') + '" placeholder="Começar Grátis">';
+        html += '</div>';
+        html += '</div>';
+        
     } else if (section === 'hero') {
         html += '<h3 style="margin-bottom: 20px;">🚀 Seção Hero (Principal)</h3>';
         html += '<div class="cms-field">';
         html += '<label>Título Principal</label>';
         html += '<input type="text" data-key="title" value="' + (sectionData.title?.value || '') + '" placeholder="Encontre Estabelecimentos Próximos em Segundos">';
+        html += '<div class="cms-field-description">Título grande que aparece no topo da página</div>';
         html += '</div>';
         html += '<div class="cms-field">';
         html += '<label>Subtítulo</label>';
         html += '<textarea data-key="subtitle" placeholder="Sistema inteligente de geolocalização...">' + (sectionData.subtitle?.value || '') + '</textarea>';
+        html += '<div class="cms-field-description">Descrição que aparece abaixo do título</div>';
         html += '</div>';
+        
+        html += '<div class="form-grid">';
+        html += '<div class="cms-field">';
+        html += '<label>Botão 1 - Texto</label>';
+        html += '<input type="text" data-key="button_1_text" value="' + (sectionData.button_1_text?.value || '') + '" placeholder="Começar Agora">';
+        html += '</div>';
+        html += '<div class="cms-field">';
+        html += '<label>Botão 1 - Link</label>';
+        html += '<input type="text" data-key="button_1_link" value="' + (sectionData.button_1_link?.value || '') + '" placeholder="cadastro.html">';
+        html += '</div>';
+        html += '</div>';
+        
+        html += '<div class="form-grid">';
+        html += '<div class="cms-field">';
+        html += '<label>Botão 2 - Texto</label>';
+        html += '<input type="text" data-key="button_2_text" value="' + (sectionData.button_2_text?.value || '') + '" placeholder="Ver Demo">';
+        html += '</div>';
+        html += '<div class="cms-field">';
+        html += '<label>Botão 2 - Link</label>';
+        html += '<input type="text" data-key="button_2_link" value="' + (sectionData.button_2_link?.value || '') + '" placeholder="#demo">';
+        html += '</div>';
+        html += '</div>';
+        
+        html += '<h4 style="margin: 20px 0 15px 0;">📊 Estatísticas</h4>';
+        for (let i = 1; i <= 3; i++) {
+            html += '<div class="form-grid">';
+            html += '<div class="cms-field">';
+            html += '<label>Estatística ' + i + ' - Número</label>';
+            html += '<input type="text" data-key="stat_' + i + '_number" value="' + (sectionData['stat_' + i + '_number']?.value || '') + '" placeholder="10.000+">';
+            html += '</div>';
+            html += '<div class="cms-field">';
+            html += '<label>Estatística ' + i + ' - Texto</label>';
+            html += '<input type="text" data-key="stat_' + i + '_text" value="' + (sectionData['stat_' + i + '_text']?.value || '') + '" placeholder="Estabelecimentos">';
+            html += '</div>';
+            html += '</div>';
+        }
+        
+    } else if (section === 'features') {
+        html += '<h3 style="margin-bottom: 20px;">⭐ Seção de Recursos</h3>';
+        html += '<div class="form-grid">';
+        html += '<div class="cms-field">';
+        html += '<label>Título da Seção</label>';
+        html += '<input type="text" data-key="title" value="' + (sectionData.title?.value || '') + '" placeholder="Recursos Poderosos">';
+        html += '</div>';
+        html += '<div class="cms-field">';
+        html += '<label>Subtítulo da Seção</label>';
+        html += '<input type="text" data-key="subtitle" value="' + (sectionData.subtitle?.value || '') + '" placeholder="Tudo que você precisa para análise geográfica">';
+        html += '</div>';
+        html += '</div>';
+        
+        html += '<h4 style="margin: 20px 0 15px 0;">📋 Cards de Recursos</h4>';
+        for (let i = 1; i <= 6; i++) {
+            html += '<div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 15px;">';
+            html += '<h5 style="margin-bottom: 10px;">Card ' + i + '</h5>';
+            html += '<div class="form-grid">';
+            html += '<div class="cms-field">';
+            html += '<label>Ícone</label>';
+            html += '<input type="text" data-key="card_' + i + '_icon" value="' + (sectionData['card_' + i + '_icon']?.value || '') + '" placeholder="📍">';
+            html += '</div>';
+            html += '<div class="cms-field">';
+            html += '<label>Título</label>';
+            html += '<input type="text" data-key="card_' + i + '_title" value="' + (sectionData['card_' + i + '_title']?.value || '') + '" placeholder="Título do Card">';
+            html += '</div>';
+            html += '</div>';
+            html += '<div class="cms-field">';
+            html += '<label>Descrição</label>';
+            html += '<textarea data-key="card_' + i + '_text" placeholder="Descrição do recurso...">' + (sectionData['card_' + i + '_text']?.value || '') + '</textarea>';
+            html += '</div>';
+            html += '</div>';
+        }
+        
+    } else if (section === 'demo') {
+        html += '<h3 style="margin-bottom: 20px;">🎬 Seção Demo</h3>';
+        html += '<div class="cms-field">';
+        html += '<label>Título da Seção</label>';
+        html += '<input type="text" data-key="title" value="' + (sectionData.title?.value || '') + '" placeholder="Veja Como Funciona">';
+        html += '</div>';
+        
+        html += '<h4 style="margin: 20px 0 15px 0;">📋 Passos</h4>';
+        for (let i = 1; i <= 3; i++) {
+            html += '<div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 15px;">';
+            html += '<h5 style="margin-bottom: 10px;">Passo ' + i + '</h5>';
+            html += '<div class="form-grid">';
+            html += '<div class="cms-field">';
+            html += '<label>Título do Passo</label>';
+            html += '<input type="text" data-key="step_' + i + '_title" value="' + (sectionData['step_' + i + '_title']?.value || '') + '" placeholder="Título do Passo ' + i + '">';
+            html += '</div>';
+            html += '<div class="cms-field">';
+            html += '<label>Descrição do Passo</label>';
+            html += '<input type="text" data-key="step_' + i + '_text" value="' + (sectionData['step_' + i + '_text']?.value || '') + '" placeholder="Descrição do passo ' + i + '">';
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
+        }
+        
+    } else if (section === 'plans') {
+        html += '<h3 style="margin-bottom: 20px;">💰 Seção de Planos</h3>';
+        html += '<div class="form-grid">';
+        html += '<div class="cms-field">';
+        html += '<label>Título da Seção</label>';
+        html += '<input type="text" data-key="title" value="' + (sectionData.title?.value || '') + '" placeholder="Escolha Seu Plano">';
+        html += '</div>';
+        html += '<div class="cms-field">';
+        html += '<label>Subtítulo da Seção</label>';
+        html += '<input type="text" data-key="subtitle" value="' + (sectionData.subtitle?.value || '') + '" placeholder="Planos flexíveis para todas as necessidades">';
+        html += '</div>';
+        html += '</div>';
+        
+        html += '<h4 style="margin: 20px 0 15px 0;">📋 Planos</h4>';
+        const planNames = ['Básico', 'Profissional', 'Enterprise'];
+        for (let i = 1; i <= 3; i++) {
+            html += '<div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 15px;">';
+            html += '<h5 style="margin-bottom: 10px;">Plano ' + planNames[i-1] + '</h5>';
+            html += '<div class="form-grid">';
+            html += '<div class="cms-field">';
+            html += '<label>Nome do Plano</label>';
+            html += '<input type="text" data-key="plan_' + i + '_name" value="' + (sectionData['plan_' + i + '_name']?.value || '') + '" placeholder="' + planNames[i-1] + '">';
+            html += '</div>';
+            html += '<div class="cms-field">';
+            html += '<label>Preço (R$)</label>';
+            html += '<input type="number" data-key="plan_' + i + '_price" value="' + (sectionData['plan_' + i + '_price']?.value || '') + '" placeholder="49">';
+            html += '</div>';
+            html += '</div>';
+            
+            if (i === 2) {
+                html += '<div class="cms-field">';
+                html += '<label>Badge (apenas Plano 2)</label>';
+                html += '<input type="text" data-key="plan_' + i + '_badge" value="' + (sectionData['plan_' + i + '_badge']?.value || '') + '" placeholder="Mais Popular">';
+                html += '</div>';
+            }
+            
+            html += '<div class="cms-field">';
+            html += '<label>Recursos (um por linha)</label>';
+            html += '<textarea data-key="plan_' + i + '_features" placeholder="✅ Recurso 1\n✅ Recurso 2\n❌ Recurso 3" style="min-height: 120px;">' + (sectionData['plan_' + i + '_features']?.value || '') + '</textarea>';
+            html += '<div class="cms-field-description">Use ✅ para recursos incluídos e ❌ para não incluídos</div>';
+            html += '</div>';
+            html += '</div>';
+        }
+        
+    } else if (section === 'cta') {
+        html += '<h3 style="margin-bottom: 20px;">📢 Seção Call-to-Action</h3>';
+        html += '<div class="cms-field">';
+        html += '<label>Título</label>';
+        html += '<input type="text" data-key="title" value="' + (sectionData.title?.value || '') + '" placeholder="Pronto para Começar?">';
+        html += '</div>';
+        html += '<div class="cms-field">';
+        html += '<label>Subtítulo</label>';
+        html += '<input type="text" data-key="subtitle" value="' + (sectionData.subtitle?.value || '') + '" placeholder="Crie sua conta gratuitamente e teste por 7 dias">';
+        html += '</div>';
+        html += '<div class="cms-field">';
+        html += '<label>Texto do Botão</label>';
+        html += '<input type="text" data-key="button_text" value="' + (sectionData.button_text?.value || '') + '" placeholder="Criar Conta Grátis">';
+        html += '</div>';
+        
+    } else if (section === 'footer') {
+        html += '<h3 style="margin-bottom: 20px;">📄 Footer</h3>';
+        html += '<div class="cms-field">';
+        html += '<label>Nome da Empresa</label>';
+        html += '<input type="text" data-key="company_name" value="' + (sectionData.company_name?.value || '') + '" placeholder="🗺️ SupHelp Geo">';
+        html += '</div>';
+        html += '<div class="cms-field">';
+        html += '<label>Descrição da Empresa</label>';
+        html += '<input type="text" data-key="company_description" value="' + (sectionData.company_description?.value || '') + '" placeholder="Geolocalização inteligente para seu negócio">';
+        html += '</div>';
+        html += '<div class="cms-field">';
+        html += '<label>Copyright</label>';
+        html += '<input type="text" data-key="copyright" value="' + (sectionData.copyright?.value || '') + '" placeholder="© 2024 SupHelp Geo. Todos os direitos reservados.">';
+        html += '</div>';
+        
     } else {
         html += '<h3>Seção ' + section + '</h3>';
         html += '<p>Configurações para a seção ' + section + ' serão implementadas em breve.</p>';
