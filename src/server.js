@@ -930,6 +930,106 @@ app.delete('/api/places/:id', async (req, res) => {
   }
 });
 
+// --- Rota 14: CMS - Obter configurações do site ---
+app.get('/api/cms/config', async (req, res) => {
+  try {
+    const { section } = req.query;
+    
+    let query = 'SELECT section, key, value, type FROM site_config';
+    const params = [];
+    
+    if (section) {
+      query += ' WHERE section = $1';
+      params.push(section);
+    }
+    
+    query += ' ORDER BY section, key';
+    
+    const result = await pool.query(query, params);
+    
+    // Organiza por seção
+    const config = {};
+    result.rows.forEach(row => {
+      if (!config[row.section]) {
+        config[row.section] = {};
+      }
+      config[row.section][row.key] = {
+        value: row.value,
+        type: row.type
+      };
+    });
+    
+    res.json({ success: true, data: config });
+  } catch (err) {
+    console.error('Erro ao buscar configurações:', err);
+    res.status(500).json({ error: "Erro ao buscar configurações" });
+  }
+});
+
+// --- Rota 15: CMS - Atualizar configuração ---
+app.put('/api/cms/config', async (req, res) => {
+  try {
+    const { section, key, value, type = 'text' } = req.body;
+    
+    if (!section || !key) {
+      return res.status(400).json({ error: "Seção e chave são obrigatórias" });
+    }
+    
+    await pool.query(`
+      INSERT INTO site_config (section, key, value, type, updated_at) 
+      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+      ON CONFLICT (section, key) 
+      DO UPDATE SET value = $3, type = $4, updated_at = CURRENT_TIMESTAMP
+    `, [section, key, value, type]);
+    
+    res.json({ success: true, message: "Configuração atualizada" });
+  } catch (err) {
+    console.error('Erro ao atualizar configuração:', err);
+    res.status(500).json({ error: "Erro ao atualizar configuração" });
+  }
+});
+
+// --- Rota 16: CMS - Atualizar múltiplas configurações ---
+app.put('/api/cms/config/bulk', async (req, res) => {
+  try {
+    const { configs } = req.body;
+    
+    if (!configs || !Array.isArray(configs)) {
+      return res.status(400).json({ error: "Configurações inválidas" });
+    }
+    
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      for (const config of configs) {
+        const { section, key, value, type = 'text' } = config;
+        
+        if (section && key) {
+          await client.query(`
+            INSERT INTO site_config (section, key, value, type, updated_at) 
+            VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+            ON CONFLICT (section, key) 
+            DO UPDATE SET value = $3, type = $4, updated_at = CURRENT_TIMESTAMP
+          `, [section, key, value, type]);
+        }
+      }
+      
+      await client.query('COMMIT');
+      res.json({ success: true, message: "Configurações atualizadas" });
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    console.error('Erro ao atualizar configurações:', err);
+    res.status(500).json({ error: "Erro ao atualizar configurações" });
+  }
+});
+
 // --- Inicialização do Servidor ---
 app.listen(port, () => {
   console.log(`✅ Backend rodando na porta ${port}`);

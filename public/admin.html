@@ -303,6 +303,80 @@
         .pagination button {
             padding: 8px 16px;
         }
+        
+        /* CMS Styles */
+        .cms-tab {
+            padding: 8px 16px;
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .cms-tab.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .cms-section {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .cms-section.active {
+            display: block;
+        }
+        
+        .cms-field {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .cms-field label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        .cms-field input,
+        .cms-field textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .cms-field textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .cms-field input:focus,
+        .cms-field textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .cms-field-description {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        
+        .cms-preview {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -317,6 +391,9 @@
         </div>
         <div class="menu-item" onclick="showSection('search')">
             🔍 Buscar
+        </div>
+        <div class="menu-item" onclick="showSection('cms')">
+            🎨 Editar Site
         </div>
         <div class="menu-item" onclick="showSection('import')">
             📥 Importar
@@ -498,6 +575,33 @@
                         </thead>
                         <tbody></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- CMS Section -->
+        <div id="cms" class="section">
+            <div class="card">
+                <h2>🎨 Editor do Site</h2>
+                <p style="color: #666; margin-bottom: 20px;">Edite todos os textos, botões e elementos da página principal</p>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button onclick="loadCMSSection('header')" class="cms-tab active" data-section="header">📋 Header</button>
+                    <button onclick="loadCMSSection('hero')" class="cms-tab" data-section="hero">🚀 Hero</button>
+                    <button onclick="loadCMSSection('features')" class="cms-tab" data-section="features">⭐ Recursos</button>
+                    <button onclick="loadCMSSection('demo')" class="cms-tab" data-section="demo">🎬 Demo</button>
+                    <button onclick="loadCMSSection('plans')" class="cms-tab" data-section="plans">💰 Planos</button>
+                    <button onclick="loadCMSSection('cta')" class="cms-tab" data-section="cta">📢 CTA</button>
+                    <button onclick="loadCMSSection('footer')" class="cms-tab" data-section="footer">📄 Footer</button>
+                </div>
+
+                <div id="cms-content">
+                    <!-- Conteúdo será carregado dinamicamente -->
+                </div>
+
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                    <button onclick="saveCMSChanges()" class="btn-secondary" style="margin-right: 10px;">💾 Salvar Alterações</button>
+                    <button onclick="previewSite()" style="background: #f59e0b;">👁️ Visualizar Site</button>
                 </div>
             </div>
         </div>

@@ -2,6 +2,8 @@
 const API_URL = window.location.origin;
 let currentPage = 1;
 let searchResults = [];
+let cmsData = {};
+let currentCMSSection = 'header';
 
 // Inicialização
 window.onload = () => {
@@ -23,6 +25,7 @@ function showSection(sectionId) {
         dashboard: 'Dashboard',
         places: 'Gerenciar Lugares',
         search: 'Buscar por Raio',
+        cms: 'Editor do Site',
         import: 'Importar Dados',
         enrich: 'Enriquecer Contatos',
         settings: 'Configurações'
@@ -32,6 +35,7 @@ function showSection(sectionId) {
     // Carrega dados da seção
     if (sectionId === 'dashboard') loadDashboard();
     if (sectionId === 'places') loadPlaces();
+    if (sectionId === 'cms') loadCMS();
 }
 
 // Dashboard
@@ -505,4 +509,342 @@ function refreshData() {
     const activeSection = document.querySelector('.section.active').id;
     if (activeSection === 'dashboard') loadDashboard();
     if (activeSection === 'places') loadPlaces(currentPage);
+    if (activeSection === 'cms') loadCMS();
+}
+
+// ===== CMS FUNCTIONS =====
+
+async function loadCMS() {
+    try {
+        const response = await fetch(`${API_URL}/api/cms/config`);
+        const data = await response.json();
+        
+        if (data.success) {
+            cmsData = data.data;
+            loadCMSSection('header');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar CMS:', error);
+    }
+}
+
+function loadCMSSection(section) {
+    currentCMSSection = section;
+    
+    // Atualiza tabs
+    document.querySelectorAll('.cms-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.section === section) {
+            tab.classList.add('active');
+        }
+    });
+    
+    const container = document.getElementById('cms-content');
+    const sectionData = cmsData[section] || {};
+    
+    let html = `<div class="cms-section active">`;
+    
+    if (section === 'header') {
+        html += `
+            <h3 style="margin-bottom: 20px;">📋 Configurações do Header</h3>
+            <div class="form-grid">
+                <div class="cms-field">
+                    <label>Texto do Logo</label>
+                    <input type="text" data-key="logo_text" value="${sectionData.logo_text?.value || ''}" placeholder="SupHelp Geo">
+                    <div class="cms-field-description">Nome da empresa que aparece ao lado do logo</div>
+                </div>
+                <div class="cms-field">
+                    <label>Imagem do Logo</label>
+                    <input type="text" data-key="logo_image" value="${sectionData.logo_image?.value || ''}" placeholder="images/logo.png">
+                    <div class="cms-field-description">Caminho para a imagem do logo</div>
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="cms-field">
+                    <label>Menu Item 1</label>
+                    <input type="text" data-key="menu_item_1" value="${sectionData.menu_item_1?.value || ''}" placeholder="Recursos">
+                </div>
+                <div class="cms-field">
+                    <label>Link Menu Item 1</label>
+                    <input type="text" data-key="menu_item_1_link" value="${sectionData.menu_item_1_link?.value || ''}" placeholder="#features">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="cms-field">
+                    <label>Menu Item 2</label>
+                    <input type="text" data-key="menu_item_2" value="${sectionData.menu_item_2?.value || ''}" placeholder="Planos">
+                </div>
+                <div class="cms-field">
+                    <label>Link Menu Item 2</label>
+                    <input type="text" data-key="menu_item_2_link" value="${sectionData.menu_item_2_link?.value || ''}" placeholder="#plans">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="cms-field">
+                    <label>Texto Login</label>
+                    <input type="text" data-key="login_text" value="${sectionData.login_text?.value || ''}" placeholder="Login">
+                </div>
+                <div class="cms-field">
+                    <label>Texto Cadastro</label>
+                    <input type="text" data-key="signup_text" value="${sectionData.signup_text?.value || ''}" placeholder="Começar Grátis">
+                </div>
+            </div>
+        `;
+    } else if (section === 'hero') {
+        html += `
+            <h3 style="margin-bottom: 20px;">🚀 Seção Hero (Principal)</h3>
+            <div class="cms-field">
+                <label>Título Principal</label>
+                <input type="text" data-key="title" value="${sectionData.title?.value || ''}" placeholder="Encontre Estabelecimentos Próximos em Segundos">
+                <div class="cms-field-description">Título grande que aparece no topo da página</div>
+            </div>
+            <div class="cms-field">
+                <label>Subtítulo</label>
+                <textarea data-key="subtitle" placeholder="Sistema inteligente de geolocalização...">${sectionData.subtitle?.value || ''}</textarea>
+                <div class="cms-field-description">Descrição que aparece abaixo do título</div>
+            </div>
+            <div class="form-grid">
+                <div class="cms-field">
+                    <label>Botão 1 - Texto</label>
+                    <input type="text" data-key="button_1_text" value="${sectionData.button_1_text?.value || ''}" placeholder="Começar Agora">
+                </div>
+                <div class="cms-field">
+                    <label>Botão 1 - Link</label>
+                    <input type="text" data-key="button_1_link" value="${sectionData.button_1_link?.value || ''}" placeholder="cadastro.html">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="cms-field">
+                    <label>Botão 2 - Texto</label>
+                    <input type="text" data-key="button_2_text" value="${sectionData.button_2_text?.value || ''}" placeholder="Ver Demo">
+                </div>
+                <div class="cms-field">
+                    <label>Botão 2 - Link</label>
+                    <input type="text" data-key="button_2_link" value="${sectionData.button_2_link?.value || ''}" placeholder="#demo">
+                </div>
+            </div>
+            <h4 style="margin: 20px 0 15px 0;">📊 Estatísticas</h4>
+            <div class="form-grid three">
+                <div class="cms-field">
+                    <label>Estatística 1 - Número</label>
+                    <input type="text" data-key="stat_1_number" value="${sectionData.stat_1_number?.value || ''}" placeholder="10.000+">
+                </div>
+                <div class="cms-field">
+                    <label>Estatística 1 - Texto</label>
+                    <input type="text" data-key="stat_1_text" value="${sectionData.stat_1_text?.value || ''}" placeholder="Estabelecimentos">
+                </div>
+                <div></div>
+            </div>
+            <div class="form-grid three">
+                <div class="cms-field">
+                    <label>Estatística 2 - Número</label>
+                    <input type="text" data-key="stat_2_number" value="${sectionData.stat_2_number?.value || ''}" placeholder="500+">
+                </div>
+                <div class="cms-field">
+                    <label>Estatística 2 - Texto</label>
+                    <input type="text" data-key="stat_2_text" value="${sectionData.stat_2_text?.value || ''}" placeholder="Clientes Ativos">
+                </div>
+                <div></div>
+            </div>
+            <div class="form-grid three">
+                <div class="cms-field">
+                    <label>Estatística 3 - Número</label>
+                    <input type="text" data-key="stat_3_number" value="${sectionData.stat_3_number?.value || ''}" placeholder="99.9%">
+                </div>
+                <div class="cms-field">
+                    <label>Estatística 3 - Texto</label>
+                    <input type="text" data-key="stat_3_text" value="${sectionData.stat_3_text?.value || ''}" placeholder="Uptime">
+                </div>
+                <div></div>
+            </div>
+        `;
+    } else if (section === 'features') {
+        html += `
+            <h3 style="margin-bottom: 20px;">⭐ Seção de Recursos</h3>
+            <div class="form-grid">
+                <div class="cms-field">
+                    <label>Título da Seção</label>
+                    <input type="text" data-key="title" value="${sectionData.title?.value || ''}" placeholder="Recursos Poderosos">
+                </div>
+                <div class="cms-field">
+                    <label>Subtítulo da Seção</label>
+                    <input type="text" data-key="subtitle" value="${sectionData.subtitle?.value || ''}" placeholder="Tudo que você precisa para análise geográfica">
+                </div>
+            </div>
+            <h4 style="margin: 20px 0 15px 0;">📋 Cards de Recursos</h4>
+        `;
+        
+        for (let i = 1; i <= 6; i++) {
+            html += `
+                <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <h5 style="margin-bottom: 10px;">Card ${i}</h5>
+                    <div class="form-grid three">
+                        <div class="cms-field">
+                            <label>Ícone</label>
+                            <input type="text" data-key="card_${i}_icon" value="${sectionData[`card_${i}_icon`]?.value || ''}" placeholder="📍">
+                        </div>
+                        <div class="cms-field">
+                            <label>Título</label>
+                            <input type="text" data-key="card_${i}_title" value="${sectionData[`card_${i}_title`]?.value || ''}" placeholder="Título do Card">
+                        </div>
+                        <div></div>
+                    </div>
+                    <div class="cms-field">
+                        <label>Descrição</label>
+                        <textarea data-key="card_${i}_text" placeholder="Descrição do recurso...">${sectionData[`card_${i}_text`]?.value || ''}</textarea>
+                    </div>
+                </div>
+            `;
+        }
+    } else if (section === 'plans') {
+        html += `
+            <h3 style="margin-bottom: 20px;">💰 Seção de Planos</h3>
+            <div class="form-grid">
+                <div class="cms-field">
+                    <label>Título da Seção</label>
+                    <input type="text" data-key="title" value="${sectionData.title?.value || ''}" placeholder="Escolha Seu Plano">
+                </div>
+                <div class="cms-field">
+                    <label>Subtítulo da Seção</label>
+                    <input type="text" data-key="subtitle" value="${sectionData.subtitle?.value || ''}" placeholder="Planos flexíveis para todas as necessidades">
+                </div>
+            </div>
+            <h4 style="margin: 20px 0 15px 0;">📋 Planos</h4>
+        `;
+        
+        const planNames = ['Básico', 'Profissional', 'Enterprise'];
+        for (let i = 1; i <= 3; i++) {
+            html += `
+                <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <h5 style="margin-bottom: 10px;">Plano ${planNames[i-1]}</h5>
+                    <div class="form-grid">
+                        <div class="cms-field">
+                            <label>Nome do Plano</label>
+                            <input type="text" data-key="plan_${i}_name" value="${sectionData[`plan_${i}_name`]?.value || ''}" placeholder="${planNames[i-1]}">
+                        </div>
+                        <div class="cms-field">
+                            <label>Preço (R$)</label>
+                            <input type="number" data-key="plan_${i}_price" value="${sectionData[`plan_${i}_price`]?.value || ''}" placeholder="49">
+                        </div>
+                    </div>
+                    ${i === 2 ? `
+                    <div class="cms-field">
+                        <label>Badge (apenas Plano 2)</label>
+                        <input type="text" data-key="plan_${i}_badge" value="${sectionData[`plan_${i}_badge`]?.value || ''}" placeholder="Mais Popular">
+                    </div>
+                    ` : ''}
+                    <div class="cms-field">
+                        <label>Recursos (um por linha)</label>
+                        <textarea data-key="plan_${i}_features" placeholder="✅ Recurso 1&#10;✅ Recurso 2&#10;❌ Recurso 3" style="min-height: 120px;">${sectionData[`plan_${i}_features`]?.value || ''}</textarea>
+                        <div class="cms-field-description">Use ✅ para recursos incluídos e ❌ para não incluídos</div>
+                    </div>
+                </div>
+            `;
+        }
+    } else if (section === 'cta') {
+        html += `
+            <h3 style="margin-bottom: 20px;">📢 Seção Call-to-Action</h3>
+            <div class="cms-field">
+                <label>Título</label>
+                <input type="text" data-key="title" value="${sectionData.title?.value || ''}" placeholder="Pronto para Começar?">
+            </div>
+            <div class="cms-field">
+                <label>Subtítulo</label>
+                <input type="text" data-key="subtitle" value="${sectionData.subtitle?.value || ''}" placeholder="Crie sua conta gratuitamente e teste por 7 dias">
+            </div>
+            <div class="cms-field">
+                <label>Texto do Botão</label>
+                <input type="text" data-key="button_text" value="${sectionData.button_text?.value || ''}" placeholder="Criar Conta Grátis">
+            </div>
+        `;
+    } else if (section === 'footer') {
+        html += `
+            <h3 style="margin-bottom: 20px;">📄 Footer</h3>
+            <div class="cms-field">
+                <label>Nome da Empresa</label>
+                <input type="text" data-key="company_name" value="${sectionData.company_name?.value || ''}" placeholder="🗺️ SupHelp Geo">
+            </div>
+            <div class="cms-field">
+                <label>Descrição da Empresa</label>
+                <input type="text" data-key="company_description" value="${sectionData.company_description?.value || ''}" placeholder="Geolocalização inteligente para seu negócio">
+            </div>
+            <div class="cms-field">
+                <label>Copyright</label>
+                <input type="text" data-key="copyright" value="${sectionData.copyright?.value || ''}" placeholder="© 2024 SupHelp Geo. Todos os direitos reservados.">
+            </div>
+        `;
+    } else if (section === 'demo') {
+        html += `
+            <h3 style="margin-bottom: 20px;">🎬 Seção Demo</h3>
+            <div class="cms-field">
+                <label>Título da Seção</label>
+                <input type="text" data-key="title" value="${sectionData.title?.value || ''}" placeholder="Veja Como Funciona">
+            </div>
+            <h4 style="margin: 20px 0 15px 0;">📋 Passos</h4>
+        `;
+        
+        for (let i = 1; i <= 3; i++) {
+            html += `
+                <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <h5 style="margin-bottom: 10px;">Passo ${i}</h5>
+                    <div class="form-grid">
+                        <div class="cms-field">
+                            <label>Título do Passo</label>
+                            <input type="text" data-key="step_${i}_title" value="${sectionData[`step_${i}_title`]?.value || ''}" placeholder="Título do Passo ${i}">
+                        </div>
+                        <div class="cms-field">
+                            <label>Descrição do Passo</label>
+                            <input type="text" data-key="step_${i}_text" value="${sectionData[`step_${i}_text`]?.value || ''}" placeholder="Descrição do passo ${i}">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+async function saveCMSChanges() {
+    const section = currentCMSSection;
+    const inputs = document.querySelectorAll(`#cms-content input, #cms-content textarea`);
+    const configs = [];
+    
+    inputs.forEach(input => {
+        const key = input.dataset.key;
+        const value = input.value;
+        const type = input.type === 'number' ? 'number' : (input.tagName === 'TEXTAREA' ? 'textarea' : 'text');
+        
+        if (key && value !== undefined) {
+            configs.push({ section, key, value, type });
+        }
+    });
+    
+    try {
+        const response = await fetch(`${API_URL}/api/cms/config/bulk`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ configs })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('✅ Alterações salvas com sucesso!');
+            // Atualiza dados locais
+            configs.forEach(config => {
+                if (!cmsData[config.section]) cmsData[config.section] = {};
+                cmsData[config.section][config.key] = { value: config.value, type: config.type };
+            });
+        } else {
+            alert('❌ Erro ao salvar: ' + data.error);
+        }
+    } catch (error) {
+        alert('❌ Erro ao salvar: ' + error.message);
+    }
+}
+
+function previewSite() {
+    window.open('/', '_blank');
 }
