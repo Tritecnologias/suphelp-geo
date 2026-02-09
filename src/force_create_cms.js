@@ -56,7 +56,11 @@ async function forceCreateCMS() {
             ('footer', 'company_description', 'Geolocalização inteligente para seu negócio', 'text'),
             ('footer', 'copyright', '© 2024 SupHelp Geo. Todos os direitos reservados.', 'text'),
             ('header', 'logo_text', 'SupHelp Geo', 'text'),
-            ('hero', 'title', 'Encontre Estabelecimentos Próximos em Segundos', 'text');
+            ('hero', 'title', 'Encontre Estabelecimentos Próximos em Segundos', 'text'),
+            ('contact', 'email', 'comercial@suphelp.com.br', 'email'),
+            ('contact', 'button_text', 'Fale Conosco', 'text'),
+            ('contact', 'email_subject', 'Interesse no SupHelp Geo', 'text'),
+            ('contact', 'email_body', 'Olá! Tenho interesse em conhecer mais sobre o SupHelp Geo.', 'textarea');
         `);
         console.log('✅ Dados inseridos!');
 

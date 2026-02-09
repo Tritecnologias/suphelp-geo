@@ -137,6 +137,14 @@ async function serveDynamicPage(pool, req, res) {
       html = html.replace(/&copy; 2024 SupHelp Geo\. Todos os direitos reservados\.<\/p>/g, `${config.footer.copyright || '© 2024 SupHelp Geo. Todos os direitos reservados.'}</p>`);
     }
     
+    // === CONTACT ===
+    if (config.contact) {
+      html = html.replace(/comercial@suphelp\.com\.br/g, config.contact.email || 'comercial@suphelp.com.br');
+      html = html.replace(/Fale Conosco/g, config.contact.button_text || 'Fale Conosco');
+      html = html.replace(/Interesse no SupHelp Geo/g, config.contact.email_subject || 'Interesse no SupHelp Geo');
+      html = html.replace(/Olá! Tenho interesse em conhecer mais sobre o SupHelp Geo\./g, config.contact.email_body || 'Olá! Tenho interesse em conhecer mais sobre o SupHelp Geo.');
+    }
+    
     res.send(html);
   } catch (err) {
     console.error('Erro ao carregar página principal:', err);

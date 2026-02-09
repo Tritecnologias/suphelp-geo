@@ -430,6 +430,29 @@ function loadCMSSection(section) {
         html += '<input type="text" data-key="copyright" value="' + (sectionData.copyright?.value || '') + '" placeholder="© 2024 SupHelp Geo. Todos os direitos reservados.">';
         html += '</div>';
         
+    } else if (section === 'contact') {
+        html += '<h3 style="margin-bottom: 20px;">📞 Configurações de Contato</h3>';
+        html += '<div class="cms-field">';
+        html += '<label>Email de Contato</label>';
+        html += '<input type="email" data-key="email" value="' + (sectionData.email?.value || '') + '" placeholder="comercial@suphelp.com.br">';
+        html += '<div class="cms-field-description">Email que receberá as mensagens dos clientes</div>';
+        html += '</div>';
+        html += '<div class="cms-field">';
+        html += '<label>Texto do Botão</label>';
+        html += '<input type="text" data-key="button_text" value="' + (sectionData.button_text?.value || '') + '" placeholder="Fale Conosco">';
+        html += '<div class="cms-field-description">Texto que aparece nos botões de contato</div>';
+        html += '</div>';
+        html += '<div class="cms-field">';
+        html += '<label>Assunto do Email</label>';
+        html += '<input type="text" data-key="email_subject" value="' + (sectionData.email_subject?.value || '') + '" placeholder="Interesse no SupHelp Geo">';
+        html += '<div class="cms-field-description">Assunto padrão do email</div>';
+        html += '</div>';
+        html += '<div class="cms-field">';
+        html += '<label>Corpo do Email</label>';
+        html += '<textarea data-key="email_body" placeholder="Olá! Tenho interesse em conhecer mais sobre o SupHelp Geo." style="min-height: 100px;">' + (sectionData.email_body?.value || '') + '</textarea>';
+        html += '<div class="cms-field-description">Mensagem padrão que aparece no email</div>';
+        html += '</div>';
+        
     } else {
         html += '<h3>Seção ' + section + '</h3>';
         html += '<p>Configurações para a seção ' + section + ' serão implementadas em breve.</p>';

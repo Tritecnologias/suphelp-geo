@@ -1,0 +1,53 @@
+📞 CONTATO: Implementar sistema completo "Fale Conosco"
+
+✅ FUNCIONALIDADES IMPLEMENTADAS:
+- Botão "Fale Conosco" no header do site
+- Link de contato no footer
+- Botão flutuante sempre visível com animação pulse
+- Seção de contato editável no CMS admin
+- Email padrão: comercial@suphelp.com.br
+
+🎨 DESIGN E UX:
+- Botão verde com ícone de email no header
+- Botão flutuante com ícone de chat e animação
+- Responsivo: botão flutuante vira círculo no mobile
+- Hover effects e transições suaves
+- Integração visual com design existente
+
+📧 FUNCIONALIDADES EMAIL:
+- Abre cliente de email padrão (mailto:)
+- Assunto pré-preenchido: "Interesse no SupHelp Geo"
+- Corpo do email com mensagem padrão
+- Todos os textos editáveis via CMS
+
+🔧 ARQUIVOS ALTERADOS:
+- public/index.html: Botões de contato adicionados
+- public/css/style.css: Estilos dos botões + animações
+- src/dynamic_page.js: Substituições dinâmicas de contato
+- public/admin.html: Nova aba "Contato" no CMS
+- public/js/admin-fixed.js: Interface de edição de contato
+- src/force_create_cms.js: Dados padrão de contato
+
+📱 RESPONSIVIDADE:
+- Desktop: Botão completo com texto
+- Mobile: Botão circular apenas com ícone
+- Header: Botão oculto em mobile (menu responsivo)
+- Posicionamento otimizado para todos os dispositivos
+
+🎯 LOCALIZAÇÕES DOS BOTÕES:
+1. Header: "📧 Fale Conosco" (verde, visível desktop)
+2. Footer: "📧 Fale Conosco" (substitui "Contato")
+3. Flutuante: "💬 Fale Conosco" (sempre visível, animado)
+
+⚙️ CMS EDITÁVEL:
+- Email de destino
+- Texto dos botões
+- Assunto do email
+- Corpo da mensagem padrão
+
+🚀 PRÓXIMOS PASSOS NO SERVIDOR:
+1. git pull origin main
+2. node src/force_create_cms.js (atualizar dados)
+3. pm2 restart suphelp-geo
+4. Testar botões de contato
+5. Editar configurações no admin se necessário
