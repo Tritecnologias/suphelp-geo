@@ -968,37 +968,50 @@ app.get('/api/cms/config', async (req, res) => {
 
 // --- Rota 15: CMS - Atualizar configuração ---
 app.put('/api/cms/config', async (req, res) => {
+  console.log('🎨 CMS: Recebida requisição de atualização:', req.body);
+  
   try {
     const { section, key, value, type = 'text' } = req.body;
     
     if (!section || !key) {
+      console.log('❌ CMS: Seção ou chave não fornecida');
       return res.status(400).json({ error: "Seção e chave são obrigatórias" });
     }
     
-    await pool.query(`
+    console.log(`🔄 CMS: Atualizando ${section}.${key} = "${value}"`);
+    
+    const result = await pool.query(`
       INSERT INTO site_config (section, key, value, type, updated_at) 
       VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
       ON CONFLICT (section, key) 
       DO UPDATE SET value = $3, type = $4, updated_at = CURRENT_TIMESTAMP
+      RETURNING *
     `, [section, key, value, type]);
     
-    res.json({ success: true, message: "Configuração atualizada" });
+    console.log('✅ CMS: Configuração atualizada:', result.rows[0]);
+    res.json({ success: true, message: "Configuração atualizada", data: result.rows[0] });
   } catch (err) {
-    console.error('Erro ao atualizar configuração:', err);
-    res.status(500).json({ error: "Erro ao atualizar configuração" });
+    console.error('❌ CMS: Erro ao atualizar configuração:', err);
+    res.status(500).json({ error: "Erro ao atualizar configuração: " + err.message });
   }
 });
 
 // --- Rota 16: CMS - Atualizar múltiplas configurações ---
 app.put('/api/cms/config/bulk', async (req, res) => {
+  console.log('🎨 CMS: Recebida requisição bulk:', req.body);
+  
   try {
     const { configs } = req.body;
     
     if (!configs || !Array.isArray(configs)) {
+      console.log('❌ CMS: Configurações inválidas');
       return res.status(400).json({ error: "Configurações inválidas" });
     }
     
+    console.log(`🔄 CMS: Processando ${configs.length} configurações`);
+    
     const client = await pool.connect();
+    const results = [];
     
     try {
       await client.query('BEGIN');
@@ -1007,17 +1020,23 @@ app.put('/api/cms/config/bulk', async (req, res) => {
         const { section, key, value, type = 'text' } = config;
         
         if (section && key) {
-          await client.query(`
+          console.log(`📝 CMS: Salvando ${section}.${key} = "${value}"`);
+          
+          const result = await client.query(`
             INSERT INTO site_config (section, key, value, type, updated_at) 
             VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
             ON CONFLICT (section, key) 
             DO UPDATE SET value = $3, type = $4, updated_at = CURRENT_TIMESTAMP
+            RETURNING *
           `, [section, key, value, type]);
+          
+          results.push(result.rows[0]);
         }
       }
       
       await client.query('COMMIT');
-      res.json({ success: true, message: "Configurações atualizadas" });
+      console.log(`✅ CMS: ${results.length} configurações salvas com sucesso`);
+      res.json({ success: true, message: "Configurações atualizadas", data: results });
     } catch (err) {
       await client.query('ROLLBACK');
       throw err;
@@ -1025,8 +1044,8 @@ app.put('/api/cms/config/bulk', async (req, res) => {
       client.release();
     }
   } catch (err) {
-    console.error('Erro ao atualizar configurações:', err);
-    res.status(500).json({ error: "Erro ao atualizar configurações" });
+    console.error('❌ CMS: Erro ao atualizar configurações:', err);
+    res.status(500).json({ error: "Erro ao atualizar configurações: " + err.message });
   }
 });
 
