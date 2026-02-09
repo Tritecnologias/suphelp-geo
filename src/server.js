@@ -6,6 +6,7 @@ const https = require('https');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('./db');
+const serveDynamicPage = require('./dynamic_page');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -1047,66 +1048,8 @@ app.put('/api/cms/config/bulk', async (req, res) => {
 });
 
 // --- Rota 17: Servir página principal com conteúdo dinâmico ---
-app.get('/', async (req, res) => {
-  try {
-    // Busca todas as configurações do CMS
-    const result = await pool.query('SELECT section, key, value FROM site_config ORDER BY section, key');
-    
-    // Organiza por seção
-    const config = {};
-    result.rows.forEach(row => {
-      if (!config[row.section]) {
-        config[row.section] = {};
-      }
-      config[row.section][row.key] = row.value;
-    });
-    
-    // Lê o template HTML
-    const fs = require('fs');
-    const path = require('path');
-    let html = fs.readFileSync(path.join(__dirname, '../public/index.html'), 'utf8');
-    
-    // Substitui placeholders pelos valores do banco
-    // Header
-    if (config.header) {
-      html = html.replace(/SupHelp Geo<\/span>/g, `${config.header.logo_text || 'SupHelp Geo'}</span>`);
-      html = html.replace(/href="#features">Recursos<\/a>/g, `href="${config.header.menu_item_1_link || '#features'}">${config.header.menu_item_1 || 'Recursos'}</a>`);
-      html = html.replace(/href="#plans">Planos<\/a>/g, `href="${config.header.menu_item_2_link || '#plans'}">${config.header.menu_item_2 || 'Planos'}</a>`);
-      html = html.replace(/href="login.html">Login<\/a>/g, `href="login.html">${config.header.login_text || 'Login'}</a>`);
-      html = html.replace(/href="cadastro.html" class="btn-primary">Começar Grátis<\/a>/g, `href="cadastro.html" class="btn-primary">${config.header.signup_text || 'Começar Grátis'}</a>`);
-    }
-    
-    // Hero
-    if (config.hero) {
-      html = html.replace(/Encontre Estabelecimentos Próximos em Segundos<\/h1>/g, `${config.hero.title || 'Encontre Estabelecimentos Próximos em Segundos'}</h1>`);
-      html = html.replace(/Sistema inteligente de geolocalização[^<]+<\/p>/g, `${config.hero.subtitle || 'Sistema inteligente de geolocalização para encontrar farmácias, padarias, mercados e muito mais. Exporte dados em Excel e PDF.'}</p>`);
-      html = html.replace(/href="cadastro.html" class="btn-hero">Começar Agora<\/a>/g, `href="${config.hero.button_1_link || 'cadastro.html'}" class="btn-hero">${config.hero.button_1_text || 'Começar Agora'}</a>`);
-      html = html.replace(/href="#demo" class="btn-secondary">Ver Demo<\/a>/g, `href="${config.hero.button_2_link || '#demo'}" class="btn-secondary">${config.hero.button_2_text || 'Ver Demo'}</a>`);
-      
-      // Estatísticas
-      html = html.replace(/<h3>10\.000\+<\/h3>/g, `<h3>${config.hero.stat_1_number || '10.000+'}</h3>`);
-      html = html.replace(/<p>Estabelecimentos<\/p>/g, `<p>${config.hero.stat_1_text || 'Estabelecimentos'}</p>`);
-      html = html.replace(/<h3>500\+<\/h3>/g, `<h3>${config.hero.stat_2_number || '500+'}</h3>`);
-      html = html.replace(/<p>Clientes Ativos<\/p>/g, `<p>${config.hero.stat_2_text || 'Clientes Ativos'}</p>`);
-      html = html.replace(/<h3>99\.9%<\/h3>/g, `<h3>${config.hero.stat_3_number || '99.9%'}</h3>`);
-      html = html.replace(/<p>Uptime<\/p>/g, `<p>${config.hero.stat_3_text || 'Uptime'}</p>`);
-    }
-    
-    // Footer
-    if (config.footer) {
-      html = html.replace(/<h3>🗺️ SupHelp Geo<\/h3>/g, `<h3>${config.footer.company_name || '🗺️ SupHelp Geo'}</h3>`);
-      html = html.replace(/Geolocalização inteligente para seu negócio<\/p>/g, `${config.footer.company_description || 'Geolocalização inteligente para seu negócio'}</p>`);
-      html = html.replace(/&copy; 2024 SupHelp Geo\. Todos os direitos reservados\.<\/p>/g, `${config.footer.copyright || '© 2024 SupHelp Geo. Todos os direitos reservados.'}</p>`);
-    }
-    
-    res.send(html);
-  } catch (err) {
-    console.error('Erro ao carregar página principal:', err);
-    // Se der erro, serve o arquivo estático
-    const fs = require('fs');
-    const path = require('path');
-    res.sendFile(path.join(__dirname, '../public/index.html'));
-  }
+app.get('/', (req, res) => {
+  serveDynamicPage(pool, req, res);
 });
 
 // --- Servir outros arquivos estáticos ---
