@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Admin</title>
+</head>
+<body>
+    <h1>Teste de Funções</h1>
+    <button onclick="testFunction()">Testar</button>
+    
+    <script>
+        console.log('Script carregado!');
+        
+        function testFunction() {
+            alert('Função funcionando!');
+        }
+        
+        // Testa se as funções do admin existem
+        window.onload = () => {
+            console.log('loadCMSSection existe?', typeof loadCMSSection);
+            console.log('saveCMSChanges existe?', typeof saveCMSChanges);
+            console.log('previewSite existe?', typeof previewSite);
+        };
+    </script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
