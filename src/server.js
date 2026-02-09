@@ -37,6 +37,29 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+// --- Middleware de Autenticação Admin ---
+const authenticateAdmin = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Token de admin não fornecido' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, admin) => {
+    if (err) {
+      return res.status(403).json({ error: 'Token de admin inválido' });
+    }
+    
+    if (!admin.isAdmin) {
+      return res.status(403).json({ error: 'Acesso negado: privilégios de admin necessários' });
+    }
+    
+    req.admin = admin;
+    next();
+  });
+};
+
 // --- Rota 2: Registro de Usuário ---
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -180,6 +203,169 @@ app.get('/api/auth/profile', authenticateToken, async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Erro ao buscar perfil:', err);
+    res.status(500).json({ error: 'Erro ao buscar perfil' });
+  }
+});
+
+// --- Rota 5: Login de Administrador ---
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { email, senha } = req.body;
+
+    if (!email || !senha) {
+      return res.status(400).json({ 
+        error: 'Email e senha são obrigatórios' 
+      });
+    }
+
+    // Busca administrador
+    const result = await pool.query(
+      'SELECT * FROM admins WHERE email = $1 AND status = $2',
+      [email, 'active']
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ 
+        error: 'Email ou senha incorretos' 
+      });
+    }
+
+    const admin = result.rows[0];
+
+    // Verifica senha
+    const senhaValida = await bcrypt.compare(senha, admin.senha_hash);
+
+    if (!senhaValida) {
+      return res.status(401).json({ 
+        error: 'Email ou senha incorretos' 
+      });
+    }
+
+    // Atualiza último login
+    await pool.query(
+      'UPDATE admins SET last_login = CURRENT_TIMESTAMP WHERE id = $1',
+      [admin.id]
+    );
+
+    // Gera token JWT com flag de admin
+    const token = jwt.sign(
+      { 
+        id: admin.id, 
+        email: admin.email,
+        role: admin.role,
+        isAdmin: true
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+
+    console.log(`✅ Login admin realizado: ${email}`);
+
+    res.json({
+      success: true,
+      token,
+      admin: {
+        id: admin.id,
+        nome: admin.nome,
+        email: admin.email,
+        role: admin.role
+      }
+    });
+  } catch (err) {
+    console.error('Erro no login admin:', err);
+    res.status(500).json({ error: 'Erro ao fazer login' });
+  }
+});
+
+// --- Rota 6: Criar Novo Administrador (Protegida) ---
+app.post('/api/admin/create', authenticateAdmin, async (req, res) => {
+  try {
+    const { nome, email, senha, role = 'admin' } = req.body;
+
+    // Validações
+    if (!nome || !email || !senha) {
+      return res.status(400).json({ 
+        error: 'Campos obrigatórios: nome, email, senha' 
+      });
+    }
+
+    // Verifica se email já existe
+    const existingAdmin = await pool.query(
+      'SELECT id FROM admins WHERE email = $1',
+      [email]
+    );
+
+    if (existingAdmin.rows.length > 0) {
+      return res.status(400).json({ 
+        error: 'Email já cadastrado' 
+      });
+    }
+
+    // Hash da senha
+    const senhaHash = await bcrypt.hash(senha, 10);
+
+    // Insere administrador
+    const result = await pool.query(`
+      INSERT INTO admins (nome, email, senha_hash, role, status)
+      VALUES ($1, $2, $3, $4, 'active')
+      RETURNING id, nome, email, role, status, created_at
+    `, [nome, email, senhaHash, role]);
+
+    const newAdmin = result.rows[0];
+
+    console.log(`✅ Novo admin cadastrado: ${email} - Role: ${role}`);
+
+    res.status(201).json({
+      success: true,
+      message: 'Administrador cadastrado com sucesso',
+      admin: {
+        id: newAdmin.id,
+        nome: newAdmin.nome,
+        email: newAdmin.email,
+        role: newAdmin.role,
+        status: newAdmin.status
+      }
+    });
+  } catch (err) {
+    console.error('Erro ao criar admin:', err);
+    res.status(500).json({ error: 'Erro ao cadastrar administrador' });
+  }
+});
+
+// --- Rota 7: Listar Administradores (Protegida) ---
+app.get('/api/admin/list', authenticateAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, nome, email, role, status, created_at, last_login 
+      FROM admins 
+      ORDER BY created_at DESC
+    `);
+
+    res.json({
+      success: true,
+      admins: result.rows
+    });
+  } catch (err) {
+    console.error('Erro ao listar admins:', err);
+    res.status(500).json({ error: 'Erro ao listar administradores' });
+  }
+});
+
+// --- Rota 8: Perfil do Administrador (Protegida) ---
+app.get('/api/admin/profile', authenticateAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, nome, email, role, status, created_at, last_login FROM admins WHERE id = $1',
+      [req.admin.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Administrador não encontrado' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Erro ao buscar perfil admin:', err);
     res.status(500).json({ error: 'Erro ao buscar perfil' });
   }
 });
@@ -929,7 +1115,7 @@ app.delete('/api/places/:id', async (req, res) => {
 });
 
 // --- Rota 14: CMS - Obter configurações do site ---
-app.get('/api/cms/config', async (req, res) => {
+app.get('/api/cms/config', authenticateAdmin, async (req, res) => {
   try {
     const { section } = req.query;
     
@@ -965,7 +1151,7 @@ app.get('/api/cms/config', async (req, res) => {
 });
 
 // --- Rota 15: CMS - Atualizar configuração ---
-app.put('/api/cms/config', async (req, res) => {
+app.put('/api/cms/config', authenticateAdmin, async (req, res) => {
   console.log('🎨 CMS: Recebida requisição de atualização:', req.body);
   
   try {
@@ -995,7 +1181,7 @@ app.put('/api/cms/config', async (req, res) => {
 });
 
 // --- Rota 16: CMS - Atualizar múltiplas configurações ---
-app.put('/api/cms/config/bulk', async (req, res) => {
+app.put('/api/cms/config/bulk', authenticateAdmin, async (req, res) => {
   console.log('🎨 CMS: Recebida requisição bulk:', req.body);
   
   try {
@@ -1054,6 +1240,18 @@ app.get('/', (req, res) => {
 
 // --- Servir outros arquivos estáticos ---
 app.use(express.static('public', { index: false }));
+
+// --- Middleware para proteger admin.html ---
+app.get('/admin.html', (req, res) => {
+  // Redireciona para login se não estiver autenticado
+  res.redirect('/admin-login.html');
+});
+
+// --- Rota para servir admin.html apenas com token válido ---
+app.get('/admin-panel', authenticateAdmin, (req, res) => {
+  const path = require('path');
+  res.sendFile(path.join(__dirname, '../public/admin.html'));
+});
 
 // --- Inicialização do Servidor ---
 app.listen(port, () => {

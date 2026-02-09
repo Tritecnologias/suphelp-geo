@@ -289,6 +289,80 @@
             gap: 15px;
         }
         
+        /* Admin Styles */
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .admin-role {
+            background: #fbbf24;
+            color: #92400e;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .btn-logout {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .btn-logout:hover {
+            background: #dc2626;
+        }
+        
+        .admins-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .admin-form {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .admins-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .admins-table th,
+        .admins-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .admins-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .badge.warning {
+            background: #fbbf24;
+            color: #92400e;
+        }
+        
         .form-grid.three {
             grid-template-columns: repeat(3, 1fr);
         }
@@ -395,6 +469,9 @@
         <div class="menu-item" onclick="showSection('cms')">
             🎨 Editar Site
         </div>
+        <div class="menu-item" onclick="showSection('admins')">
+            👥 Administradores
+        </div>
         <div class="menu-item" onclick="showSection('import')">
             📥 Importar
         </div>
@@ -409,8 +486,12 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="header">
-            <h1 id="page-title">Dashboard</h1>
-            <button onclick="refreshData()">🔄 Atualizar</button>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1 id="page-title">Dashboard</h1>
+                <div id="admin-info" style="display: flex; align-items: center; gap: 15px;">
+                    <button onclick="refreshData()">🔄 Atualizar</button>
+                </div>
+            </div>
         </div>
 
         <!-- Dashboard Section -->
@@ -640,6 +721,15 @@
                 </div>
                 <button onclick="enrichContacts()">📞 Enriquecer</button>
                 <div id="enrich-result" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+
+        <!-- Admins Section -->
+        <div id="admins" class="section">
+            <div class="card">
+                <div id="admins-list">
+                    <!-- Conteúdo será carregado dinamicamente -->
+                </div>
             </div>
         </div>
 

@@ -4,11 +4,83 @@ let currentPage = 1;
 let searchResults = [];
 let cmsData = {};
 let currentCMSSection = 'header';
+let adminToken = null;
+let adminData = null;
 
 // Inicialização
 window.onload = () => {
-    loadDashboard();
+    checkAdminAuth();
 };
+
+// Verificação de autenticação
+function checkAdminAuth() {
+    adminToken = localStorage.getItem('adminToken');
+    adminData = JSON.parse(localStorage.getItem('adminData') || '{}');
+    
+    if (!adminToken) {
+        window.location.href = '/admin-login.html';
+        return;
+    }
+    
+    // Verifica se token é válido
+    fetch(`${API_URL}/api/admin/profile`, {
+        headers: {
+            'Authorization': `Bearer ${adminToken}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Token inválido');
+        }
+        return response.json();
+    })
+    .then(data => {
+        adminData = data;
+        localStorage.setItem('adminData', JSON.stringify(data));
+        initializeAdmin();
+    })
+    .catch(error => {
+        console.error('Erro de autenticação:', error);
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminData');
+        window.location.href = '/admin-login.html';
+    });
+}
+
+function initializeAdmin() {
+    // Atualiza interface com dados do admin
+    const adminInfo = document.getElementById('admin-info');
+    if (adminInfo) {
+        adminInfo.innerHTML = `
+            <div class="admin-profile">
+                <span>👤 ${adminData.nome}</span>
+                <span class="admin-role">${adminData.role}</span>
+                <button onclick="logout()" class="btn-logout">Sair</button>
+            </div>
+        `;
+    }
+    
+    loadDashboard();
+}
+
+function logout() {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminData');
+    window.location.href = '/admin-login.html';
+}
+
+// Função para fazer requisições autenticadas
+async function authenticatedFetch(url, options = {}) {
+    const defaultOptions = {
+        headers: {
+            'Authorization': `Bearer ${adminToken}`,
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    };
+    
+    return fetch(url, { ...options, headers: defaultOptions.headers });
+}
 
 // Navegação
 function showSection(sectionId) {
@@ -26,6 +98,7 @@ function showSection(sectionId) {
         places: 'Gerenciar Lugares',
         search: 'Buscar por Raio',
         cms: 'Editor do Site',
+        admins: 'Gerenciar Administradores',
         import: 'Importar Dados',
         enrich: 'Enriquecer Contatos',
         settings: 'Configurações'
@@ -36,6 +109,7 @@ function showSection(sectionId) {
     if (sectionId === 'dashboard') loadDashboard();
     if (sectionId === 'places') loadPlaces();
     if (sectionId === 'cms') loadCMS();
+    if (sectionId === 'admins') loadAdmins();
 }
 
 // Dashboard
@@ -93,7 +167,7 @@ function loadCategories(places) {
 // CMS Functions
 async function loadCMS() {
     try {
-        const response = await fetch(`${API_URL}/api/cms/config`);
+        const response = await authenticatedFetch(`${API_URL}/api/cms/config`);
         const data = await response.json();
         
         if (data.success) {
@@ -387,9 +461,8 @@ async function saveCMSChanges() {
     }
     
     try {
-        const response = await fetch(`${API_URL}/api/cms/config/bulk`, {
+        const response = await authenticatedFetch(`${API_URL}/api/cms/config/bulk`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ configs })
         });
         
@@ -425,6 +498,137 @@ function refreshData() {
 // Placeholder functions for other sections
 async function loadPlaces() {
     console.log('loadPlaces chamada - implementar');
+}
+
+// Administradores
+async function loadAdmins() {
+    try {
+        const response = await authenticatedFetch(`${API_URL}/api/admin/list`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayAdmins(data.admins);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar admins:', error);
+        alert('Erro ao carregar administradores');
+    }
+}
+
+function displayAdmins(admins) {
+    const container = document.getElementById('admins-list');
+    if (!container) return;
+    
+    let html = `
+        <div class="admins-header">
+            <h3>👥 Administradores do Sistema</h3>
+            <button onclick="showCreateAdminForm()" class="btn btn-primary">
+                ➕ Novo Administrador
+            </button>
+        </div>
+        
+        <div id="create-admin-form" style="display: none;" class="admin-form">
+            <h4>Criar Novo Administrador</h4>
+            <div class="form-grid">
+                <input type="text" id="admin-nome" placeholder="Nome completo" required>
+                <input type="email" id="admin-email" placeholder="Email" required>
+                <input type="password" id="admin-senha" placeholder="Senha" required>
+                <select id="admin-role">
+                    <option value="admin">Administrador</option>
+                    <option value="super_admin">Super Administrador</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button onclick="createAdmin()" class="btn btn-success">Criar</button>
+                <button onclick="hideCreateAdminForm()" class="btn btn-secondary">Cancelar</button>
+            </div>
+        </div>
+        
+        <div class="admins-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Último Login</th>
+                        <th>Criado em</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    admins.forEach(admin => {
+        const lastLogin = admin.last_login ? 
+            new Date(admin.last_login).toLocaleString('pt-BR') : 'Nunca';
+        const createdAt = new Date(admin.created_at).toLocaleString('pt-BR');
+        
+        html += `
+            <tr>
+                <td>${admin.id}</td>
+                <td><strong>${admin.nome}</strong></td>
+                <td>${admin.email}</td>
+                <td><span class="badge ${admin.role === 'super_admin' ? 'warning' : 'info'}">${admin.role}</span></td>
+                <td><span class="badge ${admin.status === 'active' ? 'success' : 'danger'}">${admin.status}</span></td>
+                <td>${lastLogin}</td>
+                <td>${createdAt}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+function showCreateAdminForm() {
+    document.getElementById('create-admin-form').style.display = 'block';
+}
+
+function hideCreateAdminForm() {
+    document.getElementById('create-admin-form').style.display = 'none';
+    // Limpa campos
+    document.getElementById('admin-nome').value = '';
+    document.getElementById('admin-email').value = '';
+    document.getElementById('admin-senha').value = '';
+    document.getElementById('admin-role').value = 'admin';
+}
+
+async function createAdmin() {
+    const nome = document.getElementById('admin-nome').value;
+    const email = document.getElementById('admin-email').value;
+    const senha = document.getElementById('admin-senha').value;
+    const role = document.getElementById('admin-role').value;
+    
+    if (!nome || !email || !senha) {
+        alert('Preencha todos os campos obrigatórios');
+        return;
+    }
+    
+    try {
+        const response = await authenticatedFetch(`${API_URL}/api/admin/create`, {
+            method: 'POST',
+            body: JSON.stringify({ nome, email, senha, role })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('✅ Administrador criado com sucesso!');
+            hideCreateAdminForm();
+            loadAdmins(); // Recarrega lista
+        } else {
+            alert('❌ Erro: ' + data.error);
+        }
+    } catch (error) {
+        alert('❌ Erro ao criar administrador: ' + error.message);
+    }
 }
 
 console.log('Admin script carregado com sucesso!');
