@@ -1,8 +1,9 @@
 // Configuração da API
 export const API_CONFIG = {
-  BASE_URL: process.env.NODE_ENV === 'production' 
-    ? 'http://76.13.173.70:5000/api'
-    : 'http://localhost:5000/api',
+  BASE_URL: import.meta.env.VITE_API_URL || 
+    (import.meta.env.MODE === 'production' 
+      ? 'http://76.13.173.70:5000/api'
+      : 'http://localhost:5000/api'),
   TIMEOUT: 10000,
 };
 

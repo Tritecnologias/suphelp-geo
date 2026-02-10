@@ -1310,20 +1310,51 @@ app.get('/', (req, res) => {
   serveDynamicPage(pool, req, res);
 });
 
-// --- Servir outros arquivos estáticos ---
-app.use(express.static('public', { index: false }));
+// --- Servir build do React (se existir) ou frontend antigo ---
+const path = require('path');
+const fs = require('fs');
 
-// --- Middleware para proteger admin.html ---
-app.get('/admin.html', (req, res) => {
-  // Redireciona para login se não estiver autenticado
-  res.redirect('/admin-login.html');
-});
+// Verificar se existe build do React
+const reactBuildPath = path.join(__dirname, '../public/index.html');
+const oldFrontendPath = path.join(__dirname, '../public-old/index.html');
 
-// --- Rota para servir admin.html apenas com token válido ---
-app.get('/admin-panel', authenticateAdmin, (req, res) => {
-  const path = require('path');
-  res.sendFile(path.join(__dirname, '../public/admin.html'));
-});
+if (fs.existsSync(reactBuildPath)) {
+  console.log('✅ Servindo frontend React');
+  
+  // Servir arquivos estáticos do React
+  app.use(express.static(path.join(__dirname, '../public'), { index: false }));
+  
+  // Rota para admin antigo
+  app.use('/admin-old', express.static(path.join(__dirname, '../public-old'), { index: false }));
+  
+  // Fallback para React Router (SPA)
+  app.get('*', (req, res) => {
+    // Não interceptar rotas da API
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ error: 'API endpoint not found' });
+    }
+    
+    // Servir index.html do React para todas as outras rotas
+    res.sendFile(reactBuildPath);
+  });
+  
+} else if (fs.existsSync(oldFrontendPath)) {
+  console.log('⚠️ Servindo frontend antigo (React não encontrado)');
+  
+  // Servir frontend antigo
+  app.use(express.static(path.join(__dirname, '../public-old'), { index: false }));
+  
+} else {
+  console.log('❌ Nenhum frontend encontrado');
+  
+  // Rota de fallback
+  app.get('*', (req, res) => {
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ error: 'API endpoint not found' });
+    }
+    res.status(404).send('Frontend não encontrado');
+  });
+}
 
 // --- Inicialização do Servidor ---
 app.listen(port, () => {

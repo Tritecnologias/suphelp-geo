@@ -1,0 +1,91 @@
+🚀 DEPLOY: Scripts e configurações para servidor de produção
+
+✅ ARQUIVOS DE DEPLOY CRIADOS:
+
+### Scripts Automatizados
+- deploy-automatico.ps1: Script completo de build e deploy
+- deploy-react-servidor.ps1: Script alternativo de deploy
+- DEPLOY_REACT_SERVIDOR.md: Documentação completa
+- ROLLBACK_PLAN.md: Plano de contingência
+
+### Configurações de Produção
+- frontend/.env.production: Variáveis para produção
+- backend/src/server.js: Configurado para servir React build
+- Suporte a fallback para frontend antigo
+
+### Funcionalidades Implementadas
+
+#### Sistema Híbrido
+- Frontend React servido na porta 5000 (mesma do backend)
+- APIs mantidas em /api/*
+- Admin antigo preservado em /admin-old/*
+- Fallback automático se React não existir
+
+#### Deploy Automatizado
+- Build automático do React
+- Backup do frontend antigo
+- Instalação de dependências
+- Configuração do PM2
+- Verificação de status
+
+#### Segurança e Rollback
+- Backup automático do sistema antigo
+- Rollback em 1 minuto se necessário
+- Verificações pós-deploy
+- Logs detalhados
+
+### Estrutura Final no Servidor
+```
+~/suphelp-geo/backend/
+├── src/                 # Backend Node.js (mantido)
+├── public/              # Build React (novo)
+├── public-old/          # Frontend antigo (backup)
+├── package.json         # Dependências atualizadas
+└── install.sh           # Script de instalação
+```
+
+### URLs Finais
+- Site React: http://76.13.173.70:5000/
+- Login: http://76.13.173.70:5000/login
+- Dashboard: http://76.13.173.70:5000/dashboard
+- APIs: http://76.13.173.70:5000/api/*
+- Admin antigo: http://76.13.173.70:5000/admin-old/admin.html
+
+### Como Usar
+
+#### Deploy Completo
+```powershell
+.\deploy-automatico.ps1
+# Seguir instruções na tela
+```
+
+#### Comandos no Servidor
+```bash
+scp -r deploy-package/* dev@76.13.173.70:~/suphelp-geo/backend/
+ssh dev@76.13.173.70 'cd ~/suphelp-geo/backend && chmod +x install.sh && ./install.sh'
+```
+
+#### Rollback se Necessário
+```bash
+ssh dev@76.13.173.70
+cd ~/suphelp-geo/backend
+pm2 stop suphelp-geo
+rm -rf public && mv public-old public
+pm2 restart suphelp-geo
+```
+
+### Vantagens da Implementação
+- ✅ Zero downtime (PM2 restart)
+- ✅ Backup automático
+- ✅ Uma única porta (sem CORS)
+- ✅ Rollback rápido
+- ✅ Preserva sistema antigo
+- ✅ Deploy automatizado
+- ✅ Verificações de segurança
+
+### Próximos Passos
+1. Executar deploy-automatico.ps1
+2. Seguir instruções do script
+3. Testar todas as funcionalidades
+4. Monitorar logs iniciais
+5. Configurar SSL (futuro)
