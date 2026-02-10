@@ -1,6 +1,7 @@
 // backend/src/server.js
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const { spawn } = require('child_process');
 const https = require('https');
 const bcrypt = require('bcryptjs');
@@ -10,6 +11,17 @@ const serveDynamicPage = require('./dynamic_page');
 
 const app = express();
 const port = process.env.PORT || 5000;
+
+// Middleware CORS para permitir frontend React
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://76.13.173.70:3000',
+    'https://suphelp-geo.vercel.app' // Para deploy futuro
+  ],
+  credentials: true
+}));
 
 // Middleware para processar JSON
 app.use(express.json());
