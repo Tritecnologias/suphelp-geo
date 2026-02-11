@@ -7,7 +7,8 @@ export class AdminService {
   
   // Listar administradores
   async listAdmins(): Promise<Admin[]> {
-    return apiClient.get<Admin[]>('/admin/list');
+    const response = await apiClient.get<{ success: boolean; admins: Admin[] }>('/admin/list');
+    return response.admins;
   }
 
   // Criar administrador
