@@ -1,5 +1,5 @@
 // Dashboard do usuário
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Globe, 
@@ -17,10 +17,12 @@ import {
   Star,
   TrendingUp,
   Activity,
-  Zap
+  Zap,
+  Filter
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { usePlaces } from '../hooks/usePlaces';
+import { authService } from '../services/auth';
 
 const DashboardPage: React.FC = () => {
   const { user, logout } = useAuth();
@@ -29,6 +31,7 @@ const DashboardPage: React.FC = () => {
     isLoading, 
     error, 
     searchByAddress, 
+    searchAdvanced,
     clearResults,
     hasResults,
     totalResults 
@@ -36,11 +39,51 @@ const DashboardPage: React.FC = () => {
   
   const [searchAddress, setSearchAddress] = useState('');
   const [searchRadius, setSearchRadius] = useState(5000);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    category: '',
+    minRating: '',
+    hasPhone: false
+  });
+  const [userStats, setUserStats] = useState({
+    searches_used: 0,
+    searches_limit: 100,
+    status: 'active'
+  });
+
+  // Carregar estatísticas reais do usuário
+  useEffect(() => {
+    const loadUserStats = async () => {
+      try {
+        const profile = await authService.getProfile();
+        setUserStats({
+          searches_used: profile.searches_used || 0,
+          searches_limit: profile.searches_limit || 100,
+          status: profile.status || 'active'
+        });
+      } catch (error) {
+        console.error('Erro ao carregar estatísticas:', error);
+      }
+    };
+
+    loadUserStats();
+  }, []);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (searchAddress.trim()) {
-      await searchByAddress(searchAddress, searchRadius);
+      // Se há filtros avançados, usar busca avançada
+      if (showAdvancedFilters && (filters.category || filters.minRating || filters.hasPhone)) {
+        await searchAdvanced({
+          address: searchAddress,
+          radius: searchRadius,
+          category: filters.category || undefined,
+          minRating: filters.minRating ? Number(filters.minRating) : undefined,
+          hasPhone: filters.hasPhone || undefined
+        });
+      } else {
+        await searchByAddress(searchAddress, searchRadius);
+      }
     }
   };
 
@@ -180,8 +223,17 @@ const DashboardPage: React.FC = () => {
               </div>
             </Link>
 
-            {/* User Menu */}
+            {/* Navigation */}
             <div className="flex items-center gap-6">
+              {user?.role === 'admin' && (
+                <Link 
+                  to="/admin" 
+                  className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-all font-medium"
+                >
+                  <Settings size={16} />
+                  <span className="hidden sm:inline">Admin</span>
+                </Link>
+              )}
               <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-full">
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                   {user?.email?.charAt(0).toUpperCase()}
@@ -230,8 +282,8 @@ const DashboardPage: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">Buscas Usadas</p>
-                <p className="text-2xl font-bold text-slate-800">{user?.searches_used || 0}</p>
-                <p className="text-xs text-blue-600 font-medium">de {user?.searches_limit || 0}</p>
+                <p className="text-2xl font-bold text-slate-800">{userStats.searches_used}</p>
+                <p className="text-xs text-blue-600 font-medium">de {userStats.searches_limit}</p>
               </div>
             </div>
           </div>
@@ -243,7 +295,7 @@ const DashboardPage: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">Limite Mensal</p>
-                <p className="text-2xl font-bold text-slate-800">{user?.searches_limit || 0}</p>
+                <p className="text-2xl font-bold text-slate-800">{userStats.searches_limit}</p>
                 <p className="text-xs text-green-600 font-medium">buscas/mês</p>
               </div>
             </div>
@@ -269,7 +321,7 @@ const DashboardPage: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">Status</p>
-                <p className="text-2xl font-bold text-green-600">{user?.status || 'Ativo'}</p>
+                <p className="text-2xl font-bold text-green-600">{userStats.status === 'active' ? 'Ativo' : 'Inativo'}</p>
                 <p className="text-xs text-orange-600 font-medium">conta</p>
               </div>
             </div>
@@ -343,6 +395,15 @@ const DashboardPage: React.FC = () => {
                 )}
               </button>
 
+              <button
+                type="button"
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className="bg-slate-500 hover:bg-slate-600 text-white px-6 py-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+              >
+                <Filter size={20} />
+                Filtros {showAdvancedFilters ? '▲' : '▼'}
+              </button>
+
               {hasResults && (
                 <button
                   type="button"
@@ -353,6 +414,68 @@ const DashboardPage: React.FC = () => {
                 </button>
               )}
             </div>
+
+            {/* Filtros Avançados */}
+            {showAdvancedFilters && (
+              <div className="bg-slate-50 p-6 rounded-xl border-2 border-slate-200">
+                <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                  <Filter size={20} />
+                  Filtros Avançados
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      🏪 Categoria
+                    </label>
+                    <select
+                      value={filters.category}
+                      onChange={(e) => setFilters({...filters, category: e.target.value})}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                    >
+                      <option value="">Todas as categorias</option>
+                      <option value="restaurant">Restaurante</option>
+                      <option value="pharmacy">Farmácia</option>
+                      <option value="bank">Banco</option>
+                      <option value="hospital">Hospital</option>
+                      <option value="gas_station">Posto de Gasolina</option>
+                      <option value="supermarket">Supermercado</option>
+                      <option value="school">Escola</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      ⭐ Avaliação Mínima
+                    </label>
+                    <select
+                      value={filters.minRating}
+                      onChange={(e) => setFilters({...filters, minRating: e.target.value})}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                    >
+                      <option value="">Qualquer avaliação</option>
+                      <option value="3">3+ estrelas</option>
+                      <option value="4">4+ estrelas</option>
+                      <option value="4.5">4.5+ estrelas</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      📞 Telefone
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={filters.hasPhone}
+                        onChange={(e) => setFilters({...filters, hasPhone: e.target.checked})}
+                        className="w-4 h-4 text-cyan-600 bg-gray-100 border-gray-300 rounded focus:ring-cyan-500"
+                      />
+                      <span className="text-sm text-slate-700">Apenas com telefone</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
           </form>
         </div>
 
