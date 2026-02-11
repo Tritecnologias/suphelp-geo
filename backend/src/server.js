@@ -115,10 +115,10 @@ app.post('/api/auth/register', async (req, res) => {
 
     // Insere usuário
     const result = await pool.query(`
-      INSERT INTO users (nome, email, password_hash, telefone, empresa, plano, searches_limit, status)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
-      RETURNING id, nome, email, telefone, empresa, plano, status, created_at
-    `, [nome, email, senhaHash, telefone || null, empresa || null, plano, limits[plano] || 100]);
+      INSERT INTO users (nome, email, senha_hash, plano, searches_limit, status)
+      VALUES ($1, $2, $3, $4, $5, 'pending')
+      RETURNING id, nome, email, plano, status, created_at
+    `, [nome, email, senhaHash, plano, limits[plano] || 100]);
 
     const user = result.rows[0];
 
@@ -214,7 +214,7 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/auth/profile', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, nome, email, telefone, empresa, plano, status, searches_used, searches_limit, created_at FROM users WHERE id = $1',
+      'SELECT id, nome, email, plano, status, searches_used, searches_limit, created_at FROM users WHERE id = $1',
       [req.user.id]
     );
 
