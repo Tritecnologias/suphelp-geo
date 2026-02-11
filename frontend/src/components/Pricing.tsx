@@ -66,7 +66,7 @@ const Pricing: React.FC = () => {
           {plans.map((plan, index) => (
             <div 
               key={index}
-              className={`relative bg-white rounded-2xl shadow-lg border-2 p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${
+              className={`relative bg-white rounded-2xl shadow-lg border-2 p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl flex flex-col ${
                 plan.popular ? 'border-cyan-500 scale-105' : 'border-slate-200'
               }`}
             >
@@ -94,10 +94,10 @@ const Pricing: React.FC = () => {
                 </div>
               </div>
 
-              <ul className="space-y-4 mb-8">
+              <ul className="space-y-4 mb-8 flex-grow">
                 {plan.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
                       feature.included 
                         ? 'bg-green-100 text-green-600' 
                         : 'bg-red-100 text-red-600'
@@ -113,7 +113,7 @@ const Pricing: React.FC = () => {
 
               <Link 
                 to={`/cadastro?plan=${plan.name.toLowerCase()}`}
-                className={`block w-full text-center py-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
+                className={`block w-full text-center py-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 mt-auto ${
                   plan.popular
                     ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white'
                     : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
