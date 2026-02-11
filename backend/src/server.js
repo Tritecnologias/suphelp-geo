@@ -108,7 +108,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     // Insere usuário
     const result = await pool.query(`
-      INSERT INTO users (nome, email, senha_hash, telefone, empresa, plano, searches_limit, status)
+      INSERT INTO users (nome, email, password_hash, telefone, empresa, plano, searches_limit, status)
       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
       RETURNING id, nome, email, telefone, empresa, plano, status, created_at
     `, [nome, email, senhaHash, telefone || null, empresa || null, plano, limits[plano] || 100]);
@@ -160,7 +160,7 @@ app.post('/api/auth/login', async (req, res) => {
     const user = result.rows[0];
 
     // Verifica senha
-    const senhaValida = await bcrypt.compare(senha, user.senha_hash);
+    const senhaValida = await bcrypt.compare(senha, user.password_hash);
 
     if (!senhaValida) {
       return res.status(401).json({ 
@@ -245,7 +245,7 @@ app.post('/api/admin/login', async (req, res) => {
     const admin = result.rows[0];
 
     // Verifica senha
-    const senhaValida = await bcrypt.compare(senha, admin.senha_hash);
+    const senhaValida = await bcrypt.compare(senha, admin.password_hash);
 
     if (!senhaValida) {
       return res.status(401).json({ 
@@ -318,7 +318,7 @@ app.post('/api/admin/create', authenticateAdmin, async (req, res) => {
 
     // Insere administrador
     const result = await pool.query(`
-      INSERT INTO admins (nome, email, senha_hash, role, status)
+      INSERT INTO admins (nome, email, password_hash, role, status)
       VALUES ($1, $2, $3, $4, 'active')
       RETURNING id, nome, email, role, status, created_at
     `, [nome, email, senhaHash, role]);
@@ -413,7 +413,7 @@ app.put('/api/admin/change-password', authenticateAdmin, async (req, res) => {
     const admin = adminResult.rows[0];
 
     // Verifica senha atual
-    const senhaAtualValida = await bcrypt.compare(senhaAtual, admin.senha_hash);
+    const senhaAtualValida = await bcrypt.compare(senhaAtual, admin.password_hash);
 
     if (!senhaAtualValida) {
       return res.status(400).json({ 
@@ -426,7 +426,7 @@ app.put('/api/admin/change-password', authenticateAdmin, async (req, res) => {
 
     // Atualiza senha no banco
     await pool.query(
-      'UPDATE admins SET senha_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+      'UPDATE admins SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
       [novaSenhaHash, req.admin.id]
     );
 
