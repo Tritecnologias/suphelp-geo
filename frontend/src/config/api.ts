@@ -2,7 +2,7 @@
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_URL || 
     (import.meta.env.MODE === 'production' 
-      ? 'http://76.13.173.70:5000/api'
+      ? '/api'  // Path relativo - nginx faz proxy reverso
       : 'http://localhost:5000/api'),
   TIMEOUT: 10000,
 };

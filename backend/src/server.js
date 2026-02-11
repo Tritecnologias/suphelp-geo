@@ -17,7 +17,10 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    'http://localhost:5000',
     'http://76.13.173.70:3000',
+    'http://76.13.173.70',
+    'http://76.13.173.70:80',
     'https://suphelp-geo.vercel.app' // Para deploy futuro
   ],
   credentials: true
