@@ -17,30 +17,29 @@ pm2 restart suphelp-geo
 pm2 logs suphelp-geo --lines 50
 ```
 
-### 2. Verificar se o MySQL está rodando
+### 2. Verificar se o PostgreSQL está rodando
 
 ```bash
-sudo systemctl status mysql
+sudo systemctl status postgresql
 ```
 
 Se estiver parado:
 
 ```bash
-sudo systemctl start mysql
-sudo systemctl enable mysql  # Para iniciar automaticamente
+sudo systemctl start postgresql
+sudo systemctl enable postgresql  # Para iniciar automaticamente
 ```
 
 ### 3. Verificar conexão do banco
 
 ```bash
-mysql -u root -p
-# Digite a senha do MySQL
+psql -h 76.13.173.70 -U admin -d suphelp_geo
+# Digite a senha do PostgreSQL
 
-# Dentro do MySQL:
-USE suphelp_geo;
-SHOW TABLES;
+# Dentro do PostgreSQL:
+\dt  # Listar tabelas
 SELECT COUNT(*) FROM users;
-exit;
+\q   # Sair
 ```
 
 ### 4. Verificar logs do PM2
@@ -63,10 +62,11 @@ cat .env
 
 Certifique-se que tem:
 ```
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=sua_senha_aqui
+DB_HOST=76.13.173.70
+DB_PORT=5432
 DB_NAME=suphelp_geo
+DB_USER=admin
+DB_PASS=sua_senha_aqui
 PORT=5000
 JWT_SECRET=sua_chave_secreta
 GOOGLE_MAPS_API_KEY=sua_api_key
@@ -85,11 +85,11 @@ node test_connection.js
 # Parar aplicação
 pm2 stop suphelp-geo
 
-# Reiniciar MySQL
-sudo systemctl restart mysql
+# Reiniciar PostgreSQL
+sudo systemctl restart postgresql
 
-# Verificar se MySQL está rodando
-sudo systemctl status mysql
+# Verificar se PostgreSQL está rodando
+sudo systemctl status postgresql
 
 # Iniciar aplicação
 pm2 start suphelp-geo
@@ -160,9 +160,12 @@ pm2 monit
 
 ## Solução mais comum
 
-Na maioria dos casos, o problema é o MySQL que parou. Execute:
+Na maioria dos casos, o problema é o PostgreSQL que parou ou o Node.js. Execute:
 
 ```bash
-sudo systemctl start mysql
+sudo systemctl start postgresql
 pm2 restart suphelp-geo
+pm2 logs suphelp-geo --lines 50
 ```
+
+**Nota:** O PostgreSQL está rodando no IP 76.13.173.70 (remoto), então verifique também a conectividade de rede.
