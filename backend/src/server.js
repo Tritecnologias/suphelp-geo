@@ -1306,23 +1306,23 @@ app.put('/api/cms/config/bulk', authenticateAdmin, async (req, res) => {
 });
 
 // --- Rota 17: Servir página principal com conteúdo dinâmico ---
-app.get('/', (req, res) => {
-  serveDynamicPage(pool, req, res);
-});
+// app.get('/', (req, res) => {
+//   serveDynamicPage(pool, req, res);
+// });
 
 // --- Servir build do React (se existir) ou frontend antigo ---
 const path = require('path');
 const fs = require('fs');
 
 // Verificar se existe build do React
-const reactBuildPath = path.join(__dirname, '../public/index.html');
+const reactBuildPath = path.join(__dirname, '../public/react-build/index.html');
 const oldFrontendPath = path.join(__dirname, '../public-old/index.html');
 
 if (fs.existsSync(reactBuildPath)) {
   console.log('✅ Servindo frontend React');
   
   // Servir arquivos estáticos do React
-  app.use(express.static(path.join(__dirname, '../public'), { index: false }));
+  app.use(express.static(path.join(__dirname, '../public/react-build'), { index: false }));
   
   // Rota para admin antigo
   app.use('/admin-old', express.static(path.join(__dirname, '../public-old'), { index: false }));
