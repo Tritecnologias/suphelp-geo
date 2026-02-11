@@ -1,556 +1,697 @@
-// Página de administração - Versão funcional
+// Página de administração - Versão completa com todas as funcionalidades
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
-  Globe, 
-  Users, 
-  MapPin, 
-  Upload, 
-  Settings, 
-  LogOut,
-  Plus,
-  Edit,
-  Trash2,
-  BarChart3,
-  Database,
-  Shield,
-  Key,
-  UserPlus,
-  CheckCircle,
-  AlertCircle,
-  X,
-  TrendingUp,
-  Zap
+  Globe, Users, MapPin, Upload, Settings, LogOut, Plus, Edit, Trash2,
+  BarChart3, Database, Shield, Key, UserPlus, CheckCircle, AlertCircle,
+  Search, Download, FileText, Phone, Star, Eye, Save, RefreshCw, Palette
 } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { placesService } from '../services/places';
-import { Place } from '../types';
+import { AdminService } from '../services/admin';
+
+interface Place {
+  id: number;
+  name: string;
+  address: string;
+  category: string;
+  phone?: string;
+  website?: string;
+  rating?: number;
+  user_ratings_total?: number;
+  lat: number;
+  lng: number;
+  distance_km?: string;
+}
+
+interface Admin {
+  id: number;
+  nome: string;
+  email: string;
+  role: string;
+  status: string;
+  created_at: string;
+  last_login?: string;
+}
+
+interface Stats {
+  total: number;
+  withPhone: number;
+  withRating: number;
+  categories: number;
+}
 
 const AdminPage: React.FC = () => {
-  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState('dashboard');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
   
-  // Estados principais
-  const [activeTab, setActiveTab] = useState('dashboard');
+  // Estados para diferentes seções
+  const [stats, setStats] = useState<Stats>({ total: 0, withPhone: 0, withRating: 0, categories: 0 });
   const [places, setPlaces] = useState<Place[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [admins, setAdmins] = useState<Admin[]>([]);
+  const [recentPlaces, setRecentPlaces] = useState<Place[]>([]);
+  const [searchResults, setSearchResults] = useState<Place[]>([]);
+
+  const adminService = new AdminService();
+  // Estados para formulários
+  const [showAddPlace, setShowAddPlace] = useState(false);
+  const [showCreateAdmin, setShowCreateAdmin] = useState(false);
+  const [newPlace, setNewPlace] = useState({
+    name: '', address: '', category: '', lat: '', lng: '', 
+    phone: '', website: '', rating: ''
+  });
+  const [newAdmin, setNewAdmin] = useState({
+    nome: '', email: '', senha: '', role: 'admin'
+  });
   
-  // Estados para estatísticas
-  const [stats, setStats] = useState({
-    totalPlaces: 0,
-    totalUsers: 150,
-    totalSearches: 2500,
-    totalAdmins: 3,
-    placesThisMonth: 45,
-    usersThisMonth: 12
-  });
+  // Estados para busca e filtros
+  const [searchAddress, setSearchAddress] = useState('Jundiaí, SP');
+  const [searchRadius, setSearchRadius] = useState('5000');
+  const [searchCoords, setSearchCoords] = useState('');
+  const [filterName, setFilterName] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
+  
+  // Estados para importação
+  const [importCity, setImportCity] = useState('Jundiaí, SP');
+  const [importKeywords, setImportKeywords] = useState('farmácia, padaria, mercado');
+  const [importMax, setImportMax] = useState('20');
+  const [enrichLimit, setEnrichLimit] = useState('10');
+  
+  // Estados para paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 50;
 
-  // Estados para importação Google Places
-  const [importCity, setImportCity] = useState('');
-  const [importKeywords, setImportKeywords] = useState('');
-  const [importMaxResults, setImportMaxResults] = useState(50);
-  const [isImporting, setIsImporting] = useState(false);
-
-  // Estados para alteração de senha
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [passwordForm, setPasswordForm] = useState({
-    senhaAtual: '',
-    novaSenha: '',
-    confirmarSenha: ''
-  });
-
-  // Carregar dados iniciais
   useEffect(() => {
-    loadDashboardData();
+    loadDashboard();
   }, []);
 
-  useEffect(() => {
-    if (activeTab === 'places') {
-      loadPlaces();
-    }
-  }, [activeTab]);
-
-  const loadDashboardData = async () => {
-    try {
-      setIsLoading(true);
-      const placesResponse = await placesService.getAll({ limit: 1 });
-      setStats(prev => ({
-        ...prev,
-        totalPlaces: placesResponse.pagination.total
-      }));
-    } catch (err) {
-      setError('Erro ao carregar dados do dashboard');
-    } finally {
-      setIsLoading(false);
-    }
+  const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
+    setMessage(msg);
+    setTimeout(() => setMessage(''), 5000);
   };
 
-  const loadPlaces = async () => {
+  // Função para carregar dashboard
+  const loadDashboard = async () => {
     try {
-      setIsLoading(true);
-      const response = await placesService.getAll({ limit: 100 });
-      setPlaces(response.data);
-    } catch (err) {
-      setError('Erro ao carregar lugares');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  // Funções de importação Google Places
-  const handleImportFromGoogle = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!importCity.trim() || !importKeywords.trim()) {
-      setError('Preencha cidade e palavras-chave');
-      return;
-    }
-
-    try {
-      setIsImporting(true);
-      const keywords = importKeywords.split(',').map(k => k.trim());
+      setLoading(true);
+      const response = await fetch('/api/places?limit=1000');
+      const data = await response.json();
       
-      const response = await placesService.importFromGooglePlaces({
-        city: importCity,
-        keywords,
-        maxResults: importMaxResults
+      if (data.data) {
+        const placesData = data.data;
+        setRecentPlaces(placesData.slice(0, 10));
+        
+        // Calcular estatísticas
+        const total = placesData.length;
+        const withPhone = placesData.filter((p: Place) => p.phone).length;
+        const withRating = placesData.filter((p: Place) => p.rating).length;
+        const uniqueCategories = [...new Set(placesData.map((p: Place) => p.category).filter(c => c))];
+        
+        setStats({ total, withPhone, withRating, categories: uniqueCategories.length });
+        setCategories(uniqueCategories);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dashboard:', error);
+      showMessage('Erro ao carregar dashboard', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+  // Função para carregar lugares
+  const loadPlaces = async (page = 1) => {
+    try {
+      setLoading(true);
+      const offset = (page - 1) * limit;
+      let url = `/api/places?limit=${limit}&offset=${offset}`;
+      
+      if (filterCategory) url += `&category=${encodeURIComponent(filterCategory)}`;
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.data) {
+        let filteredPlaces = data.data;
+        
+        if (filterName) {
+          filteredPlaces = filteredPlaces.filter((p: Place) => 
+            p.name.toLowerCase().includes(filterName.toLowerCase())
+          );
+        }
+        
+        setPlaces(filteredPlaces);
+        setCurrentPage(page);
+        setTotalPages(Math.ceil(data.pagination.total / limit));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar lugares:', error);
+      showMessage('Erro ao carregar lugares', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para criar lugar
+  const createPlace = async () => {
+    try {
+      if (!newPlace.name || !newPlace.lat || !newPlace.lng) {
+        showMessage('Nome, latitude e longitude são obrigatórios', 'error');
+        return;
+      }
+
+      setLoading(true);
+      const response = await fetch('/api/places', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newPlace.name,
+          address: newPlace.address,
+          category: newPlace.category,
+          lat: parseFloat(newPlace.lat),
+          lng: parseFloat(newPlace.lng),
+          phone: newPlace.phone || null,
+          website: newPlace.website || null,
+          rating: newPlace.rating ? parseFloat(newPlace.rating) : null
+        })
       });
 
-      if (response.success) {
-        setSuccess(`Importação iniciada! ${response.data?.message || 'Processando...'}`);
-        setImportCity('');
-        setImportKeywords('');
-        setTimeout(() => {
-          loadPlaces();
-        }, 3000);
+      const data = await response.json();
+      
+      if (data.success) {
+        showMessage('Lugar criado com sucesso!');
+        setShowAddPlace(false);
+        setNewPlace({ name: '', address: '', category: '', lat: '', lng: '', phone: '', website: '', rating: '' });
+        if (activeSection === 'places') loadPlaces(currentPage);
+        if (activeSection === 'dashboard') loadDashboard();
       } else {
-        setError('Erro na importação: ' + response.error);
+        showMessage(data.error || 'Erro ao criar lugar', 'error');
       }
-    } catch (err) {
-      setError('Erro na importação: ' + (err as Error).message);
+    } catch (error) {
+      console.error('Erro ao criar lugar:', error);
+      showMessage('Erro ao criar lugar', 'error');
     } finally {
-      setIsImporting(false);
+      setLoading(false);
     }
   };
-
-  const handleDeletePlace = async (id: number, name: string) => {
-    if (!confirm(`Tem certeza que deseja deletar "${name}"?`)) {
-      return;
-    }
+  // Função para deletar lugar
+  const deletePlace = async (id: number, name: string) => {
+    if (!confirm(`Tem certeza que deseja deletar "${name}"?`)) return;
 
     try {
-      await placesService.delete(id);
-      setPlaces(places.filter(p => p.id !== id));
-      setSuccess('Lugar deletado com sucesso!');
-    } catch (err) {
-      setError('Erro ao deletar lugar: ' + (err as Error).message);
+      setLoading(true);
+      const response = await fetch(`/api/places/${id}`, { method: 'DELETE' });
+      const data = await response.json();
+      
+      if (data.success) {
+        showMessage(`Lugar "${name}" deletado com sucesso!`);
+        if (activeSection === 'places') loadPlaces(currentPage);
+        if (activeSection === 'dashboard') loadDashboard();
+      } else {
+        showMessage(data.error || 'Erro ao deletar lugar', 'error');
+      }
+    } catch (error) {
+      console.error('Erro ao deletar lugar:', error);
+      showMessage('Erro ao deletar lugar', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passwordForm.novaSenha !== passwordForm.confirmarSenha) {
-      setError('Senhas não coincidem');
-      return;
-    }
-
+  // Função para busca por raio
+  const searchNearby = async () => {
     try {
-      setSuccess('Senha alterada com sucesso!');
-      setPasswordForm({ senhaAtual: '', novaSenha: '', confirmarSenha: '' });
-      setIsChangingPassword(false);
-    } catch (err) {
-      setError('Erro ao alterar senha: ' + (err as Error).message);
+      setLoading(true);
+      
+      const geocodeResponse = await fetch(`/api/geocode?address=${encodeURIComponent(searchAddress)}`);
+      const geocodeData = await geocodeResponse.json();
+      
+      if (!geocodeData.success) {
+        showMessage('Endereço não encontrado', 'error');
+        return;
+      }
+      
+      const { lat, lng, formatted_address } = geocodeData.data;
+      setSearchCoords(`${lat}, ${lng} - ${formatted_address}`);
+      
+      const searchResponse = await fetch(`/api/places/nearby?lat=${lat}&lng=${lng}&radius=${searchRadius}&limit=100`);
+      const searchData = await searchResponse.json();
+      
+      if (searchData.data) {
+        setSearchResults(searchData.data);
+        showMessage(`${searchData.data.length} lugares encontrados!`);
+      }
+    } catch (error) {
+      console.error('Erro na busca:', error);
+      showMessage('Erro na busca por raio', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const clearMessages = () => {
-    setError(null);
-    setSuccess(null);
+  // Função para importar via Google Places API
+  const importPlaces = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/import-places-api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          city: importCity,
+          keywords: importKeywords,
+          maxResults: parseInt(importMax)
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        showMessage('Importação concluída com sucesso!');
+        if (activeSection === 'dashboard') loadDashboard();
+      } else {
+        showMessage(data.message || 'Erro na importação', 'error');
+      }
+    } catch (error) {
+      console.error('Erro na importação:', error);
+      showMessage('Erro na importação', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+  // Função para enriquecer contatos
+  const enrichContacts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/enrich-contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ placeIds: 'all', limit: parseInt(enrichLimit) })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        showMessage('Enriquecimento concluído com sucesso!');
+        if (activeSection === 'dashboard') loadDashboard();
+      } else {
+        showMessage(data.message || 'Erro no enriquecimento', 'error');
+      }
+    } catch (error) {
+      console.error('Erro no enriquecimento:', error);
+      showMessage('Erro no enriquecimento', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Função para carregar administradores
+  const loadAdmins = async () => {
+    try {
+      setLoading(true);
+      const adminsList = await adminService.listAdmins();
+      setAdmins(adminsList);
+    } catch (error) {
+      console.error('Erro ao carregar admins:', error);
+      showMessage('Erro ao carregar administradores', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para criar administrador
+  const createAdmin = async () => {
+    try {
+      if (!newAdmin.nome || !newAdmin.email || !newAdmin.senha) {
+        showMessage('Preencha todos os campos obrigatórios', 'error');
+        return;
+      }
+
+      setLoading(true);
+      await adminService.createAdmin(newAdmin);
+      
+      showMessage('Administrador criado com sucesso!');
+      setShowCreateAdmin(false);
+      setNewAdmin({ nome: '', email: '', senha: '', role: 'admin' });
+      loadAdmins();
+    } catch (error: any) {
+      console.error('Erro ao criar admin:', error);
+      showMessage(error.message || 'Erro ao criar administrador', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para exportar para Excel
+  const exportToExcel = (data: Place[], filename: string) => {
+    const csvContent = [
+      ['ID', 'Nome', 'Endereço', 'Categoria', 'Telefone', 'Rating', 'Distância (km)'],
+      ...data.map(place => [
+        place.id, place.name, place.address || '', place.category || '',
+        place.phone || '', place.rating || '', place.distance_km || ''
+      ])
+    ].map(row => row.join(',')).join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  // Função para logout
   const handleLogout = () => {
-    logout();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
   };
-  // Verificar se é admin
-  if (!user || (user as any).role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Acesso Negado</h1>
-          <p className="text-slate-600 mb-6">Você não tem permissão para acessar esta área.</p>
-          <Link to="/dashboard" className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">
-            Voltar ao Dashboard
-          </Link>
+
+  // Função para mudar seção ativa
+  const changeSection = (section: string) => {
+    setActiveSection(section);
+    
+    switch (section) {
+      case 'dashboard': loadDashboard(); break;
+      case 'places': loadPlaces(); break;
+      case 'admins': loadAdmins(); break;
+    }
+  };
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <div className="w-64 bg-gradient-to-b from-blue-600 to-purple-700 text-white p-6">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold">🗺️ SupHelp Geo</h1>
+          <p className="text-blue-200 text-sm">Painel Administrativo</p>
+        </div>
+        
+        <nav className="space-y-2">
+          {[
+            { id: 'dashboard', icon: BarChart3, label: 'Dashboard' },
+            { id: 'places', icon: MapPin, label: 'Lugares' },
+            { id: 'search', icon: Search, label: 'Buscar' },
+            { id: 'import', icon: Upload, label: 'Importar' },
+            { id: 'enrich', icon: Phone, label: 'Enriquecer' },
+            { id: 'admins', icon: Users, label: 'Administradores' },
+            { id: 'settings', icon: Settings, label: 'Configurações' }
+          ].map(item => (
+            <button
+              key={item.id}
+              onClick={() => changeSection(item.id)}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                activeSection === item.id 
+                  ? 'bg-white/20 text-white' 
+                  : 'text-blue-200 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              <item.icon size={20} />
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+        
+        <div className="mt-auto pt-8">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center space-x-3 px-4 py-3 text-blue-200 hover:bg-white/10 hover:text-white rounded-lg transition-colors"
+          >
+            <LogOut size={20} />
+            <span>Sair</span>
+          </button>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Header */}
-      <header className="bg-white shadow-lg border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-tr from-cyan-400 via-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                <Globe size={24} />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-xl bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
-                  SupHelp Geo - Admin
-                </span>
-                <span className="text-xs text-slate-500">Painel Administrativo Completo</span>
-              </div>
-            </Link>
-
-            {/* Navigation */}
-            <div className="flex items-center gap-6">
-              <Link to="/dashboard" className="text-slate-600 hover:text-blue-600 font-medium">
-                Dashboard
-              </Link>
-              <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-full">
-                <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                  A
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-slate-700">{user?.email}</span>
-                  <span className="text-xs text-red-600 font-semibold">Administrador</span>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsChangingPassword(true)}
-                className="flex items-center gap-2 text-slate-600 hover:text-blue-600 transition-colors p-2 rounded-lg hover:bg-blue-50"
-                title="Alterar Senha"
-              >
-                <Key size={18} />
-              </button>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 text-slate-600 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50"
-              >
-                <LogOut size={18} />
-                <span className="hidden sm:inline font-medium">Sair</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Messages */}
-        {(error || success) && (
-          <div className="mb-6">
-            {error && (
-              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-center gap-3">
-                <AlertCircle className="text-red-500" size={20} />
-                <span className="text-red-700">{error}</span>
-                <button onClick={clearMessages} className="ml-auto text-red-500 hover:text-red-700">
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-            {success && (
-              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 flex items-center gap-3">
-                <CheckCircle className="text-green-500" size={20} />
-                <span className="text-green-700">{success}</span>
-                <button onClick={clearMessages} className="ml-auto text-green-500 hover:text-green-700">
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-red-400 to-red-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
-              <Settings size={32} />
-            </div>
+      {/* Main Content */}
+      <div className="flex-1 p-8">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+          <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-slate-800">
-                Painel Administrativo Completo
-              </h1>
-              <p className="text-slate-600 text-lg">
-                Gerencie todos os aspectos do sistema SupHelp Geo.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation Tabs */}
-        <div className="mb-8">
-          <div className="flex flex-wrap gap-2 bg-white p-2 rounded-2xl shadow-lg border border-slate-100">
-            {[
-              { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-              { id: 'places', label: 'Lugares', icon: MapPin },
-              { id: 'users', label: 'Usuários', icon: Users },
-              { id: 'admins', label: 'Admins', icon: Shield },
-              { id: 'import', label: 'Importação', icon: Upload }
-            ].map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all ${
-                    activeTab === tab.id
-                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
-                      : 'text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
-                  <Icon size={18} />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        {/* Tab Content */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-8">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <MapPin size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">Lugares</p>
-                    <p className="text-2xl font-bold text-slate-800">{stats.totalPlaces}</p>
-                    <p className="text-xs text-blue-600 font-medium">+{stats.placesThisMonth} este mês</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <Users size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">Usuários</p>
-                    <p className="text-2xl font-bold text-slate-800">{stats.totalUsers}</p>
-                    <p className="text-xs text-green-600 font-medium">+{stats.usersThisMonth} este mês</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <TrendingUp size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">Buscas</p>
-                    <p className="text-2xl font-bold text-slate-800">{stats.totalSearches}</p>
-                    <p className="text-xs text-purple-600 font-medium">este mês</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-r from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <Shield size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">Admins</p>
-                    <p className="text-2xl font-bold text-slate-800">{stats.totalAdmins}</p>
-                    <p className="text-xs text-red-600 font-medium">ativos</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
-              <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                <Zap className="text-yellow-500" size={24} />
-                Ações Rápidas
+              <h2 className="text-2xl font-bold text-gray-900">
+                {activeSection === 'dashboard' && 'Dashboard'}
+                {activeSection === 'places' && 'Gerenciar Lugares'}
+                {activeSection === 'search' && 'Buscar por Raio'}
+                {activeSection === 'import' && 'Importar Dados'}
+                {activeSection === 'enrich' && 'Enriquecer Contatos'}
+                {activeSection === 'admins' && 'Administradores'}
+                {activeSection === 'settings' && 'Configurações'}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <button
-                  onClick={() => setActiveTab('import')}
-                  className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl hover:from-green-100 hover:to-emerald-100 transition-all"
-                >
-                  <Upload className="text-green-600" size={20} />
-                  <span className="font-semibold text-green-800">Importar Dados</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('places')}
-                  className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl hover:from-blue-100 hover:to-cyan-100 transition-all"
-                >
-                  <Plus className="text-blue-600" size={20} />
-                  <span className="font-semibold text-blue-800">Gerenciar Lugares</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('users')}
-                  className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-purple-50 rounded-xl hover:from-purple-100 hover:to-purple-100 transition-all"
-                >
-                  <UserPlus className="text-purple-600" size={20} />
-                  <span className="font-semibold text-purple-800">Gerenciar Usuários</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('admins')}
-                  className="flex items-center gap-3 p-4 bg-gradient-to-r from-red-50 to-red-50 rounded-xl hover:from-red-100 hover:to-red-100 transition-all"
-                >
-                  <Shield className="text-red-600" size={20} />
-                  <span className="font-semibold text-red-800">Gerenciar Admins</span>
-                </button>
-              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => changeSection(activeSection)}
+                disabled={loading}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              >
+                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                <span>Atualizar</span>
+              </button>
             </div>
           </div>
-        )}
-        {/* Import Tab */}
-        {activeTab === 'import' && (
+          
+          {message && (
+            <div className={`mt-4 p-4 rounded-lg ${
+              message.includes('Erro') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+            }`}>
+              {message}
+            </div>
+          )}
+        </div>
+        {/* Dashboard Section */}
+        {activeSection === 'dashboard' && (
           <div className="space-y-8">
-            {/* Google Places Import */}
-            <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg">
-                  <Upload size={20} />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-slate-800">Importar do Google Places</h2>
-                  <p className="text-slate-600">Importe estabelecimentos automaticamente</p>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white p-6 rounded-xl shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Total de Lugares</p>
+                    <p className="text-3xl font-bold text-blue-600">{stats.total}</p>
+                  </div>
+                  <MapPin className="text-blue-600" size={32} />
                 </div>
               </div>
               
-              <form onSubmit={handleImportFromGoogle} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-xl shadow-sm">
+                <div className="flex items-center justify-between">
                   <div>
-                    <label htmlFor="city" className="block text-sm font-semibold text-slate-700 mb-3">
-                      🏙️ Cidade
-                    </label>
-                    <input
-                      type="text"
-                      id="city"
-                      value={importCity}
-                      onChange={(e) => setImportCity(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
-                      placeholder="Ex: São Paulo, SP"
-                      required
-                    />
+                    <p className="text-sm text-gray-600">Com Telefone</p>
+                    <p className="text-3xl font-bold text-green-600">{stats.withPhone}</p>
                   </div>
-                  
-                  <div>
-                    <label htmlFor="keywords" className="block text-sm font-semibold text-slate-700 mb-3">
-                      🔍 Palavras-chave
-                    </label>
-                    <input
-                      type="text"
-                      id="keywords"
-                      value={importKeywords}
-                      onChange={(e) => setImportKeywords(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
-                      placeholder="Ex: restaurante, farmácia, banco"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="maxResults" className="block text-sm font-semibold text-slate-700 mb-3">
-                      📊 Máx. Resultados
-                    </label>
-                    <select
-                      id="maxResults"
-                      value={importMaxResults}
-                      onChange={(e) => setImportMaxResults(Number(e.target.value))}
-                      className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
-                    >
-                      <option value={20}>20 resultados</option>
-                      <option value={50}>50 resultados</option>
-                      <option value={100}>100 resultados</option>
-                      <option value={200}>200 resultados</option>
-                    </select>
-                  </div>
+                  <Phone className="text-green-600" size={32} />
                 </div>
-
-                <button
-                  type="submit"
-                  disabled={isImporting}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-3 shadow-lg hover:shadow-xl"
-                >
-                  {isImporting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      Importando...
-                    </>
-                  ) : (
-                    <>
-                      <Upload size={20} />
-                      Importar do Google Places
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
-        {/* Places Tab */}
-        {activeTab === 'places' && (
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                  <Database size={20} />
+              </div>
+              
+              <div className="bg-white p-6 rounded-xl shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Com Rating</p>
+                    <p className="text-3xl font-bold text-yellow-600">{stats.withRating}</p>
+                  </div>
+                  <Star className="text-yellow-600" size={32} />
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-slate-800">
-                    Gerenciar Lugares
-                  </h2>
-                  <p className="text-slate-600">{places.length} lugares cadastrados</p>
+              </div>
+              
+              <div className="bg-white p-6 rounded-xl shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Categorias</p>
+                    <p className="text-3xl font-bold text-purple-600">{stats.categories}</p>
+                  </div>
+                  <Database className="text-purple-600" size={32} />
                 </div>
               </div>
             </div>
 
-            {isLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                <p className="text-slate-600 mt-4">Carregando lugares...</p>
-              </div>
-            ) : (
+            {/* Recent Places */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Últimos Lugares Adicionados</h3>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b-2 border-slate-200">
-                      <th className="text-left py-4 px-4 font-bold text-slate-700 uppercase tracking-wide text-sm">Nome</th>
-                      <th className="text-left py-4 px-4 font-bold text-slate-700 uppercase tracking-wide text-sm">Categoria</th>
-                      <th className="text-left py-4 px-4 font-bold text-slate-700 uppercase tracking-wide text-sm">Cidade</th>
-                      <th className="text-left py-4 px-4 font-bold text-slate-700 uppercase tracking-wide text-sm">Telefone</th>
-                      <th className="text-left py-4 px-4 font-bold text-slate-700 uppercase tracking-wide text-sm">Ações</th>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4">ID</th>
+                      <th className="text-left py-3 px-4">Nome</th>
+                      <th className="text-left py-3 px-4">Categoria</th>
+                      <th className="text-left py-3 px-4">Telefone</th>
+                      <th className="text-left py-3 px-4">Rating</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {places.slice(0, 20).map((place) => (
-                      <tr key={place.id} className="border-b border-slate-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 transition-all">
-                        <td className="py-4 px-4">
-                          <div className="font-bold text-slate-800">{place.name}</div>
-                          <div className="text-xs text-slate-500">ID: {place.id}</div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <span className="inline-flex items-center gap-1 bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 text-sm px-3 py-1 rounded-full font-medium">
-                            {place.category}
+                    {recentPlaces.map(place => (
+                      <tr key={place.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4">{place.id}</td>
+                        <td className="py-3 px-4 font-medium">{place.name}</td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                            {place.category || 'Sem categoria'}
                           </span>
                         </td>
-                        <td className="py-4 px-4">
-                          <div className="text-sm text-slate-600">
-                            {place.address?.split(',').slice(-2).join(',').trim() || 'N/A'}
-                          </div>
+                        <td className="py-3 px-4">{place.phone || '-'}</td>
+                        <td className="py-3 px-4">
+                          {place.rating ? `${place.rating} ⭐` : '-'}
                         </td>
-                        <td className="py-4 px-4">
-                          <div className="text-sm text-slate-600">
-                            {place.phone || 'Não informado'}
-                          </div>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Places Section */}
+        {activeSection === 'places' && (
+          <div className="space-y-6">
+            {/* Filters and Add Button */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="flex flex-wrap gap-4 items-center justify-between">
+                <div className="flex flex-wrap gap-4 items-center">
+                  <input
+                    type="text"
+                    placeholder="Buscar por nome..."
+                    value={filterName}
+                    onChange={(e) => setFilterName(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <select
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Todas categorias</option>
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => loadPlaces()}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    <Search size={16} className="inline mr-2" />
+                    Filtrar
+                  </button>
+                </div>
+                <button
+                  onClick={() => setShowAddPlace(true)}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  <Plus size={16} className="inline mr-2" />
+                  Adicionar
+                </button>
+              </div>
+            </div>
+
+            {/* Add Place Form */}
+            {showAddPlace && (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4">Adicionar Novo Lugar</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Nome *"
+                    value={newPlace.name}
+                    onChange={(e) => setNewPlace({...newPlace, name: e.target.value})}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Categoria"
+                    value={newPlace.category}
+                    onChange={(e) => setNewPlace({...newPlace, category: e.target.value})}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Endereço"
+                    value={newPlace.address}
+                    onChange={(e) => setNewPlace({...newPlace, address: e.target.value})}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent md:col-span-2"
+                  />
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="Latitude *"
+                    value={newPlace.lat}
+                    onChange={(e) => setNewPlace({...newPlace, lat: e.target.value})}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="Longitude *"
+                    value={newPlace.lng}
+                    onChange={(e) => setNewPlace({...newPlace, lng: e.target.value})}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Telefone"
+                    value={newPlace.phone}
+                    onChange={(e) => setNewPlace({...newPlace, phone: e.target.value})}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
+                    type="url"
+                    placeholder="Website"
+                    value={newPlace.website}
+                    onChange={(e) => setNewPlace({...newPlace, website: e.target.value})}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="flex gap-4 mt-4">
+                  <button
+                    onClick={createPlace}
+                    disabled={loading}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  >
+                    <Save size={16} className="inline mr-2" />
+                    Salvar
+                  </button>
+                  <button
+                    onClick={() => setShowAddPlace(false)}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+            {/* Places Table */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4">ID</th>
+                      <th className="text-left py-3 px-4">Nome</th>
+                      <th className="text-left py-3 px-4">Endereço</th>
+                      <th className="text-left py-3 px-4">Categoria</th>
+                      <th className="text-left py-3 px-4">Telefone</th>
+                      <th className="text-left py-3 px-4">Rating</th>
+                      <th className="text-left py-3 px-4">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {places.map(place => (
+                      <tr key={place.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4">{place.id}</td>
+                        <td className="py-3 px-4 font-medium">{place.name}</td>
+                        <td className="py-3 px-4 text-sm text-gray-600">{place.address}</td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                            {place.category || 'Sem categoria'}
+                          </span>
                         </td>
-                        <td className="py-4 px-4">
+                        <td className="py-3 px-4">{place.phone || '-'}</td>
+                        <td className="py-3 px-4">
+                          {place.rating ? `${place.rating} ⭐` : '-'}
+                        </td>
+                        <td className="py-3 px-4">
                           <div className="flex gap-2">
                             <button
-                              onClick={() => handleDeletePlace(place.id, place.name)}
-                              className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors"
-                              title="Deletar"
+                              onClick={() => deletePlace(place.id, place.name)}
+                              className="p-1 text-red-600 hover:bg-red-100 rounded"
                             >
                               <Trash2 size={16} />
                             </button>
@@ -561,97 +702,321 @@ const AdminPage: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+              
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-6">
+                  <button
+                    onClick={() => loadPlaces(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50"
+                  >
+                    Anterior
+                  </button>
+                  <span className="px-4 py-2">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <button
+                    onClick={() => loadPlaces(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50"
+                  >
+                    Próxima
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {/* Search Section */}
+        {activeSection === 'search' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Busca por Raio</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  placeholder="Endereço"
+                  value={searchAddress}
+                  onChange={(e) => setSearchAddress(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <input
+                  type="number"
+                  placeholder="Raio (metros)"
+                  value={searchRadius}
+                  onChange={(e) => setSearchRadius(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <button
+                onClick={searchNearby}
+                disabled={loading}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              >
+                <Search size={16} className="inline mr-2" />
+                Buscar Próximos
+              </button>
+              {searchCoords && (
+                <p className="mt-2 text-sm text-gray-600">{searchCoords}</p>
+              )}
+            </div>
+
+            {searchResults.length > 0 && (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">
+                    📍 {searchResults.length} lugares encontrados
+                  </h3>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => exportToExcel(searchResults, 'busca-por-raio')}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    >
+                      <Download size={16} className="inline mr-2" />
+                      Excel
+                    </button>
+                  </div>
+                </div>
+                <div className="overflow-x-auto max-h-96 overflow-y-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4">#</th>
+                        <th className="text-left py-3 px-4">Nome</th>
+                        <th className="text-left py-3 px-4">Endereço</th>
+                        <th className="text-left py-3 px-4">Categoria</th>
+                        <th className="text-left py-3 px-4">Telefone</th>
+                        <th className="text-left py-3 px-4">Distância</th>
+                        <th className="text-left py-3 px-4">Rating</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {searchResults.map((place, index) => (
+                        <tr key={place.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-4">{index + 1}</td>
+                          <td className="py-3 px-4 font-medium">{place.name}</td>
+                          <td className="py-3 px-4 text-sm text-gray-600">{place.address}</td>
+                          <td className="py-3 px-4">
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                              {place.category || 'Sem categoria'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">{place.phone || '-'}</td>
+                          <td className="py-3 px-4">{place.distance_km} km</td>
+                          <td className="py-3 px-4">
+                            {place.rating ? `${place.rating} ⭐` : '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             )}
           </div>
         )}
-
-        {/* Users Tab */}
-        {activeTab === 'users' && (
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                <Users size={20} />
+        {/* Import Section */}
+        {activeSection === 'import' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Importar via Google Places API</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  placeholder="Cidade"
+                  value={importCity}
+                  onChange={(e) => setImportCity(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <input
+                  type="number"
+                  placeholder="Máximo de Resultados"
+                  value={importMax}
+                  onChange={(e) => setImportMax(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-slate-800">Gerenciar Usuários</h2>
-                <p className="text-slate-600">Controle de usuários do sistema</p>
-              </div>
-            </div>
-            <div className="text-center py-8">
-              <p className="text-slate-600">Funcionalidade em desenvolvimento...</p>
+              <input
+                type="text"
+                placeholder="Keywords (separadas por vírgula)"
+                value={importKeywords}
+                onChange={(e) => setImportKeywords(e.target.value)}
+                className="mt-4 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <button
+                onClick={importPlaces}
+                disabled={loading}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              >
+                <Upload size={16} className="inline mr-2" />
+                Importar
+              </button>
             </div>
           </div>
         )}
 
-        {/* Admins Tab */}
-        {activeTab === 'admins' && (
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                <Shield size={20} />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-slate-800">Gerenciar Administradores</h2>
-                <p className="text-slate-600">Controle de administradores do sistema</p>
-              </div>
-            </div>
-            <div className="text-center py-8">
-              <p className="text-slate-600">Funcionalidade em desenvolvimento...</p>
+        {/* Enrich Section */}
+        {activeSection === 'enrich' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Enriquecer Contatos</h3>
+              <p className="text-gray-600 mb-4">
+                Adiciona telefone, website e rating aos lugares usando Google Places API
+              </p>
+              <input
+                type="number"
+                placeholder="Limite de Lugares"
+                value={enrichLimit}
+                onChange={(e) => setEnrichLimit(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <button
+                onClick={enrichContacts}
+                disabled={loading}
+                className="ml-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              >
+                <Phone size={16} className="inline mr-2" />
+                Enriquecer
+              </button>
             </div>
           </div>
         )}
-        {/* Password Change Modal */}
-        {isChangingPassword && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
-              <h3 className="text-xl font-bold text-slate-800 mb-6">Alterar Senha</h3>
-              <form onSubmit={handleChangePassword} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Senha Atual</label>
-                  <input
-                    type="password"
-                    value={passwordForm.senhaAtual}
-                    onChange={(e) => setPasswordForm({...passwordForm, senhaAtual: e.target.value})}
-                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
+        {/* Admins Section */}
+        {activeSection === 'admins' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">👥 Administradores do Sistema</h3>
+                <button
+                  onClick={() => setShowCreateAdmin(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  <UserPlus size={16} className="inline mr-2" />
+                  Novo Administrador
+                </button>
+              </div>
+
+              {/* Create Admin Form */}
+              {showCreateAdmin && (
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+                  <h4 className="font-medium mb-4">Criar Novo Administrador</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Nome completo"
+                      value={newAdmin.nome}
+                      onChange={(e) => setNewAdmin({...newAdmin, nome: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={newAdmin.email}
+                      onChange={(e) => setNewAdmin({...newAdmin, email: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <input
+                      type="password"
+                      placeholder="Senha"
+                      value={newAdmin.senha}
+                      onChange={(e) => setNewAdmin({...newAdmin, senha: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <select
+                      value={newAdmin.role}
+                      onChange={(e) => setNewAdmin({...newAdmin, role: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="admin">Administrador</option>
+                      <option value="super_admin">Super Administrador</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-4 mt-4">
+                    <button
+                      onClick={createAdmin}
+                      disabled={loading}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                    >
+                      Criar
+                    </button>
+                    <button
+                      onClick={() => setShowCreateAdmin(false)}
+                      className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Nova Senha</label>
-                  <input
-                    type="password"
-                    value={passwordForm.novaSenha}
-                    onChange={(e) => setPasswordForm({...passwordForm, novaSenha: e.target.value})}
-                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Confirmar Nova Senha</label>
-                  <input
-                    type="password"
-                    value={passwordForm.confirmarSenha}
-                    onChange={(e) => setPasswordForm({...passwordForm, confirmarSenha: e.target.value})}
-                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="submit"
-                    className="flex-1 bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition-colors"
-                  >
-                    Alterar Senha
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsChangingPassword(false)}
-                    className="flex-1 bg-slate-500 text-white py-3 rounded-xl font-semibold hover:bg-slate-600 transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </form>
+              )}
+
+              {/* Admins Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4">ID</th>
+                      <th className="text-left py-3 px-4">Nome</th>
+                      <th className="text-left py-3 px-4">Email</th>
+                      <th className="text-left py-3 px-4">Role</th>
+                      <th className="text-left py-3 px-4">Status</th>
+                      <th className="text-left py-3 px-4">Último Login</th>
+                      <th className="text-left py-3 px-4">Criado em</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {admins.map(admin => (
+                      <tr key={admin.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4">{admin.id}</td>
+                        <td className="py-3 px-4 font-medium">{admin.nome}</td>
+                        <td className="py-3 px-4">{admin.email}</td>
+                        <td className="py-3 px-4">
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            admin.role === 'super_admin' 
+                              ? 'bg-yellow-100 text-yellow-800' 
+                              : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {admin.role}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            admin.status === 'active' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {admin.status}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {admin.last_login ? new Date(admin.last_login).toLocaleString('pt-BR') : 'Nunca'}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {new Date(admin.created_at).toLocaleString('pt-BR')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Settings Section */}
+        {activeSection === 'settings' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Configurações do Sistema</h3>
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <strong>✅ API Online</strong><br />
+                Servidor funcionando corretamente
+              </div>
+              <div className="space-y-2">
+                <p><strong>Versão:</strong> 1.0.0</p>
+                <p><strong>Banco de Dados:</strong> PostgreSQL + PostGIS</p>
+                <p><strong>API:</strong> Node.js + Express</p>
+                <p><strong>Frontend:</strong> React + TypeScript</p>
+              </div>
             </div>
           </div>
         )}

@@ -114,6 +114,33 @@ export class PlacesService {
   }): Promise<ApiResponse<any>> {
     return apiClient.post<ApiResponse<any>>('/enrich-contacts', params);
   }
+
+  // Importar CSV
+  async importCsv(file: File): Promise<ApiResponse<any>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    return apiClient.post<ApiResponse<any>>('/import-csv', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  }
+
+  // Exportar dados
+  async exportData(format: 'csv' | 'excel' = 'excel'): Promise<Blob> {
+    const response = await fetch(`${apiClient.baseURL}/places/export?format=${format}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Erro ao exportar dados');
+    }
+    
+    return response.blob();
+  }
 }
 
 export const placesService = new PlacesService();
