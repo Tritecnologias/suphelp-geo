@@ -31,6 +31,13 @@ app.get('/api/health', (req, res) => {
   res.json({ message: 'SupHelp Geo API - Sistema Operacional 🚀' });
 });
 
+// --- Rota: Config do Frontend (API Key do Google Maps) ---
+app.get('/api/config', (req, res) => {
+  res.json({
+    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || ''
+  });
+});
+
 // --- Middleware de Autenticação ---
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];

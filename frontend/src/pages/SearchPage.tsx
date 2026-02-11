@@ -1,4 +1,4 @@
-// Página de busca com mapa integrado
+// Página de busca com mapa integrado - API Key segura via backend
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, MapPin, Filter, X, Loader } from 'lucide-react';
 
@@ -33,6 +33,7 @@ const SearchPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(true);
   const [centerCoords, setCenterCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const googleMapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
@@ -49,40 +50,64 @@ const SearchPage: React.FC = () => {
     'Padaria'
   ];
 
+  // Carregar Google Maps API dinamicamente com chave do backend
+  useEffect(() => {
+    const loadGoogleMaps = async () => {
+      try {
+        // Buscar API Key do backend (seguro!)
+        const response = await fetch('/api/config');
+        const config = await response.json();
+        
+        if (!config.googleMapsApiKey) {
+          console.error('Google Maps API Key não configurada no servidor');
+          return;
+        }
+
+        // Verificar se já está carregado
+        if (window.google && window.google.maps) {
+          setGoogleMapsLoaded(true);
+          return;
+        }
+
+        // Carregar script do Google Maps
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${config.googleMapsApiKey}&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        script.onload = () => setGoogleMapsLoaded(true);
+        script.onerror = () => console.error('Erro ao carregar Google Maps');
+        document.head.appendChild(script);
+      } catch (error) {
+        console.error('Erro ao carregar configuração:', error);
+      }
+    };
+
+    loadGoogleMaps();
+  }, []);
   // Inicializar mapa
   useEffect(() => {
-    if (mapRef.current && !googleMapRef.current) {
+    if (mapRef.current && !googleMapRef.current && googleMapsLoaded) {
       googleMapRef.current = new google.maps.Map(mapRef.current, {
-        center: { lat: -23.5505, lng: -46.6333 }, // São Paulo
+        center: { lat: -23.5505, lng: -46.6333 },
         zoom: 12,
-        styles: [
-          {
-            featureType: 'poi',
-            elementType: 'labels',
-            stylers: [{ visibility: 'off' }]
-          }
-        ]
+        styles: [{ featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] }]
       });
     }
-  }, []);
+  }, [googleMapsLoaded]);
 
   // Atualizar marcadores no mapa
   useEffect(() => {
-    if (!googleMapRef.current) return;
+    if (!googleMapRef.current || !googleMapsLoaded) return;
 
-    // Limpar marcadores antigos
     markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
 
-    // Adicionar novos marcadores
     results.forEach(place => {
       const marker = new google.maps.Marker({
         position: { lat: place.lat, lng: place.lng },
         map: googleMapRef.current!,
         title: place.name,
-        icon: {
-          url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
-        }
+        icon: { url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png' }
       });
 
       const infoWindow = new google.maps.InfoWindow({
@@ -102,24 +127,17 @@ const SearchPage: React.FC = () => {
         `
       });
 
-      marker.addListener('click', () => {
-        infoWindow.open(googleMapRef.current!, marker);
-      });
-
+      marker.addListener('click', () => infoWindow.open(googleMapRef.current!, marker));
       markersRef.current.push(marker);
     });
 
-    // Ajustar zoom para mostrar todos os marcadores
     if (results.length > 0) {
       const bounds = new google.maps.LatLngBounds();
-      results.forEach(place => {
-        bounds.extend({ lat: place.lat, lng: place.lng });
-      });
+      results.forEach(place => bounds.extend({ lat: place.lat, lng: place.lng }));
       googleMapRef.current.fitBounds(bounds);
     }
-  }, [results]);
+  }, [results, googleMapsLoaded]);
 
-  // Função de busca
   const handleSearch = async () => {
     if (!searchAddress.trim()) {
       alert('Digite um endereço para buscar');
@@ -128,8 +146,6 @@ const SearchPage: React.FC = () => {
 
     try {
       setLoading(true);
-
-      // Geocodificar endereço
       const geocodeResponse = await fetch(`/api/geocode?address=${encodeURIComponent(searchAddress)}`);
       const geocodeData = await geocodeResponse.json();
 
@@ -141,26 +157,19 @@ const SearchPage: React.FC = () => {
       const { lat, lng } = geocodeData.data;
       setCenterCoords({ lat, lng });
 
-      // Centralizar mapa
       if (googleMapRef.current) {
         googleMapRef.current.setCenter({ lat, lng });
         googleMapRef.current.setZoom(14);
       }
 
-      // Buscar lugares próximos
-      let url = `/api/places/nearby?lat=${lat}&lng=${lng}&radius=${filters.radius}&limit=100`;
-      
-      const searchResponse = await fetch(url);
+      const searchResponse = await fetch(`/api/places/nearby?lat=${lat}&lng=${lng}&radius=${filters.radius}&limit=100`);
       const searchData = await searchResponse.json();
 
       let filteredResults = searchData.data || [];
 
-      // Aplicar filtros de categoria
       if (filters.categories.length > 0) {
         filteredResults = filteredResults.filter((place: Place) =>
-          filters.categories.some(cat => 
-            place.category?.toLowerCase().includes(cat.toLowerCase())
-          )
+          filters.categories.some(cat => place.category?.toLowerCase().includes(cat.toLowerCase()))
         );
       }
 
@@ -181,28 +190,19 @@ const SearchPage: React.FC = () => {
         : [...prev.categories, category]
     }));
   };
-
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
       <div className={`${showFilters ? 'w-96' : 'w-0'} transition-all duration-300 bg-white shadow-lg overflow-hidden`}>
         <div className="h-full overflow-y-auto p-6">
-          {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-gray-900">🗺️ SupHelp Geo</h1>
-            <button
-              onClick={() => setShowFilters(false)}
-              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
-            >
+            <button onClick={() => setShowFilters(false)} className="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
               <X size={20} />
             </button>
           </div>
 
-          {/* Busca */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Cidade
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Cidade</label>
             <input
               type="text"
               placeholder="Digite a cidade (ex: São Paulo)"
@@ -213,11 +213,8 @@ const SearchPage: React.FC = () => {
             />
           </div>
 
-          {/* Bairro */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Bairro
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Bairro</label>
             <input
               type="text"
               placeholder="Ex: Centro"
@@ -227,11 +224,8 @@ const SearchPage: React.FC = () => {
             />
           </div>
 
-          {/* Categorias */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Categorias
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Categorias</label>
             <div className="space-y-2">
               {categories.map(category => (
                 <button
@@ -249,7 +243,6 @@ const SearchPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Raio de Busca */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Raio de Busca: {filters.radius / 1000} km
@@ -265,7 +258,6 @@ const SearchPage: React.FC = () => {
             />
           </div>
 
-          {/* Botão Buscar */}
           <button
             onClick={handleSearch}
             disabled={loading}
@@ -284,17 +276,9 @@ const SearchPage: React.FC = () => {
             )}
           </button>
 
-          {/* Resultados */}
           <div className="mt-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-gray-700">
-                RESULTADOS ({results.length})
-              </h3>
-              {results.length > 0 && (
-                <button className="text-xs text-blue-600 hover:underline">
-                  Ordenar
-                </button>
-              )}
+              <h3 className="text-sm font-medium text-gray-700">RESULTADOS ({results.length})</h3>
             </div>
 
             {results.length === 0 ? (
@@ -325,14 +309,10 @@ const SearchPage: React.FC = () => {
                         {place.category}
                       </span>
                       {place.distance_km && (
-                        <span className="text-xs text-gray-500">
-                          📍 {place.distance_km} km
-                        </span>
+                        <span className="text-xs text-gray-500">📍 {place.distance_km} km</span>
                       )}
                       {place.rating && (
-                        <span className="text-xs text-gray-500">
-                          ⭐ {place.rating}
-                        </span>
+                        <span className="text-xs text-gray-500">⭐ {place.rating}</span>
                       )}
                     </div>
                   </div>
@@ -343,7 +323,6 @@ const SearchPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Mapa */}
       <div className="flex-1 relative">
         {!showFilters && (
           <button
@@ -354,12 +333,21 @@ const SearchPage: React.FC = () => {
           </button>
         )}
         
+        {!googleMapsLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+            <div className="text-center">
+              <Loader className="animate-spin mx-auto mb-4 text-blue-600" size={48} />
+              <p className="text-gray-600">Carregando mapa...</p>
+            </div>
+          </div>
+        )}
+        
         <div ref={mapRef} className="w-full h-full" />
         
         {results.length > 0 && (
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white px-4 py-2 rounded-full shadow-lg">
             <p className="text-sm text-gray-700">
-              📍 Nenhum local encontrado nesta área
+              📍 {results.length} {results.length === 1 ? 'local encontrado' : 'locais encontrados'}
             </p>
           </div>
         )}

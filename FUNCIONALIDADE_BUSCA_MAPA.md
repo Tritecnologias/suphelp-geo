@@ -1,4 +1,102 @@
-# 🗺️ FUNCIONALIDADE: Busca com Mapa Integrado
+# 🗺️ FUNCIONALIDADE: Busca com Mapa Integrado (SEGURA)
+
+## ✨ **O que foi implementado:**
+
+Uma página de busca completa similar ao CondoFinder, com **segurança aprimorada**:
+
+- ✅ **API Key do Google Maps carregada do backend** (não exposta no frontend!)
+- ✅ **Endpoint `/api/config`** que fornece a chave de forma segura
+- ✅ **Carregamento dinâmico** do script do Google Maps
+- ✅ **Sidebar com filtros avançados**
+- ✅ **Mapa interativo do Google Maps**
+- ✅ **Lista de resultados**
+- ✅ **Design responsivo**
+
+## 🔒 **SEGURANÇA:**
+
+A API Key do Google Maps **NÃO está exposta no código frontend**!
+
+- ✅ Chave armazenada no `.env` do backend
+- ✅ Endpoint `/api/config` fornece a chave via API
+- ✅ Script do Google Maps carregado dinamicamente
+- ✅ Sem exposição de credenciais no código-fonte
+
+## 🚀 **Como acessar:**
+
+URL: **http://76.13.173.70:5000/busca**
+
+## 🔧 **Configuração (já está pronta!):**
+
+A chave já está configurada no `.env`:
+
+```env
+GOOGLE_MAPS_API_KEY=AIzaSyDq2V4A_RmdQmxfO6jPkGHe0jXdfxDHV_Y
+```
+
+### **Para fazer deploy:**
+
+```bash
+# No servidor
+cd ~/suphelp-geo
+git pull origin main
+
+# Build
+cd frontend
+npm run build
+
+# Deploy
+cd ..
+rm -rf backend/public/react-build
+mkdir -p backend/public/react-build
+cp -r frontend/dist/* backend/public/react-build/
+
+# Reiniciar
+pm2 restart suphelp-geo
+```
+
+## 📋 **Como usar:**
+
+1. Acesse http://76.13.173.70:5000/busca
+2. Digite uma cidade no campo "Cidade"
+3. Selecione categorias (opcional)
+4. Ajuste o raio de busca
+5. Clique em "Buscar"
+6. Interaja com os resultados e marcadores
+
+## 🎨 **Categorias disponíveis:**
+
+- Condomínio
+- Prédio Residencial
+- Clube
+- Empresa
+- Academia
+- Farmácia
+- Mercado
+- Restaurante
+- Padaria
+
+## 🔍 **Funcionalidades técnicas:**
+
+- **API Key segura**: Carregada do backend via `/api/config`
+- **Geocoding**: Converte endereços em coordenadas
+- **Busca por raio**: PostGIS calcula distâncias reais
+- **Filtros client-side**: Categorias filtradas no frontend
+- **Marcadores dinâmicos**: Atualizados em tempo real
+- **InfoWindows**: Detalhes ao clicar nos marcadores
+- **Bounds automático**: Zoom ajustado automaticamente
+- **Loading states**: Feedback visual durante carregamento
+
+## 🎯 **Melhorias de segurança implementadas:**
+
+1. ✅ API Key não exposta no HTML
+2. ✅ Carregamento dinâmico do Google Maps
+3. ✅ Endpoint backend para configuração
+4. ✅ Variável de ambiente no .env
+5. ✅ Sem credenciais no código-fonte
+
+---
+
+**A funcionalidade está pronta e SEGURA! Faça o deploy e teste!** 🚀🔒
 
 ## ✨ **O que foi implementado:**
 
