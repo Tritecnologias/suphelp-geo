@@ -168,18 +168,20 @@ app.post('/api/auth/login', async (req, res) => {
       });
     }
 
-    // Gera token JWT
+    // Gera token JWT com flag de admin se o usuário tiver role admin
     const token = jwt.sign(
       { 
         id: user.id, 
         email: user.email,
-        plano: user.plano 
+        plano: user.plano,
+        role: user.role,
+        isAdmin: user.role === 'admin' || user.role === 'super_admin'
       },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    console.log(`✅ Login realizado: ${email}`);
+    console.log(`✅ Login realizado: ${email} (role: ${user.role || 'user'})`);
 
     res.json({
       success: true,
@@ -189,6 +191,7 @@ app.post('/api/auth/login', async (req, res) => {
         nome: user.nome,
         email: user.email,
         plano: user.plano,
+        role: user.role,
         status: user.status,
         searches_used: user.searches_used,
         searches_limit: user.searches_limit
