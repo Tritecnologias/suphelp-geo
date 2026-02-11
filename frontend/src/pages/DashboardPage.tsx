@@ -671,4 +671,6 @@ const DashboardPage: React.FC = () => {
       </div>
     </div>
   );
+};
+
 export default DashboardPage;
