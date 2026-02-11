@@ -39,13 +39,29 @@ const DashboardPage: React.FC = () => {
   } = usePlaces();
   
   const [searchAddress, setSearchAddress] = useState('');
+  const [searchCity, setSearchCity] = useState('');
+  const [searchNeighborhood, setSearchNeighborhood] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState('');
   const [searchRadius, setSearchRadius] = useState(5000);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [filters, setFilters] = useState({
     category: '',
     minRating: '',
     hasPhone: false
   });
+
+  const categories = [
+    'Condomínio',
+    'Prédio Residencial',
+    'Clube',
+    'Empresa',
+    'Academia',
+    'Farmácia',
+    'Mercado',
+    'Restaurante',
+    'Padaria'
+  ];
   const [userStats, setUserStats] = useState({
     searches_used: 0,
     searches_limit: 100,
@@ -176,20 +192,38 @@ const DashboardPage: React.FC = () => {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchAddress.trim()) {
-      // Se há filtros avançados, usar busca avançada
-      if (showAdvancedFilters && (filters.category || filters.minRating || filters.hasPhone)) {
-        await searchAdvanced({
-          address: searchAddress,
-          radius: searchRadius,
-          category: filters.category || undefined,
-          minRating: filters.minRating ? Number(filters.minRating) : undefined,
-          hasPhone: filters.hasPhone || undefined
-        });
-      } else {
-        await searchByAddress(searchAddress, searchRadius);
-      }
+    
+    // Montar endereço completo
+    let fullAddress = '';
+    if (searchCity) fullAddress += searchCity;
+    if (searchNeighborhood) fullAddress += (fullAddress ? ', ' : '') + searchNeighborhood;
+    if (searchKeyword) fullAddress += (fullAddress ? ', ' : '') + searchKeyword;
+    
+    if (!fullAddress.trim()) {
+      alert('Digite pelo menos a cidade para buscar');
+      return;
     }
+
+    // Se há categorias selecionadas ou filtros avançados, usar busca avançada
+    if (selectedCategories.length > 0 || (showAdvancedFilters && (filters.category || filters.minRating || filters.hasPhone))) {
+      await searchAdvanced({
+        address: fullAddress,
+        radius: searchRadius,
+        category: selectedCategories.length > 0 ? selectedCategories.join(',') : (filters.category || undefined),
+        minRating: filters.minRating ? Number(filters.minRating) : undefined,
+        hasPhone: filters.hasPhone || undefined
+      });
+    } else {
+      await searchByAddress(fullAddress, searchRadius);
+    }
+  };
+
+  const toggleCategory = (category: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
   };
 
   const handleLogout = () => {
@@ -421,47 +455,110 @@ const DashboardPage: React.FC = () => {
             {/* Search Form */}
             <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
               <div className="flex items-center gap-2 mb-4">
-                <Search size={18} className="text-blue-600" />
-                <h2 className="text-lg font-bold text-slate-800">Buscar</h2>
+                <Filter size={18} className="text-blue-600" />
+                <h2 className="text-lg font-bold text-slate-800">Filtros</h2>
               </div>
               
               <form onSubmit={handleSearch} className="space-y-4">
+                {/* Cidade */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-2">
-                    📍 Endereço
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Cidade
                   </label>
                   <input
                     type="text"
-                    value={searchAddress}
-                    onChange={(e) => setSearchAddress(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm"
-                    placeholder="Ex: Rua das Flores, 123, São Paulo"
-                    required
+                    value={searchCity}
+                    onChange={(e) => setSearchCity(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="Digite a cidade (ex: São Paulo)"
                   />
                 </div>
-                
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-2">
-                    🎯 Raio: {searchRadius / 1000} km
-                  </label>
-                  <select
-                    value={searchRadius}
-                    onChange={(e) => setSearchRadius(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 text-sm"
-                  >
-                    <option value={1000}>1 km</option>
-                    <option value={2000}>2 km</option>
-                    <option value={5000}>5 km</option>
-                    <option value={10000}>10 km</option>
-                    <option value={20000}>20 km</option>
-                  </select>
+
+                {/* Bairro e Palavra-chave */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Bairro
+                    </label>
+                    <input
+                      type="text"
+                      value={searchNeighborhood}
+                      onChange={(e) => setSearchNeighborhood(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                      placeholder="Ex: Centro"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Palavra-chave
+                    </label>
+                    <input
+                      type="text"
+                      value={searchKeyword}
+                      onChange={(e) => setSearchKeyword(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                      placeholder="Ex: Edifício..."
+                    />
+                  </div>
                 </div>
 
-                <div className="flex gap-2">
+                {/* Categorias */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-3">
+                    Categorias
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map(category => (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => toggleCategory(category)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                          selectedCategories.includes(category)
+                            ? 'bg-blue-500 text-white shadow-md'
+                            : 'bg-white text-slate-700 border border-slate-300 hover:border-blue-300'
+                        }`}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Raio de Busca */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-sm font-semibold text-slate-700">
+                      Raio de Busca
+                    </label>
+                    <span className="text-blue-600 font-bold text-sm">{searchRadius / 1000} km</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1000"
+                    max="20000"
+                    step="1000"
+                    value={searchRadius}
+                    onChange={(e) => setSearchRadius(parseInt(e.target.value))}
+                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                  />
+                </div>
+
+                {/* Botões */}
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    className="bg-white border border-slate-300 text-slate-700 px-4 py-3 rounded-lg font-semibold text-sm transition-all hover:bg-slate-50"
+                  >
+                    Filtros Avançados
+                  </button>
+
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-3 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {isLoading ? (
                       <>
@@ -469,43 +566,32 @@ const DashboardPage: React.FC = () => {
                         Buscando...
                       </>
                     ) : (
-                      <>
-                        <Search size={16} />
-                        Buscar
-                      </>
+                      'Buscar'
                     )}
                   </button>
+                </div>
 
+                {hasResults && (
                   <button
                     type="button"
-                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                    className="bg-slate-500 hover:bg-slate-600 text-white px-3 py-2 rounded-lg transition-all"
+                    onClick={clearResults}
+                    className="w-full bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm transition-all"
                   >
-                    <Filter size={16} />
+                    Limpar Resultados
                   </button>
-
-                  {hasResults && (
-                    <button
-                      type="button"
-                      onClick={clearResults}
-                      className="bg-slate-500 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-sm"
-                    >
-                      Limpar
-                    </button>
-                  )}
-                </div>
+                )}
 
                 {/* Filtros Avançados */}
                 {showAdvancedFilters && (
-                  <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-3">
+                  <div className="bg-white p-4 rounded-lg border border-slate-200 space-y-3">
                     <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
                       <Filter size={16} />
                       Filtros Avançados
                     </h3>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 mb-1">
-                          🏪 Categoria
+                          🏪 Categoria Específica
                         </label>
                         <select
                           value={filters.category}
@@ -544,7 +630,7 @@ const DashboardPage: React.FC = () => {
                             type="checkbox"
                             checked={filters.hasPhone}
                             onChange={(e) => setFilters({...filters, hasPhone: e.target.checked})}
-                            className="w-3 h-3 text-cyan-600"
+                            className="w-3 h-3 text-blue-600"
                           />
                           <span className="text-xs text-slate-700">📞 Apenas com telefone</span>
                         </label>
