@@ -21,6 +21,15 @@ interface SiteConfig {
     stat3Number?: string;
     stat3Text?: string;
   };
+  features?: {
+    title?: string;
+    subtitle?: string;
+    cards?: Array<{
+      icon?: string;
+      title?: string;
+      text?: string;
+    }>;
+  };
 }
 
 interface SiteConfigContextType {
@@ -61,7 +70,7 @@ export const SiteConfigProvider: React.FC<SiteConfigProviderProps> = ({ children
       const data = await response.json();
       
       if (data.success && data.data) {
-        const { header, hero, footer } = data.data;
+        const { header, hero, footer, features } = data.data;
         
         setConfig({
           siteName: header?.site_name?.value || defaultConfig.siteName,
@@ -82,6 +91,15 @@ export const SiteConfigProvider: React.FC<SiteConfigProviderProps> = ({ children
             stat2Text: hero?.stat_2_text?.value,
             stat3Number: hero?.stat_3_number?.value,
             stat3Text: hero?.stat_3_text?.value
+          },
+          features: {
+            title: features?.title?.value,
+            subtitle: features?.subtitle?.value,
+            cards: [1, 2, 3, 4].map(i => ({
+              icon: features?.[`card_${i}_icon`]?.value,
+              title: features?.[`card_${i}_title`]?.value,
+              text: features?.[`card_${i}_text`]?.value
+            }))
           }
         });
       }
