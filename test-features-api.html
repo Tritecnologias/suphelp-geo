@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste API Features</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Teste API de Configurações - Features</h1>
+    
+    <div class="section">
+        <h2>1. Testar GET /api/cms/config</h2>
+        <button onclick="testGetConfig()">Buscar Configurações</button>
+        <pre id="config-result">Clique no botão para testar...</pre>
+    </div>
+
+    <div class="section">
+        <h2>2. Dados de Features Extraídos</h2>
+        <pre id="features-data">Aguardando...</pre>
+    </div>
+
+    <div class="section">
+        <h2>3. Salvar Configurações de Teste</h2>
+        <button onclick="saveTestConfig()">Salvar Features de Teste</button>
+        <pre id="save-result">Clique no botão para salvar...</pre>
+    </div>
+
+    <script>
+        async function testGetConfig() {
+            try {
+                const response = await fetch('/api/cms/config');
+                const data = await response.json();
+                
+                document.getElementById('config-result').textContent = JSON.stringify(data, null, 2);
+                
+                // Extrair dados de features
+                if (data.success && data.data && data.data.features) {
+                    const features = data.data.features;
+                    const featuresInfo = {
+                        title: features.title?.value,
+                        subtitle: features.subtitle?.value,
+                        cards: [1, 2, 3, 4].map(i => ({
+                            icon: features[`card_${i}_icon`]?.value,
+                            title: features[`card_${i}_title`]?.value,
+                            text: features[`card_${i}_text`]?.value
+                        }))
+                    };
+                    document.getElementById('features-data').textContent = JSON.stringify(featuresInfo, null, 2);
+                } else {
+                    document.getElementById('features-data').textContent = 'Nenhum dado de features encontrado';
+                }
+            } catch (error) {
+                document.getElementById('config-result').textContent = 'ERRO: ' + error.message;
+            }
+        }
+
+        async function saveTestConfig() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Você precisa estar logado! Faça login em /admin primeiro.');
+                return;
+            }
+
+            const testConfigs = [
+                { section: 'features', key: 'title', value: 'Recursos Poderosos', type: 'text' },
+                { section: 'features', key: 'subtitle', value: 'Tudo que você precisa para análise geográfica', type: 'text' },
+                { section: 'features', key: 'card_1_icon', value: 'MapPin', type: 'text' },
+                { section: 'features', key: 'card_1_title', value: 'Busca por Endereço', type: 'text' },
+                { section: 'features', key: 'card_1_text', value: 'Digite qualquer endereço e encontre estabelecimentos próximos automaticamente', type: 'text' },
+                { section: 'features', key: 'card_2_icon', value: 'Download', type: 'text' },
+                { section: 'features', key: 'card_2_title', value: 'Exportação Excel', type: 'text' },
+                { section: 'features', key: 'card_2_text', value: 'Exporte todos os dados em formato CSV compatível com Excel e Google Sheets', type: 'text' },
+                { section: 'features', key: 'card_3_icon', value: 'FileText', type: 'text' },
+                { section: 'features', key: 'card_3_title', value: 'Relatórios PDF', type: 'text' },
+                { section: 'features', key: 'card_3_text', value: 'Gere relatórios profissionais em PDF prontos para impressão', type: 'text' },
+                { section: 'features', key: 'card_4_icon', value: 'Target', type: 'text' },
+                { section: 'features', key: 'card_4_title', value: 'Busca por Raio', type: 'text' },
+                { section: 'features', key: 'card_4_text', value: 'Defina o raio de busca em metros e encontre tudo ao redor', type: 'text' }
+            ];
+
+            try {
+                const response = await fetch('/api/cms/config/bulk', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ configs: testConfigs })
+                });
+
+                const data = await response.json();
+                document.getElementById('save-result').textContent = JSON.stringify(data, null, 2);
+                
+                if (data.success) {
+                    alert('✅ Configurações salvas! Agora teste a API novamente.');
+                }
+            } catch (error) {
+                document.getElementById('save-result').textContent = 'ERRO: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
