@@ -397,6 +397,36 @@ const CMSEditor: React.FC<CMSEditorProps> = ({ onSave }) => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Features Incluídas (uma por linha, use ✓ no início)
+                </label>
+                <textarea
+                  rows={4}
+                  value={getValue('pricing', `plan_${idx + 1}_features_included`)}
+                  onChange={(e) => handleInputChange('pricing', `plan_${idx + 1}_features_included`, e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                  placeholder="✓ 100 buscas por mês&#10;✓ Exportação Excel&#10;✓ Exportação PDF"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Digite uma feature por linha. Use ✓ no início para check verde.
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Features Não Incluídas (uma por linha, use ✗ no início)
+                </label>
+                <textarea
+                  rows={3}
+                  value={getValue('pricing', `plan_${idx + 1}_features_excluded`)}
+                  onChange={(e) => handleInputChange('pricing', `plan_${idx + 1}_features_excluded`, e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                  placeholder="✗ API Access&#10;✗ Relatórios personalizados"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Digite uma feature por linha. Use ✗ no início para X vermelho.
+                </p>
+              </div>
             </div>
           ))}
         </div>

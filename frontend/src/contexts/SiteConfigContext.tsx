@@ -38,6 +38,8 @@ interface SiteConfig {
       price?: string;
       period?: string;
       description?: string;
+      featuresIncluded?: string;
+      featuresExcluded?: string;
     }>;
   };
 }
@@ -118,7 +120,9 @@ export const SiteConfigProvider: React.FC<SiteConfigProviderProps> = ({ children
               name: pricing?.[`plan_${i}_name`]?.value,
               price: pricing?.[`plan_${i}_price`]?.value,
               period: pricing?.[`plan_${i}_period`]?.value,
-              description: pricing?.[`plan_${i}_description`]?.value
+              description: pricing?.[`plan_${i}_description`]?.value,
+              featuresIncluded: pricing?.[`plan_${i}_features_included`]?.value,
+              featuresExcluded: pricing?.[`plan_${i}_features_excluded`]?.value
             }))
           }
         });

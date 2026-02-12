@@ -12,14 +12,8 @@ const Pricing: React.FC = () => {
       price: '49',
       period: '/mês',
       description: 'Ideal para pequenos negócios',
-      features: [
-        { name: '100 buscas por mês', included: true },
-        { name: 'Exportação Excel', included: true },
-        { name: 'Exportação PDF', included: true },
-        { name: 'Suporte por email', included: true },
-        { name: 'API Access', included: false },
-        { name: 'Relatórios personalizados', included: false }
-      ],
+      featuresIncluded: '✓ 100 buscas por mês\n✓ Exportação Excel\n✓ Exportação PDF\n✓ Suporte por email',
+      featuresExcluded: '✗ API Access\n✗ Relatórios personalizados',
       popular: false
     },
     {
@@ -27,14 +21,8 @@ const Pricing: React.FC = () => {
       price: '149',
       period: '/mês',
       description: 'Para empresas em crescimento',
-      features: [
-        { name: '1.000 buscas por mês', included: true },
-        { name: 'Exportação Excel', included: true },
-        { name: 'Exportação PDF', included: true },
-        { name: 'Suporte prioritário', included: true },
-        { name: 'API Access', included: true },
-        { name: 'Relatórios personalizados', included: true }
-      ],
+      featuresIncluded: '✓ 1.000 buscas por mês\n✓ Exportação Excel\n✓ Exportação PDF\n✓ Suporte prioritário\n✓ API Access\n✓ Relatórios personalizados',
+      featuresExcluded: '',
       popular: true
     },
     {
@@ -42,30 +30,56 @@ const Pricing: React.FC = () => {
       price: '499',
       period: '/mês',
       description: 'Para grandes organizações',
-      features: [
-        { name: 'Buscas ilimitadas', included: true },
-        { name: 'Exportação Excel', included: true },
-        { name: 'Exportação PDF', included: true },
-        { name: 'Suporte 24/7', included: true },
-        { name: 'API Access completo', included: true },
-        { name: 'Relatórios personalizados', included: true },
-        { name: 'Integração customizada', included: true },
-        { name: 'Treinamento dedicado', included: true }
-      ],
+      featuresIncluded: '✓ Buscas ilimitadas\n✓ Exportação Excel\n✓ Exportação PDF\n✓ Suporte 24/7\n✓ API Access completo\n✓ Relatórios personalizados\n✓ Integração customizada\n✓ Treinamento dedicado',
+      featuresExcluded: '',
       popular: false
     }
   ];
 
+  // Processar features de texto para array
+  const parseFeatures = (included: string, excluded: string) => {
+    const features = [];
+    
+    // Features incluídas
+    if (included) {
+      included.split('\n').forEach(line => {
+        const text = line.replace(/^[✓✔☑]/g, '').trim();
+        if (text) {
+          features.push({ name: text, included: true });
+        }
+      });
+    }
+    
+    // Features excluídas
+    if (excluded) {
+      excluded.split('\n').forEach(line => {
+        const text = line.replace(/^[✗✘☒×]/g, '').trim();
+        if (text) {
+          features.push({ name: text, included: false });
+        }
+      });
+    }
+    
+    return features;
+  };
+
   // Usar configurações do banco ou valores padrão
   const plans = config.pricing?.plans && config.pricing.plans.length > 0 && config.pricing.plans[0].name
     ? config.pricing.plans.map((plan, index) => ({
-        ...defaultPlans[index],
         name: plan.name || defaultPlans[index].name,
         price: plan.price || defaultPlans[index].price,
         period: plan.period || defaultPlans[index].period,
-        description: plan.description || defaultPlans[index].description
+        description: plan.description || defaultPlans[index].description,
+        features: parseFeatures(
+          plan.featuresIncluded || defaultPlans[index].featuresIncluded,
+          plan.featuresExcluded || defaultPlans[index].featuresExcluded
+        ),
+        popular: defaultPlans[index].popular
       }))
-    : defaultPlans;
+    : defaultPlans.map(plan => ({
+        ...plan,
+        features: parseFeatures(plan.featuresIncluded, plan.featuresExcluded)
+      }));
 
   return (
     <section id="pricing" className="py-20 bg-white">
