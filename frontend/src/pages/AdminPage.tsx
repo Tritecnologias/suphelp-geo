@@ -7,6 +7,7 @@ import {
   Search, Download, FileText, Phone, Star, Eye, Save, RefreshCw, Palette
 } from 'lucide-react';
 import { adminService } from '../services/admin';
+import { useSiteConfig } from '../contexts/SiteConfigContext';
 
 interface Place {
   id: number;
@@ -41,6 +42,7 @@ interface Stats {
 
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
+  const { config: globalConfig } = useSiteConfig();
   const [activeSection, setActiveSection] = useState('dashboard');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -488,9 +490,16 @@ const AdminPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <div className="w-64 bg-gradient-to-b from-blue-600 to-purple-700 text-white p-6">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold">🗺️ SupHelp Geo</h1>
-          <p className="text-blue-200 text-sm">Painel Administrativo</p>
+        <div className="mb-8 flex items-center gap-3">
+          {globalConfig.logoUrl ? (
+            <img src={globalConfig.logoUrl} alt={globalConfig.siteName} className="w-10 h-10 object-contain" />
+          ) : (
+            <span className="text-3xl">🗺️</span>
+          )}
+          <div>
+            <h1 className="text-xl font-bold">{globalConfig.siteName}</h1>
+            <p className="text-blue-200 text-xs">Painel Administrativo</p>
+          </div>
         </div>
         
         <nav className="space-y-2">
@@ -1171,9 +1180,13 @@ const AdminPage: React.FC = () => {
                     Logotipo
                   </label>
                   <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center text-white">
-                      <Globe size={32} />
-                    </div>
+                    {globalConfig.logoUrl ? (
+                      <img src={globalConfig.logoUrl} alt="Logo atual" className="w-20 h-20 object-contain border border-gray-200 rounded-lg p-2" />
+                    ) : (
+                      <div className="w-20 h-20 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center text-white">
+                        <Globe size={32} />
+                      </div>
+                    )}
                     <div className="flex-1">
                       <input
                         type="file"
