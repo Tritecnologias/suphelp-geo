@@ -6,6 +6,9 @@ const { spawn } = require('child_process');
 const https = require('https');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const pool = require('./db');
 const serveDynamicPage = require('./dynamic_page');
 
@@ -1318,13 +1321,65 @@ app.put('/api/cms/config/bulk', authenticateAdmin, async (req, res) => {
   }
 });
 
-// --- Rota 17: Servir página principal com conteúdo dinâmico ---
+// --- Configuração do Multer para Upload de Arquivos ---
+const uploadsDir = path.join(__dirname, '../public/uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'logo-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|svg/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Apenas imagens são permitidas (jpeg, jpg, png, gif, svg)'));
+    }
+  }
+});
+
+// --- Rota 17: Upload de Logo ---
+app.post('/api/upload/logo', authenticateAdmin, upload.single('logo'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'Nenhum arquivo enviado' });
+    }
+
+    const fileUrl = `/uploads/${req.file.filename}`;
+    console.log(`✅ Logo uploaded: ${fileUrl}`);
+    
+    res.json({ 
+      success: true, 
+      url: fileUrl,
+      filename: req.file.filename 
+    });
+  } catch (error) {
+    console.error('❌ Erro no upload:', error);
+    res.status(500).json({ success: false, error: 'Erro ao fazer upload do arquivo' });
+  }
+});
+
+// --- Rota 18: Servir página principal com conteúdo dinâmico ---
 // app.get('/', (req, res) => {
 //   serveDynamicPage(pool, req, res);
 // });
 
 // --- Servir build do React (se existir) ou frontend antigo ---
-const path = require('path');
 const fs = require('fs');
 
 // Verificar se existe build do React
@@ -1333,6 +1388,9 @@ const oldFrontendPath = path.join(__dirname, '../public-old/index.html');
 
 if (fs.existsSync(reactBuildPath)) {
   console.log('✅ Servindo frontend React');
+  
+  // Servir uploads
+  app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
   
   // Servir arquivos estáticos do React
   app.use(express.static(path.join(__dirname, '../public/react-build'), { index: false }));

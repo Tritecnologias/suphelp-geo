@@ -377,6 +377,7 @@ const AdminPage: React.FC = () => {
   };
 
   // Função para salvar configurações do site
+  // Função para salvar configurações do site
   const handleSaveSiteConfig = async () => {
     try {
       setLoading(true);
@@ -390,6 +391,37 @@ const AdminPage: React.FC = () => {
         { section: 'footer', key: 'contact_email', value: siteConfig.email, type: 'text' },
         { section: 'footer', key: 'contact_phone', value: siteConfig.phone, type: 'text' }
       ];
+
+      // Se houver logo (arquivo), fazer upload primeiro
+      if (siteConfig.logo) {
+        const formData = new FormData();
+        formData.append('logo', siteConfig.logo);
+
+        try {
+          const uploadResponse = await fetch('/api/upload/logo', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: formData
+          });
+
+          const uploadData = await uploadResponse.json();
+          
+          if (uploadData.success && uploadData.url) {
+            // Adicionar URL do logo às configurações
+            configs.push({ 
+              section: 'header', 
+              key: 'logo_url', 
+              value: uploadData.url, 
+              type: 'text' 
+            });
+          }
+        } catch (uploadError) {
+          console.error('Erro ao fazer upload do logo:', uploadError);
+          setMessage('⚠️ Configurações salvas, mas erro ao fazer upload do logo');
+        }
+      }
 
       await adminService.saveSiteConfig(configs);
 
