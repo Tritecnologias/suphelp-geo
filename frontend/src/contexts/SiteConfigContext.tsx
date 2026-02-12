@@ -23,7 +23,7 @@ const defaultConfig: SiteConfig = {
   description: 'Sistema inteligente de geolocalização para encontrar farmácias, padarias, mercados e muito mais. Exporte dados em Excel e PDF com facilidade.',
   email: 'comercial@suphelp.com.br',
   phone: '(11) 9999-9999',
-  copyrightText: 'Todos os direitos reservados.'
+  copyrightText: `© ${new Date().getFullYear()} SupHelp Geo. Todos os direitos reservados.`
 };
 
 const SiteConfigContext = createContext<SiteConfigContextType>({

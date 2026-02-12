@@ -5,6 +5,7 @@ import { useSiteConfig } from '../contexts/SiteConfigContext';
 
 const Footer: React.FC = () => {
   const { config } = useSiteConfig();
+  const defaultCopyright = `© ${new Date().getFullYear()} ${config.siteName}. Todos os direitos reservados.`;
 
   return (
     <footer className="bg-slate-900 text-white py-16">
@@ -87,7 +88,9 @@ const Footer: React.FC = () => {
         {/* Copyright */}
         <div className="border-t border-slate-700 pt-8 text-center">
           <p className="text-slate-400">
-            © {new Date().getFullYear()} {config.siteName}. {config.copyrightText || 'Todos os direitos reservados.'}
+            {(config.copyrightText || defaultCopyright)
+              .replace('{year}', new Date().getFullYear().toString())
+              .replace('{siteName}', config.siteName)}
           </p>
         </div>
       </div>
