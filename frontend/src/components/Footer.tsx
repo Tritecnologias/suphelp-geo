@@ -14,7 +14,7 @@ const Footer: React.FC = () => {
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               {config.logoUrl ? (
-                <img src={config.logoUrl} alt={config.siteName} className="w-10 h-10 rounded-lg object-cover" />
+                <img src={config.logoUrl} alt={config.siteName} className="w-10 h-10 object-contain" />
               ) : (
                 <div className="w-10 h-10 bg-gradient-to-tr from-cyan-400 via-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white">
                   <Globe size={20} />

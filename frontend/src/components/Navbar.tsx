@@ -13,7 +13,7 @@ const Navbar: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
             {config.logoUrl ? (
-              <img src={config.logoUrl} alt={config.siteName} className="w-12 h-12 rounded-xl object-cover shadow-lg" />
+              <img src={config.logoUrl} alt={config.siteName} className="w-12 h-12 object-contain" />
             ) : (
               <div className="w-12 h-12 bg-gradient-to-tr from-cyan-400 via-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
                 <Globe size={24} />

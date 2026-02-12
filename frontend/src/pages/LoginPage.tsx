@@ -37,7 +37,7 @@ const LoginPage: React.FC = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             {config.logoUrl ? (
-              <img src={config.logoUrl} alt={config.siteName} className="w-12 h-12 rounded-full object-cover shadow-lg" />
+              <img src={config.logoUrl} alt={config.siteName} className="w-16 h-16 object-contain" />
             ) : (
               <div className="w-12 h-12 bg-gradient-to-tr from-lime-400 to-primary rounded-full flex items-center justify-center text-white shadow-lg">
                 <Globe size={28} />
