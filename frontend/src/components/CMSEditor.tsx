@@ -293,14 +293,15 @@ const CMSEditor: React.FC<CMSEditorProps> = ({ onSave }) => {
               <h6 className="font-medium text-gray-700">Card {i}</h6>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Ícone</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Ícone (Lucide)</label>
                   <input
                     type="text"
                     value={getValue('features', `card_${i}_icon`)}
                     onChange={(e) => handleInputChange('features', `card_${i}_icon`, e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="📍"
+                    placeholder="MapPin"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Ex: MapPin, Download, FileText, Target, Zap, Phone, Mail</p>
                 </div>
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Título</label>
