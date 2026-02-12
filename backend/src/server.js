@@ -1203,7 +1203,7 @@ app.delete('/api/places/:id', async (req, res) => {
 });
 
 // --- Rota 14: CMS - Obter configurações do site ---
-app.get('/api/cms/config', authenticateAdmin, async (req, res) => {
+app.get('/api/cms/config', async (req, res) => {
   try {
     const { section } = req.query;
     
