@@ -48,6 +48,16 @@ const AdminPage: React.FC = () => {
   // Estados para diferentes seções
   const [stats, setStats] = useState<Stats>({ total: 0, withPhone: 0, withRating: 0, categories: 0 });
   const [places, setPlaces] = useState<Place[]>([]);
+
+  // Estados para configurações do site
+  const [siteConfig, setSiteConfig] = useState({
+    siteName: 'SupHelp Geo',
+    slogan: 'Geolocalização Inteligente',
+    description: 'Encontre estabelecimentos próximos com precisão e facilidade',
+    email: 'contato@suphelp.com.br',
+    phone: '(11) 9999-9999',
+    logo: null as File | null
+  });
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [recentPlaces, setRecentPlaces] = useState<Place[]>([]);
   const [searchResults, setSearchResults] = useState<Place[]>([]);
@@ -365,6 +375,29 @@ const AdminPage: React.FC = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     navigate('/login');
+  };
+
+  // Função para salvar configurações do site
+  const handleSaveSiteConfig = async () => {
+    try {
+      setLoading(true);
+      setMessage('');
+
+      // Aqui você implementaria a chamada à API para salvar no banco
+      // Por enquanto, vou simular o salvamento
+      console.log('Salvando configurações:', siteConfig);
+
+      // Simular delay de API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      setMessage('✅ Configurações salvas com sucesso!');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      setMessage('❌ Erro ao salvar configurações');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Função para mudar seção ativa
@@ -1005,6 +1038,13 @@ const AdminPage: React.FC = () => {
         {/* Settings Section */}
         {activeSection === 'settings' && (
           <div className="space-y-6">
+            {/* Mensagem de feedback */}
+            {message && (
+              <div className={`p-4 rounded-lg ${message.includes('✅') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                {message}
+              </div>
+            )}
+
             {/* Configurações da Landing Page */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -1019,7 +1059,8 @@ const AdminPage: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="SupHelp Geo"
+                    value={siteConfig.siteName}
+                    onChange={(e) => setSiteConfig({...siteConfig, siteName: e.target.value})}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="Ex: SupHelp Geo"
                   />
@@ -1031,7 +1072,8 @@ const AdminPage: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Geolocalização Inteligente"
+                    value={siteConfig.slogan}
+                    onChange={(e) => setSiteConfig({...siteConfig, slogan: e.target.value})}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="Ex: Geolocalização Inteligente"
                   />
@@ -1043,7 +1085,8 @@ const AdminPage: React.FC = () => {
                   </label>
                   <textarea
                     rows={3}
-                    defaultValue="Encontre estabelecimentos próximos com precisão e facilidade"
+                    value={siteConfig.description}
+                    onChange={(e) => setSiteConfig({...siteConfig, description: e.target.value})}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="Descrição que aparece na página inicial"
                   />
@@ -1061,6 +1104,7 @@ const AdminPage: React.FC = () => {
                       <input
                         type="file"
                         accept="image/*"
+                        onChange={(e) => setSiteConfig({...siteConfig, logo: e.target.files?.[0] || null})}
                         className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       />
                       <p className="text-xs text-gray-500 mt-1">PNG, JPG ou SVG (máx. 2MB)</p>
@@ -1075,7 +1119,8 @@ const AdminPage: React.FC = () => {
                     </label>
                     <input
                       type="email"
-                      defaultValue="contato@suphelp.com.br"
+                      value={siteConfig.email}
+                      onChange={(e) => setSiteConfig({...siteConfig, email: e.target.value})}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -1086,17 +1131,42 @@ const AdminPage: React.FC = () => {
                     </label>
                     <input
                       type="tel"
-                      defaultValue="(11) 9999-9999"
+                      value={siteConfig.phone}
+                      onChange={(e) => setSiteConfig({...siteConfig, phone: e.target.value})}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <button className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                    Salvar Alterações
+                  <button 
+                    onClick={handleSaveSiteConfig}
+                    disabled={loading}
+                    className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {loading ? (
+                      <>
+                        <RefreshCw size={18} className="animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={18} />
+                        Salvar Alterações
+                      </>
+                    )}
                   </button>
-                  <button className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                  <button 
+                    onClick={() => setSiteConfig({
+                      siteName: 'SupHelp Geo',
+                      slogan: 'Geolocalização Inteligente',
+                      description: 'Encontre estabelecimentos próximos com precisão e facilidade',
+                      email: 'contato@suphelp.com.br',
+                      phone: '(11) 9999-9999',
+                      logo: null
+                    })}
+                    className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  >
                     Cancelar
                   </button>
                 </div>
