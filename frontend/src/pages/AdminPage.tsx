@@ -560,16 +560,6 @@ const AdminPage: React.FC = () => {
                 {activeSection === 'settings' && 'Configurações'}
               </h2>
             </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => changeSection(activeSection)}
-                disabled={loading}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              >
-                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-                <span>Atualizar</span>
-              </button>
-            </div>
           </div>
           
           {message && (
