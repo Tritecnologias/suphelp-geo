@@ -62,7 +62,6 @@ const AdminPage: React.FC = () => {
   const [recentPlaces, setRecentPlaces] = useState<Place[]>([]);
   const [searchResults, setSearchResults] = useState<Place[]>([]);
 
-  const adminService = new AdminService();
   // Estados para formulários
   const [showAddPlace, setShowAddPlace] = useState(false);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
