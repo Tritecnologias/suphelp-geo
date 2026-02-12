@@ -9,6 +9,17 @@ interface SiteConfig {
   phone: string;
   logoUrl?: string;
   copyrightText?: string;
+  hero?: {
+    title?: string;
+    button1Text?: string;
+    button2Text?: string;
+    stat1Number?: string;
+    stat1Text?: string;
+    stat2Number?: string;
+    stat2Text?: string;
+    stat3Number?: string;
+    stat3Text?: string;
+  };
 }
 
 interface SiteConfigContextType {
@@ -58,7 +69,18 @@ export const SiteConfigProvider: React.FC<SiteConfigProviderProps> = ({ children
           email: footer?.contact_email?.value || defaultConfig.email,
           phone: footer?.contact_phone?.value || defaultConfig.phone,
           logoUrl: header?.logo_url?.value,
-          copyrightText: footer?.copyright_text?.value || defaultConfig.copyrightText
+          copyrightText: footer?.copyright_text?.value || defaultConfig.copyrightText,
+          hero: {
+            title: hero?.title?.value,
+            button1Text: hero?.button_1_text?.value,
+            button2Text: hero?.button_2_text?.value,
+            stat1Number: hero?.stat_1_number?.value,
+            stat1Text: hero?.stat_1_text?.value,
+            stat2Number: hero?.stat_2_number?.value,
+            stat2Text: hero?.stat_2_text?.value,
+            stat3Number: hero?.stat_3_number?.value,
+            stat3Text: hero?.stat_3_text?.value
+          }
         });
       }
     } catch (error) {
