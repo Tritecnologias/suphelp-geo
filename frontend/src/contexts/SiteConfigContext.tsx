@@ -8,6 +8,7 @@ interface SiteConfig {
   email: string;
   phone: string;
   logoUrl?: string;
+  copyrightText?: string;
 }
 
 interface SiteConfigContextType {
@@ -21,7 +22,8 @@ const defaultConfig: SiteConfig = {
   slogan: 'Geolocalização Inteligente',
   description: 'Sistema inteligente de geolocalização para encontrar farmácias, padarias, mercados e muito mais. Exporte dados em Excel e PDF com facilidade.',
   email: 'comercial@suphelp.com.br',
-  phone: '(11) 9999-9999'
+  phone: '(11) 9999-9999',
+  copyrightText: 'Todos os direitos reservados.'
 };
 
 const SiteConfigContext = createContext<SiteConfigContextType>({
@@ -55,7 +57,8 @@ export const SiteConfigProvider: React.FC<SiteConfigProviderProps> = ({ children
           description: hero?.description?.value || defaultConfig.description,
           email: footer?.contact_email?.value || defaultConfig.email,
           phone: footer?.contact_phone?.value || defaultConfig.phone,
-          logoUrl: header?.logo_url?.value
+          logoUrl: header?.logo_url?.value,
+          copyrightText: footer?.copyright_text?.value || defaultConfig.copyrightText
         });
       }
     } catch (error) {
