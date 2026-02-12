@@ -1,5 +1,9 @@
 # Como Editar Planos e Features no CMS
 
+## ✨ SUPER SIMPLES - Não precisa copiar símbolos!
+
+Basta digitar o texto direto, uma feature por linha. O sistema adiciona os checks automaticamente!
+
 ## Campos Disponíveis na Aba "Preços"
 
 ### Seção Principal
@@ -17,20 +21,35 @@
 #### Features (Recursos)
 
 ##### Features Incluídas (Check Verde ✓)
-Digite uma feature por linha, começando com ✓:
+Digite uma feature por linha (pode começar com +, * ou nada):
 
 ```
-✓ 100 buscas por mês
-✓ Exportação Excel
-✓ Exportação PDF
+100 buscas por mês
+Exportação Excel
+Exportação PDF
+Suporte por email
+```
+
+Ou se preferir usar símbolos:
+```
++ 100 buscas por mês
++ Exportação Excel
+* Exportação PDF
 ✓ Suporte por email
 ```
 
 ##### Features Não Incluídas (X Vermelho ✗)
-Digite uma feature por linha, começando com ✗:
+Digite uma feature por linha (pode começar com -, x ou nada):
 
 ```
-✗ API Access
+API Access
+Relatórios personalizados
+```
+
+Ou se preferir usar símbolos:
+```
+- API Access
+x Relatórios personalizados
 ✗ Relatórios personalizados
 ```
 
@@ -44,16 +63,16 @@ Digite uma feature por linha, começando com ✗:
 
 ### Features Incluídas:
 ```
-✓ 100 buscas por mês
-✓ Exportação Excel
-✓ Exportação PDF
-✓ Suporte por email
+100 buscas por mês
+Exportação Excel
+Exportação PDF
+Suporte por email
 ```
 
 ### Features Não Incluídas:
 ```
-✗ API Access
-✗ Relatórios personalizados
+API Access
+Relatórios personalizados
 ```
 
 ## Exemplo Completo - Plano Profissional
@@ -66,12 +85,12 @@ Digite uma feature por linha, começando com ✗:
 
 ### Features Incluídas:
 ```
-✓ 1.000 buscas por mês
-✓ Exportação Excel
-✓ Exportação PDF
-✓ Suporte prioritário
-✓ API Access
-✓ Relatórios personalizados
+1.000 buscas por mês
+Exportação Excel
+Exportação PDF
+Suporte prioritário
+API Access
+Relatórios personalizados
 ```
 
 ### Features Não Incluídas:
@@ -89,14 +108,14 @@ Digite uma feature por linha, começando com ✗:
 
 ### Features Incluídas:
 ```
-✓ Buscas ilimitadas
-✓ Exportação Excel
-✓ Exportação PDF
-✓ Suporte 24/7
-✓ API Access completo
-✓ Relatórios personalizados
-✓ Integração customizada
-✓ Treinamento dedicado
+Buscas ilimitadas
+Exportação Excel
+Exportação PDF
+Suporte 24/7
+API Access completo
+Relatórios personalizados
+Integração customizada
+Treinamento dedicado
 ```
 
 ### Features Não Incluídas:
@@ -106,39 +125,50 @@ Digite uma feature por linha, começando com ✗:
 
 ## Dicas Importantes
 
-### Símbolos Aceitos
+### Símbolos Aceitos (OPCIONAIS!)
+
+Você NÃO precisa usar símbolos, mas se quiser, estes são aceitos:
 
 **Para features incluídas (check verde):**
-- ✓ (recomendado)
-- ✔
-- ☑
+- Nada (apenas o texto)
+- `+` (mais simples)
+- `*` (asterisco)
+- ✓ ✔ ☑ (se quiser copiar)
 
 **Para features não incluídas (X vermelho):**
-- ✗ (recomendado)
-- ✘
-- ☒
-- ×
+- Nada (apenas o texto)
+- `-` (hífen/menos)
+- `x` (letra x minúscula)
+- ✗ ✘ ☒ × (se quiser copiar)
 
 ### Formatação
 
 1. **Uma feature por linha**: Cada linha representa uma feature
-2. **Símbolo no início**: Sempre comece a linha com ✓ ou ✗
-3. **Texto após o símbolo**: O sistema remove o símbolo automaticamente
+2. **Símbolo OPCIONAL**: Pode começar com símbolo ou não
+3. **Texto limpo**: O sistema remove símbolos automaticamente
 4. **Linhas vazias**: São ignoradas automaticamente
 
 ### Exemplos de Formatação
 
-✅ **CORRETO:**
+✅ **TODOS CORRETOS:**
 ```
+100 buscas por mês
++ 100 buscas por mês
+* 100 buscas por mês
 ✓ 100 buscas por mês
-✓ Exportação Excel
+```
+
+✅ **TAMBÉM CORRETOS:**
+```
+API Access
+- API Access
+x API Access
 ✗ API Access
 ```
 
 ❌ **INCORRETO:**
 ```
-100 buscas por mês ✓
-Exportação Excel (incluído)
+100 buscas por mês (incluído)
 API Access - não incluído
 ```
 
@@ -174,14 +204,15 @@ Após salvar, os planos aparecerão assim:
 ## Troubleshooting
 
 ### Features não aparecem
-- Verifique se você colocou ✓ ou ✗ no início de cada linha
 - Certifique-se de que salvou as alterações
+- Uma feature por linha (sem vírgulas)
 - Limpe o cache do navegador (Ctrl+Shift+R)
 
 ### Formatação estranha
 - Use apenas uma feature por linha
 - Não use vírgulas ou pontos no final
 - Mantenha o texto simples e direto
+- Símbolos são OPCIONAIS
 
 ### Plano não atualiza
 - Verifique se fez o build no servidor
