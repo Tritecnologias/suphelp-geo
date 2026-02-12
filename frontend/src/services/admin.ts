@@ -277,7 +277,7 @@ export class AdminService {
 
   // Salvar configurações do site
   async saveSiteConfig(configs: Array<{ section: string; key: string; value: string; type: string }>): Promise<ApiResponse<any>> {
-    return apiClient.post<ApiResponse<any>>('/cms/config', { configs });
+    return apiClient.put<ApiResponse<any>>('/cms/config/bulk', { configs });
   }
 
   // Atualizar configuração específica
