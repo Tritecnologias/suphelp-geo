@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Globe, Mail, Lock, User, Phone, Building, ArrowLeft, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useSiteConfig } from '../contexts/SiteConfigContext';
 
 const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ const RegisterPage: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const { register, isLoading } = useAuth();
+  const { config } = useSiteConfig();
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -86,10 +88,14 @@ const RegisterPage: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-tr from-lime-400 to-primary rounded-full flex items-center justify-center text-white shadow-lg">
-              <Globe size={28} />
-            </div>
-            <span className="font-bold text-2xl text-primary tracking-tight">SupHelp Geo</span>
+            {config.logoUrl ? (
+              <img src={config.logoUrl} alt={config.siteName} className="w-12 h-12 rounded-full object-cover shadow-lg" />
+            ) : (
+              <div className="w-12 h-12 bg-gradient-to-tr from-lime-400 to-primary rounded-full flex items-center justify-center text-white shadow-lg">
+                <Globe size={28} />
+              </div>
+            )}
+            <span className="font-bold text-2xl text-primary tracking-tight">{config.siteName}</span>
           </div>
           <h1 className="text-2xl font-bold text-slate-800 mb-2">Crie sua conta</h1>
           <p className="text-slate-500">Comece grátis e teste por 7 dias</p>

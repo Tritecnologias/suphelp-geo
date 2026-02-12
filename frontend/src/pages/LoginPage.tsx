@@ -3,12 +3,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Globe, Mail, Lock, ArrowLeft, AlertCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useSiteConfig } from '../contexts/SiteConfigContext';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [error, setError] = useState('');
   const { login, isLoading } = useAuth();
+  const { config } = useSiteConfig();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,10 +36,14 @@ const LoginPage: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-tr from-lime-400 to-primary rounded-full flex items-center justify-center text-white shadow-lg">
-              <Globe size={28} />
-            </div>
-            <span className="font-bold text-2xl text-primary tracking-tight">SupHelp Geo</span>
+            {config.logoUrl ? (
+              <img src={config.logoUrl} alt={config.siteName} className="w-12 h-12 rounded-full object-cover shadow-lg" />
+            ) : (
+              <div className="w-12 h-12 bg-gradient-to-tr from-lime-400 to-primary rounded-full flex items-center justify-center text-white shadow-lg">
+                <Globe size={28} />
+              </div>
+            )}
+            <span className="font-bold text-2xl text-primary tracking-tight">{config.siteName}</span>
           </div>
           <h1 className="text-2xl font-bold text-slate-800 mb-2">Bem-vindo de volta!</h1>
           <p className="text-slate-500">Faça login para acessar sua conta</p>
