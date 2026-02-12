@@ -178,13 +178,26 @@ const CMSEditor: React.FC<CMSEditorProps> = ({ onSave }) => {
           <h4 className="font-semibold text-gray-900 mb-4">Seção Hero (Principal)</h4>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Título Principal</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Título - Linha 1 (Preto)</label>
             <input
               type="text"
-              value={getValue('hero', 'title', 'Encontre Estabelecimentos Próximos em Segundos')}
-              onChange={(e) => handleInputChange('hero', 'title', e.target.value)}
+              value={getValue('hero', 'title_line1', 'Encontre Estabelecimentos')}
+              onChange={(e) => handleInputChange('hero', 'title_line1', e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="Encontre Estabelecimentos"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Título - Linha 2 (Azul com Gradiente)</label>
+            <input
+              type="text"
+              value={getValue('hero', 'title_line2', 'Próximos em Segundos')}
+              onChange={(e) => handleInputChange('hero', 'title_line2', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="Próximos em Segundos"
+            />
+            <p className="text-xs text-gray-500 mt-1">Esta linha aparece com gradiente azul</p>
           </div>
 
           <div>

@@ -11,9 +11,9 @@ const Hero: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-slate-800 mb-6">
-            {config.hero?.title || 'Encontre Estabelecimentos'}
+            {config.hero?.titleLine1 || 'Encontre Estabelecimentos'}
             <span className="block bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
-              Próximos em Segundos
+              {config.hero?.titleLine2 || 'Próximos em Segundos'}
             </span>
           </h1>
           

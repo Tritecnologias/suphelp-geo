@@ -10,7 +10,8 @@ interface SiteConfig {
   logoUrl?: string;
   copyrightText?: string;
   hero?: {
-    title?: string;
+    titleLine1?: string;
+    titleLine2?: string;
     button1Text?: string;
     button2Text?: string;
     stat1Number?: string;
@@ -71,7 +72,8 @@ export const SiteConfigProvider: React.FC<SiteConfigProviderProps> = ({ children
           logoUrl: header?.logo_url?.value,
           copyrightText: footer?.copyright_text?.value || defaultConfig.copyrightText,
           hero: {
-            title: hero?.title?.value,
+            titleLine1: hero?.title_line1?.value,
+            titleLine2: hero?.title_line2?.value,
             button1Text: hero?.button_1_text?.value,
             button2Text: hero?.button_2_text?.value,
             stat1Number: hero?.stat_1_number?.value,
