@@ -1380,7 +1380,6 @@ app.post('/api/upload/logo', authenticateAdmin, upload.single('logo'), (req, res
 // });
 
 // --- Servir build do React (se existir) ou frontend antigo ---
-const fs = require('fs');
 
 // Verificar se existe build do React
 const reactBuildPath = path.join(__dirname, '../public/react-build/index.html');
