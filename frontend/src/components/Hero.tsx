@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Search, MapPin, Download } from 'lucide-react';
+import { useSiteConfig } from '../contexts/SiteConfigContext';
 
 const Hero: React.FC = () => {
+  const { config } = useSiteConfig();
+
   return (
     <section className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-100 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,8 +18,7 @@ const Hero: React.FC = () => {
           </h1>
           
           <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Sistema inteligente de geolocalização para encontrar farmácias, padarias, mercados e muito mais. 
-            Exporte dados em Excel e PDF com facilidade.
+            {config.description}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">

@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Globe, Mail } from 'lucide-react';
+import { useSiteConfig } from '../contexts/SiteConfigContext';
 
 const Footer: React.FC = () => {
+  const { config } = useSiteConfig();
+
   return (
     <footer className="bg-slate-900 text-white py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -10,21 +13,25 @@ const Footer: React.FC = () => {
           {/* Logo e Descrição */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-tr from-cyan-400 via-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white">
-                <Globe size={20} />
-              </div>
-              <span className="font-bold text-xl">SupHelp Geo</span>
+              {config.logoUrl ? (
+                <img src={config.logoUrl} alt={config.siteName} className="w-10 h-10 rounded-lg object-cover" />
+              ) : (
+                <div className="w-10 h-10 bg-gradient-to-tr from-cyan-400 via-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white">
+                  <Globe size={20} />
+                </div>
+              )}
+              <span className="font-bold text-xl">{config.siteName}</span>
             </div>
             <p className="text-slate-300 mb-4 max-w-md">
-              Geolocalização inteligente para seu negócio. Encontre estabelecimentos próximos e exporte dados facilmente.
+              {config.slogan}. Encontre estabelecimentos próximos e exporte dados facilmente.
             </p>
             <div className="flex items-center gap-2 text-slate-300">
               <Mail size={16} />
               <a 
-                href="mailto:comercial@suphelp.com.br" 
+                href={`mailto:${config.email}`}
                 className="hover:text-cyan-400 transition-colors"
               >
-                comercial@suphelp.com.br
+                {config.email}
               </a>
             </div>
           </div>
@@ -80,7 +87,7 @@ const Footer: React.FC = () => {
         {/* Copyright */}
         <div className="border-t border-slate-700 pt-8 text-center">
           <p className="text-slate-400">
-            © {new Date().getFullYear()} SupHelp Geo. Todos os direitos reservados.
+            © {new Date().getFullYear()} {config.siteName}. Todos os direitos reservados.
           </p>
         </div>
       </div>
