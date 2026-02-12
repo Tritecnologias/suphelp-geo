@@ -445,27 +445,30 @@ const AdminPage: React.FC = () => {
         
         console.log('Configurações carregadas:', response);
         
+        // A resposta vem em response.data (não response diretamente)
+        const config = response.data || response;
+        
         // Extrair valores do formato do backend (cada campo tem .value)
-        if (response.header) {
+        if (config.header) {
           setSiteConfig(prev => ({
             ...prev,
-            siteName: response.header.site_name?.value || prev.siteName,
-            slogan: response.header.slogan?.value || prev.slogan
+            siteName: config.header.site_name?.value || prev.siteName,
+            slogan: config.header.slogan?.value || prev.slogan
           }));
         }
         
-        if (response.hero) {
+        if (config.hero) {
           setSiteConfig(prev => ({
             ...prev,
-            description: response.hero.description?.value || prev.description
+            description: config.hero.description?.value || prev.description
           }));
         }
         
-        if (response.footer) {
+        if (config.footer) {
           setSiteConfig(prev => ({
             ...prev,
-            email: response.footer.contact_email?.value || prev.email,
-            phone: response.footer.contact_phone?.value || prev.phone
+            email: config.footer.contact_email?.value || prev.email,
+            phone: config.footer.contact_phone?.value || prev.phone
           }));
         }
       } catch (error) {
