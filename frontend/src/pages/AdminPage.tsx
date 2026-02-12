@@ -1129,8 +1129,9 @@ const AdminPage: React.FC = () => {
           <div className="space-y-6">
             {/* Editor CMS Completo */}
             <CMSEditor onSave={() => {
-              // Recarregar configurações globais após salvar
-              window.location.reload();
+              // Apenas mostrar mensagem de sucesso, sem recarregar a página
+              setMessage('✅ Configurações salvas! Recarregue a página para ver as mudanças na landing page.');
+              setTimeout(() => setMessage(''), 5000);
             }} />
 
             {/* Upload de Logo Separado */}
