@@ -30,6 +30,16 @@ interface SiteConfig {
       text?: string;
     }>;
   };
+  pricing?: {
+    title?: string;
+    subtitle?: string;
+    plans?: Array<{
+      name?: string;
+      price?: string;
+      period?: string;
+      description?: string;
+    }>;
+  };
 }
 
 interface SiteConfigContextType {
@@ -70,7 +80,7 @@ export const SiteConfigProvider: React.FC<SiteConfigProviderProps> = ({ children
       const data = await response.json();
       
       if (data.success && data.data) {
-        const { header, hero, footer, features } = data.data;
+        const { header, hero, footer, features, pricing } = data.data;
         
         setConfig({
           siteName: header?.site_name?.value || defaultConfig.siteName,
@@ -99,6 +109,16 @@ export const SiteConfigProvider: React.FC<SiteConfigProviderProps> = ({ children
               icon: features?.[`card_${i}_icon`]?.value,
               title: features?.[`card_${i}_title`]?.value,
               text: features?.[`card_${i}_text`]?.value
+            }))
+          },
+          pricing: {
+            title: pricing?.title?.value,
+            subtitle: pricing?.subtitle?.value,
+            plans: [1, 2, 3].map(i => ({
+              name: pricing?.[`plan_${i}_name`]?.value,
+              price: pricing?.[`plan_${i}_price`]?.value,
+              period: pricing?.[`plan_${i}_period`]?.value,
+              description: pricing?.[`plan_${i}_description`]?.value
             }))
           }
         });

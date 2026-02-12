@@ -1,12 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Check, X } from 'lucide-react';
+import { useSiteConfig } from '../contexts/SiteConfigContext';
 
 const Pricing: React.FC = () => {
-  const plans = [
+  const { config } = useSiteConfig();
+
+  const defaultPlans = [
     {
       name: 'Básico',
-      price: 49,
+      price: '49',
+      period: '/mês',
       description: 'Ideal para pequenos negócios',
       features: [
         { name: '100 buscas por mês', included: true },
@@ -20,7 +24,8 @@ const Pricing: React.FC = () => {
     },
     {
       name: 'Profissional',
-      price: 149,
+      price: '149',
+      period: '/mês',
       description: 'Para empresas em crescimento',
       features: [
         { name: '1.000 buscas por mês', included: true },
@@ -34,7 +39,8 @@ const Pricing: React.FC = () => {
     },
     {
       name: 'Enterprise',
-      price: 499,
+      price: '499',
+      period: '/mês',
       description: 'Para grandes organizações',
       features: [
         { name: 'Buscas ilimitadas', included: true },
@@ -50,15 +56,26 @@ const Pricing: React.FC = () => {
     }
   ];
 
+  // Usar configurações do banco ou valores padrão
+  const plans = config.pricing?.plans && config.pricing.plans.length > 0 && config.pricing.plans[0].name
+    ? config.pricing.plans.map((plan, index) => ({
+        ...defaultPlans[index],
+        name: plan.name || defaultPlans[index].name,
+        price: plan.price || defaultPlans[index].price,
+        period: plan.period || defaultPlans[index].period,
+        description: plan.description || defaultPlans[index].description
+      }))
+    : defaultPlans;
+
   return (
     <section id="pricing" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-slate-800 mb-4">
-            Escolha Seu Plano
+            {config.pricing?.title || 'Escolha Seu Plano'}
           </h2>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            Planos flexíveis para todas as necessidades
+            {config.pricing?.subtitle || 'Planos flexíveis para todas as necessidades'}
           </p>
         </div>
 
@@ -86,11 +103,10 @@ const Pricing: React.FC = () => {
                   {plan.description}
                 </p>
                 <div className="flex items-baseline justify-center gap-2">
-                  <span className="text-slate-500">R$</span>
                   <span className="text-5xl font-bold text-slate-800">
                     {plan.price}
                   </span>
-                  <span className="text-slate-500">/mês</span>
+                  <span className="text-slate-500">{plan.period}</span>
                 </div>
               </div>
 
