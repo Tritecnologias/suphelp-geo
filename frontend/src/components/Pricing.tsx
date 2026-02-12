@@ -12,8 +12,8 @@ const Pricing: React.FC = () => {
       price: '49',
       period: '/mês',
       description: 'Ideal para pequenos negócios',
-      featuresIncluded: '✓ 100 buscas por mês\n✓ Exportação Excel\n✓ Exportação PDF\n✓ Suporte por email',
-      featuresExcluded: '✗ API Access\n✗ Relatórios personalizados',
+      featuresIncluded: '100 buscas por mês\nExportação Excel\nExportação PDF\nSuporte por email',
+      featuresExcluded: 'API Access\nRelatórios personalizados',
       popular: false
     },
     {
@@ -21,7 +21,7 @@ const Pricing: React.FC = () => {
       price: '149',
       period: '/mês',
       description: 'Para empresas em crescimento',
-      featuresIncluded: '✓ 1.000 buscas por mês\n✓ Exportação Excel\n✓ Exportação PDF\n✓ Suporte prioritário\n✓ API Access\n✓ Relatórios personalizados',
+      featuresIncluded: '1.000 buscas por mês\nExportação Excel\nExportação PDF\nSuporte prioritário\nAPI Access\nRelatórios personalizados',
       featuresExcluded: '',
       popular: true
     },
@@ -30,7 +30,7 @@ const Pricing: React.FC = () => {
       price: '499',
       period: '/mês',
       description: 'Para grandes organizações',
-      featuresIncluded: '✓ Buscas ilimitadas\n✓ Exportação Excel\n✓ Exportação PDF\n✓ Suporte 24/7\n✓ API Access completo\n✓ Relatórios personalizados\n✓ Integração customizada\n✓ Treinamento dedicado',
+      featuresIncluded: 'Buscas ilimitadas\nExportação Excel\nExportação PDF\nSuporte 24/7\nAPI Access completo\nRelatórios personalizados\nIntegração customizada\nTreinamento dedicado',
       featuresExcluded: '',
       popular: false
     }
@@ -43,7 +43,8 @@ const Pricing: React.FC = () => {
     // Features incluídas
     if (included) {
       included.split('\n').forEach(line => {
-        const text = line.replace(/^[✓✔☑]/g, '').trim();
+        // Remove símbolos comuns no início: ✓, ✔, ☑, +, *
+        const text = line.replace(/^[✓✔☑+*\s]+/g, '').trim();
         if (text) {
           features.push({ name: text, included: true });
         }
@@ -53,7 +54,8 @@ const Pricing: React.FC = () => {
     // Features excluídas
     if (excluded) {
       excluded.split('\n').forEach(line => {
-        const text = line.replace(/^[✗✘☒×]/g, '').trim();
+        // Remove símbolos comuns no início: ✗, ✘, ☒, ×, -, x
+        const text = line.replace(/^[✗✘☒×\-x\s]+/g, '').trim();
         if (text) {
           features.push({ name: text, included: false });
         }

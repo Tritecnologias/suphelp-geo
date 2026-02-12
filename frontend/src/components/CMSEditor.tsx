@@ -399,32 +399,32 @@ const CMSEditor: React.FC<CMSEditorProps> = ({ onSave }) => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Features Incluídas (uma por linha, use ✓ no início)
+                  Features Incluídas (uma por linha)
                 </label>
                 <textarea
                   rows={4}
                   value={getValue('pricing', `plan_${idx + 1}_features_included`)}
                   onChange={(e) => handleInputChange('pricing', `plan_${idx + 1}_features_included`, e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-                  placeholder="✓ 100 buscas por mês&#10;✓ Exportação Excel&#10;✓ Exportação PDF"
+                  placeholder="100 buscas por mês&#10;Exportação Excel&#10;Exportação PDF&#10;Suporte por email"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Digite uma feature por linha. Use ✓ no início para check verde.
+                  Digite uma feature por linha. Pode começar com +, *, ✓ ou nada.
                 </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Features Não Incluídas (uma por linha, use ✗ no início)
+                  Features Não Incluídas (uma por linha)
                 </label>
                 <textarea
                   rows={3}
                   value={getValue('pricing', `plan_${idx + 1}_features_excluded`)}
                   onChange={(e) => handleInputChange('pricing', `plan_${idx + 1}_features_excluded`, e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-                  placeholder="✗ API Access&#10;✗ Relatórios personalizados"
+                  placeholder="API Access&#10;Relatórios personalizados"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Digite uma feature por linha. Use ✗ no início para X vermelho.
+                  Digite uma feature por linha. Pode começar com -, x, ✗ ou nada.
                 </p>
               </div>
             </div>
