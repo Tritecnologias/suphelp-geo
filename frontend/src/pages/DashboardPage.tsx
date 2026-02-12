@@ -414,23 +414,6 @@ const DashboardPage: React.FC = () => {
         {/* Sidebar Esquerda */}
         <div className="w-[500px] bg-white shadow-lg overflow-y-auto flex-shrink-0">
           <div className="p-6 space-y-6">
-            {/* Welcome */}
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
-                  <span className="text-xl">👋</span>
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-slate-800">
-                    Olá, {user?.email?.split('@')[0]}!
-                  </h1>
-                  <p className="text-slate-600 text-sm">
-                    Encontre estabelecimentos próximos
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* Stats Cards */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
