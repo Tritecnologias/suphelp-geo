@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { adminService } from '../services/admin';
 import { useSiteConfig } from '../contexts/SiteConfigContext';
+import CMSEditor from '../components/CMSEditor';
 
 interface Place {
   id: number;
@@ -1126,143 +1127,51 @@ const AdminPage: React.FC = () => {
         {/* Settings Section */}
         {activeSection === 'settings' && (
           <div className="space-y-6">
-            {/* Mensagem de feedback */}
-            {message && (
-              <div className={`p-4 rounded-lg ${message.includes('✅') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                {message}
-              </div>
-            )}
+            {/* Editor CMS Completo */}
+            <CMSEditor onSave={() => {
+              // Recarregar configurações globais após salvar
+              window.location.reload();
+            }} />
 
-            {/* Configurações da Landing Page */}
+            {/* Upload de Logo Separado */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Globe size={20} />
-                Configurações da Landing Page
+                <Upload size={20} />
+                Upload de Logotipo
               </h3>
               
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nome do Site
-                  </label>
+              <div className="flex items-center gap-4">
+                {globalConfig.logoUrl ? (
+                  <img src={globalConfig.logoUrl} alt="Logo atual" className="w-20 h-20 object-contain border border-gray-200 rounded-lg p-2" />
+                ) : (
+                  <div className="w-20 h-20 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center text-white">
+                    <Globe size={32} />
+                  </div>
+                )}
+                <div className="flex-1">
                   <input
-                    type="text"
-                    value={siteConfig.siteName}
-                    onChange={(e) => setSiteConfig({...siteConfig, siteName: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Ex: SupHelp Geo"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setSiteConfig({...siteConfig, logo: e.target.files?.[0] || null})}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
+                  <p className="text-xs text-gray-500 mt-1">PNG, JPG ou SVG (máx. 2MB)</p>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Slogan
-                  </label>
-                  <input
-                    type="text"
-                    value={siteConfig.slogan}
-                    onChange={(e) => setSiteConfig({...siteConfig, slogan: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Ex: Geolocalização Inteligente"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Descrição Principal
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={siteConfig.description}
-                    onChange={(e) => setSiteConfig({...siteConfig, description: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Descrição que aparece na página inicial"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Logotipo
-                  </label>
-                  <div className="flex items-center gap-4">
-                    {globalConfig.logoUrl ? (
-                      <img src={globalConfig.logoUrl} alt="Logo atual" className="w-20 h-20 object-contain border border-gray-200 rounded-lg p-2" />
-                    ) : (
-                      <div className="w-20 h-20 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center text-white">
-                        <Globe size={32} />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setSiteConfig({...siteConfig, logo: e.target.files?.[0] || null})}
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">PNG, JPG ou SVG (máx. 2MB)</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email de Contato
-                    </label>
-                    <input
-                      type="email"
-                      value={siteConfig.email}
-                      onChange={(e) => setSiteConfig({...siteConfig, email: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Telefone de Contato
-                    </label>
-                    <input
-                      type="tel"
-                      value={siteConfig.phone}
-                      onChange={(e) => setSiteConfig({...siteConfig, phone: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button 
-                    onClick={handleSaveSiteConfig}
-                    disabled={loading}
-                    className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <>
-                        <RefreshCw size={18} className="animate-spin" />
-                        Salvando...
-                      </>
-                    ) : (
-                      <>
-                        <Save size={18} />
-                        Salvar Alterações
-                      </>
-                    )}
-                  </button>
-                  <button 
-                    onClick={() => setSiteConfig({
-                      siteName: 'SupHelp Geo',
-                      slogan: 'Geolocalização Inteligente',
-                      description: 'Encontre estabelecimentos próximos com precisão e facilidade',
-                      email: 'contato@suphelp.com.br',
-                      phone: '(11) 9999-9999',
-                      logo: null
-                    })}
-                    className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-                  >
-                    Cancelar
-                  </button>
-                </div>
+                <button 
+                  onClick={handleSaveSiteConfig}
+                  disabled={loading || !siteConfig.logo}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {loading ? <RefreshCw size={16} className="animate-spin" /> : <Upload size={16} />}
+                  Upload
+                </button>
               </div>
+              
+              {message && (
+                <div className={`mt-4 p-3 rounded-lg text-sm ${message.includes('✅') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  {message}
+                </div>
+              )}
             </div>
 
             {/* Informações do Sistema */}
