@@ -6,7 +6,7 @@ import {
   BarChart3, Database, Shield, Key, UserPlus, CheckCircle, AlertCircle,
   Search, Download, FileText, Phone, Star, Eye, Save, RefreshCw, Palette
 } from 'lucide-react';
-import { AdminService } from '../services/admin';
+import { adminService } from '../services/admin';
 
 interface Place {
   id: number;
@@ -392,7 +392,7 @@ const AdminPage: React.FC = () => {
         { section: 'footer', key: 'contact_phone', value: siteConfig.phone, type: 'text' }
       ];
 
-      await AdminService.saveSiteConfig(configs);
+      await adminService.saveSiteConfig(configs);
 
       setMessage('✅ Configurações salvas com sucesso!');
       setTimeout(() => setMessage(''), 3000);
@@ -408,7 +408,7 @@ const AdminPage: React.FC = () => {
   useEffect(() => {
     const loadSiteConfig = async () => {
       try {
-        const config = await AdminService.getSiteConfig();
+        const config = await adminService.getSiteConfig();
         
         // Extrair valores do formato do backend
         if (config.header) {
