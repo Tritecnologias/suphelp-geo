@@ -267,6 +267,23 @@ export class AdminService {
       ]
     };
   }
+  // === CMS / SITE CONFIG ===
+  
+  // Obter configurações do site
+  async getSiteConfig(section?: string): Promise<any> {
+    const endpoint = section ? `/cms/config?section=${section}` : '/cms/config';
+    return apiClient.get<any>(endpoint);
+  }
+
+  // Salvar configurações do site
+  async saveSiteConfig(configs: Array<{ section: string; key: string; value: string; type: string }>): Promise<ApiResponse<any>> {
+    return apiClient.post<ApiResponse<any>>('/cms/config', { configs });
+  }
+
+  // Atualizar configuração específica
+  async updateSiteConfig(section: string, key: string, value: string, type: string = 'text'): Promise<ApiResponse<any>> {
+    return apiClient.put<ApiResponse<any>>('/cms/config', { section, key, value, type });
+  }
 }
 
 export const adminService = new AdminService();

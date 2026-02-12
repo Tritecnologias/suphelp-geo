@@ -383,12 +383,16 @@ const AdminPage: React.FC = () => {
       setLoading(true);
       setMessage('');
 
-      // Aqui você implementaria a chamada à API para salvar no banco
-      // Por enquanto, vou simular o salvamento
-      console.log('Salvando configurações:', siteConfig);
+      // Preparar dados para salvar no formato do backend
+      const configs = [
+        { section: 'header', key: 'site_name', value: siteConfig.siteName, type: 'text' },
+        { section: 'header', key: 'slogan', value: siteConfig.slogan, type: 'text' },
+        { section: 'hero', key: 'description', value: siteConfig.description, type: 'text' },
+        { section: 'footer', key: 'contact_email', value: siteConfig.email, type: 'text' },
+        { section: 'footer', key: 'contact_phone', value: siteConfig.phone, type: 'text' }
+      ];
 
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await AdminService.saveSiteConfig(configs);
 
       setMessage('✅ Configurações salvas com sucesso!');
       setTimeout(() => setMessage(''), 3000);
@@ -399,6 +403,45 @@ const AdminPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Carregar configurações do site ao montar o componente
+  useEffect(() => {
+    const loadSiteConfig = async () => {
+      try {
+        const config = await AdminService.getSiteConfig();
+        
+        // Extrair valores do formato do backend
+        if (config.header) {
+          setSiteConfig(prev => ({
+            ...prev,
+            siteName: config.header.site_name || prev.siteName,
+            slogan: config.header.slogan || prev.slogan
+          }));
+        }
+        
+        if (config.hero) {
+          setSiteConfig(prev => ({
+            ...prev,
+            description: config.hero.description || prev.description
+          }));
+        }
+        
+        if (config.footer) {
+          setSiteConfig(prev => ({
+            ...prev,
+            email: config.footer.contact_email || prev.email,
+            phone: config.footer.contact_phone || prev.phone
+          }));
+        }
+      } catch (error) {
+        console.error('Erro ao carregar configurações:', error);
+      }
+    };
+
+    if (activeSection === 'settings') {
+      loadSiteConfig();
+    }
+  }, [activeSection]);
 
   // Função para mudar seção ativa
   const changeSection = (section: string) => {
