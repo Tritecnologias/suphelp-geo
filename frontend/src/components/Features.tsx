@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Download, FileText, Target, Phone, Zap } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { useSiteConfig } from '../contexts/SiteConfigContext';
 
 const Features: React.FC = () => {
@@ -7,22 +7,22 @@ const Features: React.FC = () => {
 
   const defaultFeatures = [
     {
-      icon: '📍',
+      icon: 'MapPin',
       title: 'Busca por Endereço',
       description: 'Digite qualquer endereço e encontre estabelecimentos próximos automaticamente'
     },
     {
-      icon: '📥',
+      icon: 'Download',
       title: 'Exportação Excel',
       description: 'Exporte todos os dados em formato CSV compatível com Excel e Google Sheets'
     },
     {
-      icon: '📄',
+      icon: 'FileText',
       title: 'Relatórios PDF',
       description: 'Gere relatórios profissionais em PDF prontos para impressão'
     },
     {
-      icon: '🎯',
+      icon: 'Target',
       title: 'Busca por Raio',
       description: 'Defina o raio de busca em metros e encontre tudo ao redor'
     }
@@ -31,11 +31,28 @@ const Features: React.FC = () => {
   // Usar configurações do banco ou valores padrão
   const features = config.features?.cards && config.features.cards.length > 0
     ? config.features.cards.map(card => ({
-        icon: card.icon || '📍',
+        icon: card.icon || 'MapPin',
         title: card.title || '',
         description: card.text || ''
       }))
     : defaultFeatures;
+
+  // Função para renderizar ícone (Lucide ou emoji)
+  const renderIcon = (iconName: string) => {
+    // Se for um emoji (1-2 caracteres), renderizar como texto
+    if (iconName.length <= 2) {
+      return <span className="text-3xl">{iconName}</span>;
+    }
+    
+    // Tentar renderizar como ícone Lucide
+    const IconComponent = (LucideIcons as any)[iconName];
+    if (IconComponent) {
+      return <IconComponent size={32} />;
+    }
+    
+    // Fallback para MapPin se o ícone não existir
+    return <LucideIcons.MapPin size={32} />;
+  };
 
   return (
     <section id="features" className="py-20 bg-white">
@@ -55,8 +72,8 @@ const Features: React.FC = () => {
               key={index}
               className="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
             >
-              <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center text-white mb-6 shadow-lg text-3xl">
-                {feature.icon}
+              <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center text-white mb-6 shadow-lg">
+                {renderIcon(feature.icon)}
               </div>
               <h3 className="text-xl font-bold text-slate-800 mb-3">
                 {feature.title}
