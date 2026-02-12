@@ -441,29 +441,31 @@ const AdminPage: React.FC = () => {
   useEffect(() => {
     const loadSiteConfig = async () => {
       try {
-        const config = await adminService.getSiteConfig();
+        const response = await adminService.getSiteConfig();
         
-        // Extrair valores do formato do backend
-        if (config.header) {
+        console.log('Configurações carregadas:', response);
+        
+        // Extrair valores do formato do backend (cada campo tem .value)
+        if (response.header) {
           setSiteConfig(prev => ({
             ...prev,
-            siteName: config.header.site_name || prev.siteName,
-            slogan: config.header.slogan || prev.slogan
+            siteName: response.header.site_name?.value || prev.siteName,
+            slogan: response.header.slogan?.value || prev.slogan
           }));
         }
         
-        if (config.hero) {
+        if (response.hero) {
           setSiteConfig(prev => ({
             ...prev,
-            description: config.hero.description || prev.description
+            description: response.hero.description?.value || prev.description
           }));
         }
         
-        if (config.footer) {
+        if (response.footer) {
           setSiteConfig(prev => ({
             ...prev,
-            email: config.footer.contact_email || prev.email,
-            phone: config.footer.contact_phone || prev.phone
+            email: response.footer.contact_email?.value || prev.email,
+            phone: response.footer.contact_phone?.value || prev.phone
           }));
         }
       } catch (error) {
