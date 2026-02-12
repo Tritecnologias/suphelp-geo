@@ -1005,8 +1005,107 @@ const AdminPage: React.FC = () => {
         {/* Settings Section */}
         {activeSection === 'settings' && (
           <div className="space-y-6">
+            {/* Configurações da Landing Page */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold mb-4">Configurações do Sistema</h3>
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Globe size={20} />
+                Configurações da Landing Page
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nome do Site
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="SupHelp Geo"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Ex: SupHelp Geo"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Slogan
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Geolocalização Inteligente"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Ex: Geolocalização Inteligente"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Descrição Principal
+                  </label>
+                  <textarea
+                    rows={3}
+                    defaultValue="Encontre estabelecimentos próximos com precisão e facilidade"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Descrição que aparece na página inicial"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Logotipo
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center text-white">
+                      <Globe size={32} />
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">PNG, JPG ou SVG (máx. 2MB)</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email de Contato
+                    </label>
+                    <input
+                      type="email"
+                      defaultValue="contato@suphelp.com.br"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Telefone de Contato
+                    </label>
+                    <input
+                      type="tel"
+                      defaultValue="(11) 9999-9999"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    Salvar Alterações
+                  </button>
+                  <button className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Informações do Sistema */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Informações do Sistema</h3>
               <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                 <strong>✅ API Online</strong><br />
                 Servidor funcionando corretamente
