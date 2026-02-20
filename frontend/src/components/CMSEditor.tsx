@@ -63,6 +63,12 @@ const CMSEditor: React.FC<CMSEditorProps> = ({ onSave }) => {
       setMessage('✅ Configurações salvas com sucesso!');
       setTimeout(() => setMessage(''), 3000);
       
+      // Recarregar configurações do contexto global
+      if (window.location.pathname === '/admin') {
+        // Disparar evento customizado para recarregar o contexto
+        window.dispatchEvent(new Event('cms-config-updated'));
+      }
+      
       if (onSave) onSave();
     } catch (error) {
       console.error('Erro ao salvar:', error);

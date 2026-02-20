@@ -1119,8 +1119,9 @@ const AdminPage: React.FC = () => {
           <div className="space-y-6">
             {/* Editor CMS Completo */}
             <CMSEditor onSave={() => {
-              // Apenas mostrar mensagem de sucesso, sem recarregar a página
-              setMessage('✅ Configurações salvas! Recarregue a página para ver as mudanças na landing page.');
+              // Recarregar configurações do contexto global
+              window.dispatchEvent(new Event('cms-config-updated'));
+              setMessage('✅ Configurações salvas! As mudanças já estão visíveis.');
               setTimeout(() => setMessage(''), 5000);
             }} />
 
