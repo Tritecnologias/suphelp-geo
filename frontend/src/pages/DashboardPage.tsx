@@ -497,11 +497,15 @@ const DashboardPage: React.FC = () => {
                       <button
                         key={category}
                         type="button"
-                        onClick={() => toggleCategory(category)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleCategory(category);
+                        }}
+                        className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all touch-manipulation active:scale-95 ${
                           selectedCategories.includes(category)
                             ? 'bg-blue-500 text-white shadow-md'
-                            : 'bg-white text-slate-700 border border-slate-300 hover:border-blue-300'
+                            : 'bg-white text-slate-700 border-2 border-slate-300 hover:border-blue-300 active:border-blue-400'
                         }`}
                       >
                         {category}
@@ -533,16 +537,20 @@ const DashboardPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                   <button
                     type="button"
-                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                    className="bg-white border border-slate-300 text-slate-700 px-4 py-2.5 sm:py-3 rounded-lg font-semibold text-sm transition-all hover:bg-slate-50"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowAdvancedFilters(!showAdvancedFilters);
+                    }}
+                    className="bg-white border-2 border-slate-300 text-slate-700 px-4 py-3 rounded-lg font-semibold text-sm transition-all hover:bg-slate-50 active:bg-slate-100 touch-manipulation"
                   >
-                    Filtros Avançados
+                    {showAdvancedFilters ? '▲ Ocultar Filtros' : '▼ Filtros Avançados'}
                   </button>
 
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2.5 sm:py-3 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-3 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95 touch-manipulation"
                   >
                     {isLoading ? (
                       <>
@@ -558,8 +566,12 @@ const DashboardPage: React.FC = () => {
                 {hasResults && (
                   <button
                     type="button"
-                    onClick={clearResults}
-                    className="w-full bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm transition-all"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      clearResults();
+                    }}
+                    className="w-full bg-slate-500 hover:bg-slate-600 text-white px-4 py-2.5 rounded-lg text-sm transition-all active:bg-slate-700 touch-manipulation"
                   >
                     Limpar Resultados
                   </button>
