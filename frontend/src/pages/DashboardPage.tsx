@@ -579,10 +579,10 @@ const DashboardPage: React.FC = () => {
 
                 {/* Filtros Avançados */}
                 {showAdvancedFilters && (
-                  <div className="bg-white p-4 rounded-lg border border-slate-200 space-y-3">
+                  <div className="bg-white p-3 sm:p-4 rounded-lg border-2 border-blue-200 space-y-3 animate-in slide-in-from-top duration-200">
                     <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-                      <Filter size={16} />
-                      Filtros Avançados
+                      <Filter size={16} className="text-blue-600" />
+                      <span className="text-blue-600">Filtros Avançados</span>
                     </h3>
                     <div className="space-y-3">
                       <div>
@@ -592,7 +592,7 @@ const DashboardPage: React.FC = () => {
                         <select
                           value={filters.category}
                           onChange={(e) => setFilters({...filters, category: e.target.value})}
-                          className="w-full px-2 py-1.5 border border-slate-300 rounded text-xs"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         >
                           <option value="">Todas</option>
                           <option value="restaurant">Restaurante</option>
@@ -611,7 +611,7 @@ const DashboardPage: React.FC = () => {
                         <select
                           value={filters.minRating}
                           onChange={(e) => setFilters({...filters, minRating: e.target.value})}
-                          className="w-full px-2 py-1.5 border border-slate-300 rounded text-xs"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         >
                           <option value="">Qualquer</option>
                           <option value="3">3+ estrelas</option>
@@ -621,14 +621,14 @@ const DashboardPage: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="flex items-center gap-2 cursor-pointer">
+                        <label className="flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-50 rounded">
                           <input
                             type="checkbox"
                             checked={filters.hasPhone}
                             onChange={(e) => setFilters({...filters, hasPhone: e.target.checked})}
-                            className="w-3 h-3 text-blue-600"
+                            className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                           />
-                          <span className="text-xs text-slate-700">📞 Apenas com telefone</span>
+                          <span className="text-sm text-slate-700">📞 Apenas com telefone</span>
                         </label>
                       </div>
                     </div>
