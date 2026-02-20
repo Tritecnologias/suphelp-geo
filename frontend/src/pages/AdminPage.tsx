@@ -493,9 +493,9 @@ const AdminPage: React.FC = () => {
     }
   };
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
       {/* Sidebar */}
-      <div className="w-64 bg-gradient-to-b from-blue-600 to-purple-700 text-white p-6">
+      <div className="hidden lg:block lg:w-64 bg-gradient-to-b from-blue-600 to-purple-700 text-white p-6">
         <div className="mb-8 flex items-center gap-3">
           {globalConfig.logoUrl ? (
             <img src={globalConfig.logoUrl} alt={globalConfig.siteName} className="w-10 h-10 object-contain" />
@@ -544,8 +544,56 @@ const AdminPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Mobile Navigation */}
+      <div className="lg:hidden bg-gradient-to-r from-blue-600 to-purple-700 text-white p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            {globalConfig.logoUrl ? (
+              <img src={globalConfig.logoUrl} alt={globalConfig.siteName} className="w-8 h-8 object-contain" />
+            ) : (
+              <span className="text-2xl">🗺️</span>
+            )}
+            <div>
+              <h1 className="text-lg font-bold">{globalConfig.siteName}</h1>
+              <p className="text-blue-200 text-xs">Admin</p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="p-2 hover:bg-white/10 rounded-lg"
+          >
+            <LogOut size={20} />
+          </button>
+        </div>
+        
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {[
+            { id: 'dashboard', icon: BarChart3, label: 'Dashboard' },
+            { id: 'places', icon: MapPin, label: 'Lugares' },
+            { id: 'search', icon: Search, label: 'Buscar' },
+            { id: 'import', icon: Upload, label: 'Importar' },
+            { id: 'enrich', icon: Phone, label: 'Enriquecer' },
+            { id: 'admins', icon: Users, label: 'Admins' },
+            { id: 'settings', icon: Settings, label: 'Config' }
+          ].map(item => (
+            <button
+              key={item.id}
+              onClick={() => changeSection(item.id)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg whitespace-nowrap text-sm transition-colors ${
+                activeSection === item.id 
+                  ? 'bg-white/20 text-white' 
+                  : 'bg-white/10 text-blue-100 hover:bg-white/15'
+              }`}
+            >
+              <item.icon size={16} />
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Main Content */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-4 lg:p-8 overflow-auto">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
           <div className="flex justify-between items-center">
