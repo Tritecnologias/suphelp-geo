@@ -410,39 +410,39 @@ const DashboardPage: React.FC = () => {
       </header>
 
       {/* Layout: Sidebar + Mapa */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         {/* Sidebar Esquerda */}
-        <div className="w-[500px] bg-white shadow-lg overflow-y-auto flex-shrink-0">
-          <div className="p-6 space-y-6">
+        <div className="w-full lg:w-[500px] bg-white shadow-lg overflow-y-auto flex-shrink-0">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 sm:p-4 rounded-xl border border-blue-200">
                 <div className="flex items-center gap-2 mb-1">
-                  <Search size={16} className="text-blue-600" />
+                  <Search size={14} className="text-blue-600 sm:w-4 sm:h-4" />
                   <p className="text-xs font-medium text-blue-700 uppercase">Buscas</p>
                 </div>
-                <p className="text-2xl font-bold text-blue-900">{userStats.searches_used}</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-900">{userStats.searches_used}</p>
                 <p className="text-xs text-blue-600">de {userStats.searches_limit}</p>
               </div>
 
-              <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+              <div className="bg-gradient-to-br from-green-50 to-green-100 p-3 sm:p-4 rounded-xl border border-green-200">
                 <div className="flex items-center gap-2 mb-1">
-                  <MapPin size={16} className="text-green-600" />
+                  <MapPin size={14} className="text-green-600 sm:w-4 sm:h-4" />
                   <p className="text-xs font-medium text-green-700 uppercase">Resultados</p>
                 </div>
-                <p className="text-2xl font-bold text-green-900">{totalResults}</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-900">{totalResults}</p>
                 <p className="text-xs text-green-600">encontrados</p>
               </div>
             </div>
 
             {/* Search Form */}
-            <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-              <div className="flex items-center gap-2 mb-4">
-                <Filter size={18} className="text-blue-600" />
-                <h2 className="text-lg font-bold text-slate-800">Filtros</h2>
+            <div className="bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-200">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <Filter size={16} className="text-blue-600 sm:w-[18px] sm:h-[18px]" />
+                <h2 className="text-base sm:text-lg font-bold text-slate-800">Filtros</h2>
               </div>
               
-              <form onSubmit={handleSearch} className="space-y-4">
+              <form onSubmit={handleSearch} className="space-y-3 sm:space-y-4">
                 {/* Cidade */}
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">
@@ -458,7 +458,7 @@ const DashboardPage: React.FC = () => {
                 </div>
 
                 {/* Bairro e Palavra-chave */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
                       Bairro
@@ -529,11 +529,11 @@ const DashboardPage: React.FC = () => {
                 </div>
 
                 {/* Botões */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                   <button
                     type="button"
                     onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                    className="bg-white border border-slate-300 text-slate-700 px-4 py-3 rounded-lg font-semibold text-sm transition-all hover:bg-slate-50"
+                    className="bg-white border border-slate-300 text-slate-700 px-4 py-2.5 sm:py-3 rounded-lg font-semibold text-sm transition-all hover:bg-slate-50"
                   >
                     Filtros Avançados
                   </button>
@@ -541,7 +541,7 @@ const DashboardPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-3 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2.5 sm:py-3 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {isLoading ? (
                       <>
@@ -637,20 +637,20 @@ const DashboardPage: React.FC = () => {
 
             {/* Export Buttons */}
             {hasResults && (
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button 
                   onClick={handleExportExcel}
-                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all"
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all"
                 >
-                  <Download size={16} />
-                  Excel
+                  <Download size={14} className="sm:w-4 sm:h-4" />
+                  <span>Excel</span>
                 </button>
                 <button 
                   onClick={handleExportPDF}
-                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all"
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all"
                 >
-                  <FileText size={16} />
-                  PDF
+                  <FileText size={14} className="sm:w-4 sm:h-4" />
+                  <span>PDF</span>
                 </button>
               </div>
             )}
@@ -717,7 +717,8 @@ const DashboardPage: React.FC = () => {
         </div>
 
         {/* Mapa Direita */}
-        <div className="flex-1 relative bg-gray-100">
+        {/* Mapa */}
+        <div className="flex-1 relative bg-gray-100 h-[400px] lg:h-auto">
           {!googleMapsLoaded && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
               <div className="text-center">
@@ -730,8 +731,8 @@ const DashboardPage: React.FC = () => {
           <div ref={mapRef} className="w-full h-full" />
           
           {hasResults && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white px-4 py-2 rounded-full shadow-lg">
-              <p className="text-sm text-gray-700 font-semibold">
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-lg">
+              <p className="text-xs sm:text-sm text-gray-700 font-semibold">
                 📍 {totalResults} {totalResults === 1 ? 'local encontrado' : 'locais encontrados'}
               </p>
             </div>
