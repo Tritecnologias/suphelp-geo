@@ -37,7 +37,6 @@ const DashboardPage: React.FC = () => {
     hasResults,
     totalResults 
   } = usePlaces();
-  
   const [searchAddress, setSearchAddress] = useState('');
   const [searchCity, setSearchCity] = useState('');
   const [searchNeighborhood, setSearchNeighborhood] = useState('');
@@ -90,6 +89,16 @@ const DashboardPage: React.FC = () => {
     };
 
     loadUserStats();
+  }, []);
+
+  // Garantir que filtros avançados comecem fechados
+  useEffect(() => {
+    console.log('🔍 Estado showAdvancedFilters:', showAdvancedFilters);
+    // Forçar reset no mount
+    if (showAdvancedFilters) {
+      console.log('⚠️ Resetando showAdvancedFilters para false');
+      setShowAdvancedFilters(false);
+    }
   }, []);
 
   // Carregar Google Maps API dinamicamente com chave do backend
@@ -540,7 +549,10 @@ const DashboardPage: React.FC = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      setShowAdvancedFilters(!showAdvancedFilters);
+                      console.log('🔘 Botão clicado! Estado atual:', showAdvancedFilters);
+                      const newState = !showAdvancedFilters;
+                      console.log('🔘 Novo estado:', newState);
+                      setShowAdvancedFilters(newState);
                     }}
                     className="bg-white border-2 border-slate-300 text-slate-700 px-4 py-3 rounded-lg font-semibold text-sm transition-all hover:bg-slate-50 active:bg-slate-100 touch-manipulation"
                   >
@@ -579,61 +591,65 @@ const DashboardPage: React.FC = () => {
 
                 {/* Filtros Avançados */}
                 {showAdvancedFilters && (
-                  <div className="bg-white p-3 sm:p-4 rounded-lg border-2 border-blue-200 space-y-3 animate-in slide-in-from-top duration-200">
-                    <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-                      <Filter size={16} className="text-blue-600" />
-                      <span className="text-blue-600">Filtros Avançados</span>
-                    </h3>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
-                          🏪 Categoria Específica
-                        </label>
-                        <select
-                          value={filters.category}
-                          onChange={(e) => setFilters({...filters, category: e.target.value})}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        >
-                          <option value="">Todas</option>
-                          <option value="restaurant">Restaurante</option>
-                          <option value="pharmacy">Farmácia</option>
-                          <option value="bank">Banco</option>
-                          <option value="hospital">Hospital</option>
-                          <option value="gas_station">Posto</option>
-                          <option value="supermarket">Supermercado</option>
-                        </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
-                          ⭐ Avaliação Mínima
-                        </label>
-                        <select
-                          value={filters.minRating}
-                          onChange={(e) => setFilters({...filters, minRating: e.target.value})}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        >
-                          <option value="">Qualquer</option>
-                          <option value="3">3+ estrelas</option>
-                          <option value="4">4+ estrelas</option>
-                          <option value="4.5">4.5+ estrelas</option>
-                        </select>
-                      </div>
+                  <>
+                    {console.log('✅ Renderizando Filtros Avançados')}
+                    <div className="bg-white p-3 sm:p-4 rounded-lg border-2 border-blue-200 space-y-3 animate-in slide-in-from-top duration-200">
+                      <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                        <Filter size={16} className="text-blue-600" />
+                        <span className="text-blue-600">Filtros Avançados</span>
+                      </h3>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">
+                            🏪 Categoria Específica
+                          </label>
+                          <select
+                            value={filters.category}
+                            onChange={(e) => setFilters({...filters, category: e.target.value})}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          >
+                            <option value="">Todas</option>
+                            <option value="restaurant">Restaurante</option>
+                            <option value="pharmacy">Farmácia</option>
+                            <option value="bank">Banco</option>
+                            <option value="hospital">Hospital</option>
+                            <option value="gas_station">Posto</option>
+                            <option value="supermarket">Supermercado</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">
+                            ⭐ Avaliação Mínima
+                          </label>
+                          <select
+                            value={filters.minRating}
+                            onChange={(e) => setFilters({...filters, minRating: e.target.value})}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          >
+                            <option value="">Qualquer</option>
+                            <option value="3">3+ estrelas</option>
+                            <option value="4">4+ estrelas</option>
+                            <option value="4.5">4.5+ estrelas</option>
+                          </select>
+                        </div>
 
-                      <div>
-                        <label className="flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-50 rounded">
-                          <input
-                            type="checkbox"
-                            checked={filters.hasPhone}
-                            onChange={(e) => setFilters({...filters, hasPhone: e.target.checked})}
-                            className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                          />
-                          <span className="text-sm text-slate-700">📞 Apenas com telefone</span>
-                        </label>
+                        <div>
+                          <label className="flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-50 rounded">
+                            <input
+                              type="checkbox"
+                              checked={filters.hasPhone}
+                              onChange={(e) => setFilters({...filters, hasPhone: e.target.checked})}
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-slate-700">📞 Apenas com telefone</span>
+                          </label>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </>
                 )}
+                {!showAdvancedFilters && console.log('❌ Filtros Avançados OCULTOS')}
               </form>
             </div>
 
