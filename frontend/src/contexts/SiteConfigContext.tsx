@@ -137,7 +137,9 @@ export const SiteConfigProvider: React.FC<SiteConfigProviderProps> = ({ children
 
   useEffect(() => {
     loadConfig();
-    
+  }, []);
+
+  useEffect(() => {
     // Escutar evento de atualização do CMS
     const handleConfigUpdate = () => {
       console.log('🔄 Recarregando configurações do CMS...');
