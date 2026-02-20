@@ -362,44 +362,45 @@ const DashboardPage: React.FC = () => {
     <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
       <header className="bg-white shadow-lg border-b border-slate-200 flex-shrink-0">
-        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+        <div className="max-w-full mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16 py-2">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-tr from-cyan-400 via-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                <Globe size={20} />
+            <Link to="/" className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-tr from-cyan-400 via-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                <Globe size={18} className="sm:w-5 sm:h-5" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-lg bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+              <div className="flex flex-col min-w-0">
+                <span className="font-bold text-base sm:text-lg bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent truncate">
                   SupHelp Geo
                 </span>
-                <span className="text-xs text-slate-500">Geolocalização Inteligente</span>
+                <span className="text-xs text-slate-500 truncate">Geolocalização</span>
               </div>
             </Link>
 
             {/* Navigation */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
               {user?.role === 'admin' && (
                 <Link 
                   to="/admin" 
-                  className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-all font-medium text-sm"
+                  className="flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-all font-medium text-xs sm:text-sm"
                 >
                   <Settings size={14} />
                   <span className="hidden sm:inline">Admin</span>
                 </Link>
               )}
-              <div className="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-full">
+              <div className="hidden sm:flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-full">
                 <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
                   {user?.email?.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs font-medium text-slate-700">{user?.email}</span>
+                  <span className="text-xs font-medium text-slate-700 truncate max-w-[120px]">{user?.email}</span>
                   <span className="text-xs text-cyan-600 font-semibold">{user?.plano || 'Básico'}</span>
                 </div>
               </div>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 text-slate-600 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50"
+                className="flex items-center gap-1 sm:gap-2 text-slate-600 hover:text-red-600 transition-colors p-1.5 sm:p-2 rounded-lg hover:bg-red-50"
+                title="Sair"
               >
                 <LogOut size={16} />
                 <span className="hidden sm:inline font-medium text-sm">Sair</span>
