@@ -480,10 +480,6 @@ const DashboardPage: React.FC = () => {
                 <Filter className="text-blue-600" size={20} />
                 <h3 className="text-base font-bold text-slate-800">Localização</h3>
               </div>
-              <div className="flex items-center gap-2 mb-5">
-                <Filter className="text-blue-600" size={20} />
-                <h3 className="text-base font-bold text-slate-800">Localização</h3>
-              </div>
 
               <form onSubmit={handleSearch} className="space-y-4">
                 {/* Estado */}
