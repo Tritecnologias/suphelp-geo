@@ -71,6 +71,11 @@ const DashboardPage: React.FC = () => {
     { id: 'Universidade', label: 'Universidade', icon: GraduationCap },
     { id: 'Academia', label: 'Academia', icon: Dumbbell }
   ];
+
+  const concorrentesOptions = [
+    { id: 'Supermercado', label: 'Supermercado', icon: ShoppingCart },
+    { id: 'Atacadão', label: 'Atacadão', icon: Store }
+  ];
   
   const estados = [
     'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 
