@@ -99,7 +99,7 @@ const AdminPage: React.FC = () => {
     loadDashboard();
   }, []);
 
-  const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
+  const showMessage = (msg: string, type: 'success' | 'error' | 'info' = 'success') => {
     setMessage(msg);
     setTimeout(() => setMessage(''), 5000);
   };
@@ -1058,20 +1058,42 @@ const AdminPage: React.FC = () => {
                   <div className="text-gray-500">Padaria Central,Rua Principal 123,Padaria,-23.1858,-46.8978</div>
                 </div>
               </div>
-              <input
-                type="file"
-                accept=".csv"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    handleCSVUpload(file);
-                  }
-                }}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-              />
-              <p className="mt-2 text-xs text-gray-500">
-                Selecione um arquivo CSV com as colunas: name, address, category, lat, lon
-              </p>
+              
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
+                <Upload className="mx-auto mb-3 text-gray-400" size={40} />
+                <label className="cursor-pointer">
+                  <span className="text-sm text-gray-600">
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <RefreshCw size={16} className="animate-spin" />
+                        Processando arquivo...
+                      </span>
+                    ) : (
+                      <>
+                        <span className="text-green-600 font-semibold">Clique para escolher arquivo</span>
+                        {' '}ou arraste aqui
+                      </>
+                    )}
+                  </span>
+                  <input
+                    type="file"
+                    accept=".csv"
+                    disabled={loading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        handleCSVUpload(file);
+                        // Limpar input para permitir upload do mesmo arquivo novamente
+                        e.target.value = '';
+                      }
+                    }}
+                    className="hidden"
+                  />
+                </label>
+                <p className="mt-2 text-xs text-gray-500">
+                  Arquivo CSV com colunas: name, address, category, lat, lon
+                </p>
+              </div>
             </div>
           </div>
         )}
