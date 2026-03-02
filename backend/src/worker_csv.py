@@ -24,6 +24,7 @@ def import_csv(file_path):
         cur = conn.cursor()
 
         sucesso = 0
+        duplicados = 0
         erros = 0
 
         # 3. Itera sobre as linhas e salva
@@ -35,32 +36,73 @@ def import_csv(file_path):
                 lat = float(row['lat'])
                 lon = float(row['lon'])
 
-                # Query com UPSERT (Se já existe o mesmo nome, NÃO duplica)
+                # Verifica se já existe um lugar com o mesmo nome e coordenadas próximas (raio de 10 metros)
+                check_query = """
+                    SELECT id FROM places 
+                    WHERE name = %s 
+                    AND ST_DWithin(
+                        location::geography,
+                        ST_SetSRID(ST_MakePoint(%s, %s), 4326)::geography,
+                        10
+                    )
+                    LIMIT 1;
+                """
+                cur.execute(check_query, (name, lon, lat))
+                existing = cur.fetchone()
+                
+                if existing:
+                    duplicados += 1
+                    print(f"⚠️ Linha {index + 2}: '{name}' já existe no banco (ID: {existing[0]})")
+                    continue
+
+                # Insere novo lugar
                 query = """
                     INSERT INTO places (name, address, category, location)
                     VALUES (%s, %s, %s, ST_SetSRID(ST_MakePoint(%s, %s), 4326))
-                    ON CONFLICT (google_place_id) DO NOTHING
                     RETURNING id;
                 """
-                # Nota: Para o 'ON CONFLICT' funcionar perfeitamente, idealmente teríamos um ID único. 
-                # Como é CSV simples, vamos apenas inserir por enquanto.
                 
                 cur.execute(query, (name, address, category, lon, lat))
-                sucesso += 1
+                result = cur.fetchone()
+                
+                if result:
+                    sucesso += 1
+                    print(f"✅ Linha {index + 2}: '{name}' importado com sucesso (ID: {result[0]})")
+                
+            except KeyError as e:
+                print(f"❌ Linha {index + 2}: Coluna obrigatória não encontrada: {e}")
+                erros += 1
+            except ValueError as e:
+                print(f"❌ Linha {index + 2}: Erro ao converter coordenadas: {e}")
+                erros += 1
             except Exception as e:
-                print(f"⚠️ Erro na linha {index}: {e}")
+                print(f"❌ Linha {index + 2}: Erro inesperado: {e}")
                 erros += 1
 
         conn.commit()
         cur.close()
-        print(f"✅ Importação Finalizada! Sucesso: {sucesso} | Falhas: {erros}")
+        
+        # Imprime resumo em formato JSON para o Node.js capturar
+        print(f"\n✅ Importação Finalizada!")
+        print(f"Sucesso: {sucesso}")
+        print(f"Duplicados: {duplicados}")
+        print(f"Erros: {erros}")
+        print(f"Total processado: {len(df)}")
 
     except FileNotFoundError:
-        print("❌ Arquivo CSV não encontrado na pasta.")
+        print(f"❌ Arquivo CSV não encontrado: {file_path}")
+        sys.exit(1)
+    except pd.errors.EmptyDataError:
+        print("❌ Arquivo CSV está vazio")
+        sys.exit(1)
     except Exception as e:
         print(f"❌ Erro Crítico: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
     finally:
-        if conn: conn.close()
+        if conn: 
+            conn.close()
 
 if __name__ == "__main__":
     # Pega o nome do arquivo passado como argumento pelo Node
