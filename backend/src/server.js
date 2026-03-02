@@ -740,7 +740,7 @@ app.get('/api/geocode', (req, res) => {
 // --- Rota 7: Busca por Raio (Nearby) ---
 app.get('/api/places/nearby', async (req, res) => {
   try {
-    const { lat, lng, radius = 5000, limit = 50 } = req.query;
+    const { lat, lng, radius = 5000, limit = 50, category, minRating, hasPhone } = req.query;
     
     // Validações
     if (!lat || !lng) {
@@ -759,8 +759,8 @@ app.get('/api/places/nearby', async (req, res) => {
       });
     }
     
-    // Busca lugares dentro do raio usando ST_DWithin
-    const result = await pool.query(`
+    // Construir query com filtros opcionais
+    let query = `
       SELECT 
         id, 
         name, 
@@ -783,9 +783,41 @@ app.get('/api/places/nearby', async (req, res) => {
         ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
         $3
       )
-      ORDER BY distance_meters ASC
-      LIMIT $4
-    `, [longitude, latitude, radiusMeters, parseInt(limit)]);
+    `;
+    
+    const params = [longitude, latitude, radiusMeters];
+    let paramCount = 4;
+    
+    // Filtro por categoria (pode ser múltiplas separadas por vírgula)
+    if (category) {
+      const categories = category.split(',').map(c => c.trim());
+      const categoryConditions = categories.map((_, index) => {
+        const paramIndex = paramCount + index;
+        return `category ILIKE $${paramIndex}`;
+      });
+      query += ` AND (${categoryConditions.join(' OR ')})`;
+      categories.forEach(cat => params.push(`%${cat}%`));
+      paramCount += categories.length;
+    }
+    
+    // Filtro por rating mínimo
+    if (minRating) {
+      query += ` AND rating >= $${paramCount}`;
+      params.push(parseFloat(minRating));
+      paramCount++;
+    }
+    
+    // Filtro por telefone
+    if (hasPhone === 'true' || hasPhone === true) {
+      query += ` AND phone IS NOT NULL AND phone != ''`;
+    }
+    
+    query += ` ORDER BY distance_meters ASC LIMIT $${paramCount}`;
+    params.push(parseInt(limit));
+    
+    const result = await pool.query(query, params);
+    
+    console.log(`🔍 Busca nearby: ${result.rows.length} resultados encontrados (filtros: category=${category}, minRating=${minRating}, hasPhone=${hasPhone})`);
     
     res.json({
       center: { lat: latitude, lng: longitude },

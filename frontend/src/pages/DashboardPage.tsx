@@ -203,18 +203,38 @@ const DashboardPage: React.FC = () => {
       return;
     }
 
-    // Se há categorias selecionadas ou filtros avançados, usar busca avançada
-    if (selectedCategories.length > 0 || (showAdvancedFilters && (filters.category || filters.minRating || filters.hasPhone))) {
-      await searchAdvanced({
-        address: fullAddress,
-        radius: searchRadius,
-        category: selectedCategories.length > 0 ? selectedCategories.join(',') : (filters.category || undefined),
-        minRating: filters.minRating ? Number(filters.minRating) : undefined,
-        hasPhone: filters.hasPhone || undefined
-      });
-    } else {
-      await searchByAddress(fullAddress, searchRadius);
+    // SEMPRE fazer busca por raio (geocode + nearby)
+    // Primeiro geocodifica o endereço
+    const geocodeResult = await geocodeAddress(fullAddress);
+    
+    if (!geocodeResult || !geocodeResult.success) {
+      return; // Erro já foi tratado pelo hook
     }
+
+    // Depois busca lugares próximos com filtros
+    const searchParams: any = {
+      lat: geocodeResult.data.lat,
+      lng: geocodeResult.data.lng,
+      radius: searchRadius,
+      limit: 100
+    };
+
+    // Adicionar filtros se houver
+    if (selectedCategories.length > 0) {
+      searchParams.category = selectedCategories.join(',');
+    } else if (filters.category) {
+      searchParams.category = filters.category;
+    }
+
+    if (filters.minRating) {
+      searchParams.minRating = Number(filters.minRating);
+    }
+
+    if (filters.hasPhone) {
+      searchParams.hasPhone = true;
+    }
+
+    await searchNearby(searchParams);
   };
 
   const toggleCategory = (category: string) => {
