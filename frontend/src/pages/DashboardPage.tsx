@@ -19,10 +19,19 @@ import {
   Activity,
   Zap,
   Filter,
-  Loader
+  Loader,
+  Building2,
+  Building,
+  Briefcase,
+  Hospital,
+  GraduationCap,
+  Dumbbell,
+  ShoppingCart,
+  Store
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { usePlaces } from '../hooks/usePlaces';
+import { authService } from '../services/auth';
 import { authService } from '../services/auth';
 
 const DashboardPage: React.FC = () => {
