@@ -63,17 +63,70 @@ def get_val(row, col_map, field, default=''):
     return default
 
 def parse_float(val):
-    """Converte string para float, tratando vírgulas e valores inválidos"""
+    """Converte string para float, tratando formatos brasileiros e internacionais.
+    Exemplos que precisa tratar:
+      -23.1858         -> -23.1858  (formato normal)
+      -231.842.640     -> -23.1842640  (formato BR com ponto como milhar)
+      -231.842,640     -> -23.1842640  (formato BR com vírgula decimal)
+      -46.881.040.399  -> -46.881040399  (formato BR)
+      -23,1858         -> -23.1858  (vírgula como decimal)
+    """
     if not val:
         return None
-    val = val.strip().replace(',', '.')
-    # Remove caracteres não numéricos exceto ponto e sinal negativo
+    val = val.strip()
+    if not val:
+        return None
+    
+    # Guarda o sinal
+    negative = val.startswith('-')
+    val = val.lstrip('-').strip()
+    
+    # Conta pontos e vírgulas
+    num_dots = val.count('.')
+    num_commas = val.count(',')
+    
+    if num_commas == 1 and num_dots >= 1:
+        # Formato: -231.842,640 -> pontos são milhar, vírgula é decimal
+        val = val.replace('.', '').replace(',', '.')
+    elif num_commas == 1 and num_dots == 0:
+        # Formato: -23,1858 -> vírgula é decimal
+        val = val.replace(',', '.')
+    elif num_dots > 1:
+        # Formato: -231.842.640 -> múltiplos pontos = separador de milhar
+        # Mantém apenas o primeiro ponto como decimal
+        parts = val.split('.')
+        val = parts[0] + '.' + ''.join(parts[1:])
+    # else: formato normal com 1 ponto ou nenhum
+    
+    # Remove qualquer caractere não numérico restante
     cleaned = ''
+    dot_found = False
     for c in val:
-        if c in '0123456789.-':
+        if c == '.' and not dot_found:
             cleaned += c
+            dot_found = True
+        elif c in '0123456789':
+            cleaned += c
+    
+    if not cleaned:
+        return None
+    
     try:
-        return float(cleaned)
+        result = float(cleaned)
+        if negative:
+            result = -result
+        
+        # Validação: coordenadas devem estar em faixas válidas
+        # Latitude: -90 a 90, Longitude: -180 a 180
+        # Se o valor absoluto for > 180, provavelmente tem problema de formato
+        if abs(result) > 180:
+            # Tenta dividir por potências de 10 para encontrar valor válido
+            temp = result
+            while abs(temp) > 180:
+                temp = temp / 10
+            result = temp
+        
+        return result
     except ValueError:
         return None
 
@@ -149,12 +202,19 @@ def import_csv(file_path):
                 category = get_val(row, col_map, 'category', 'Importado')
                 phone = get_val(row, col_map, 'phone')
                 
-                lat = parse_float(get_val(row, col_map, 'lat'))
-                lon = parse_float(get_val(row, col_map, 'lon'))
+                lat_raw = get_val(row, col_map, 'lat')
+                lon_raw = get_val(row, col_map, 'lon')
+                lat = parse_float(lat_raw)
+                lon = parse_float(lon_raw)
                 rating_val = parse_float(get_val(row, col_map, 'rating'))
 
                 if lat is None or lon is None:
-                    print(f"⚠️ Linha {index + 2}: Coordenadas inválidas para '{name}'")
+                    print(f"⚠️ Linha {index + 2}: Coordenadas inválidas para '{name}' (lat_raw='{lat_raw}', lon_raw='{lon_raw}')")
+                    erros += 1
+                    continue
+                
+                if abs(lat) > 90 or abs(lon) > 180:
+                    print(f"⚠️ Linha {index + 2}: Coordenadas fora da faixa para '{name}' (lat={lat}, lon={lon})")
                     erros += 1
                     continue
 
