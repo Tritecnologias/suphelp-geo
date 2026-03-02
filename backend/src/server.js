@@ -595,17 +595,27 @@ app.post('/api/import-csv-upload', upload.single('file'), (req, res) => {
       if (code === 0) {
         // Tentar extrair número de registros importados do output
         const successMatch = outputData.match(/Sucesso:\s*(\d+)/);
+        const duplicatesMatch = outputData.match(/Duplicados:\s*(\d+)/);
+        const errorsMatch = outputData.match(/Erros:\s*(\d+)/);
+        const totalMatch = outputData.match(/Total processado:\s*(\d+)/);
+        
         const imported = successMatch ? parseInt(successMatch[1]) : 0;
+        const duplicates = duplicatesMatch ? parseInt(duplicatesMatch[1]) : 0;
+        const errors = errorsMatch ? parseInt(errorsMatch[1]) : 0;
+        const total = totalMatch ? parseInt(totalMatch[1]) : 0;
 
         res.json({ 
           success: true, 
           message: "Importação de CSV finalizada com sucesso.",
-          imported: imported
+          imported,
+          duplicates,
+          errors,
+          total
         });
       } else {
         res.status(500).json({ 
           success: false, 
-          message: "Falha ao processar o CSV.",
+          message: "Falha ao processar o CSV. Verifique se o formato está correto (name,address,category,lat,lon).",
           error: errorData
         });
       }

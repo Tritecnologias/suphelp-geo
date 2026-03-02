@@ -15,9 +15,14 @@ DB_PASS = os.getenv("DB_PASS", "***REMOVED***")
 def import_csv(file_path):
     conn = None
     try:
-        # 1. Lê o CSV usando Pandas
-        df = pd.read_csv(file_path)
+        # 1. Lê o CSV usando Pandas (on_bad_lines='skip' ignora linhas com formato incorreto)
+        try:
+            df = pd.read_csv(file_path, on_bad_lines='skip', encoding='utf-8')
+        except UnicodeDecodeError:
+            df = pd.read_csv(file_path, on_bad_lines='skip', encoding='latin-1')
+        
         print(f"📄 Lendo arquivo: {len(df)} registros encontrados.")
+        print(f"📋 Colunas encontradas: {list(df.columns)}")
 
         # 2. Conecta no Banco
         conn = psycopg2.connect(host=DB_HOST, port=DB_PORT, database=DB_NAME, user=DB_USER, password=DB_PASS)

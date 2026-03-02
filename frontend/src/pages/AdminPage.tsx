@@ -309,7 +309,12 @@ const AdminPage: React.FC = () => {
       
       if (data.success) {
         const imported = data.imported || 0;
-        showMessage(`✅ Importação concluída com sucesso! ${imported} ${imported === 1 ? 'lugar importado' : 'lugares importados'}.`);
+        const duplicates = data.duplicates || 0;
+        const total = data.total || 0;
+        let msg = `✅ Importação concluída! ${imported} ${imported === 1 ? 'lugar importado' : 'lugares importados'}.`;
+        if (duplicates > 0) msg += ` ${duplicates} duplicados ignorados.`;
+        if (total > 0) msg += ` (${total} linhas processadas)`;
+        showMessage(msg);
         if (activeSection === 'dashboard') loadDashboard();
       } else {
         showMessage(`❌ ${data.message || 'Erro ao importar CSV'}`, 'error');
