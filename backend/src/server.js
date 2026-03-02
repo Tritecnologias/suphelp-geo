@@ -29,6 +29,31 @@ app.use(cors({
   credentials: true
 }));
 
+// Configuração do Multer para upload de arquivos
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, '../../uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, 'import-' + Date.now() + '.csv');
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: function (req, file, cb) {
+    if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Apenas arquivos CSV são permitidos!'));
+    }
+  }
+});
+
 // Middleware para processar JSON
 app.use(express.json());
 
@@ -506,6 +531,73 @@ app.post('/api/import-csv', (req, res) => {
       res.status(500).json({ success: false, message: "Falha ao processar o CSV." });
     }
   });
+});
+
+// --- Rota 3.1: Importar CSV via Upload (worker_csv.py) ---
+app.post('/api/import-csv-upload', upload.single('file'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Nenhum arquivo enviado" 
+      });
+    }
+
+    const filePath = req.file.path;
+    console.log(`📂 Iniciando importação do arquivo: ${req.file.filename}...`);
+
+    // Passamos o caminho completo do arquivo como argumento para o Python
+    const pythonProcess = spawn('python3', ['src/worker_csv.py', filePath]);
+
+    let outputData = '';
+    let errorData = '';
+
+    pythonProcess.stdout.on('data', (data) => {
+      const output = data.toString();
+      console.log(`🐍 CSV Log: ${output}`);
+      outputData += output;
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      const error = data.toString();
+      console.error(`❌ CSV Erro: ${error}`);
+      errorData += error;
+    });
+
+    pythonProcess.on('close', (code) => {
+      // Limpar arquivo temporário após processamento
+      try {
+        fs.unlinkSync(filePath);
+        console.log(`🗑️ Arquivo temporário removido: ${filePath}`);
+      } catch (err) {
+        console.error(`⚠️ Erro ao remover arquivo temporário: ${err}`);
+      }
+
+      if (code === 0) {
+        // Tentar extrair número de registros importados do output
+        const successMatch = outputData.match(/Sucesso:\s*(\d+)/);
+        const imported = successMatch ? parseInt(successMatch[1]) : 0;
+
+        res.json({ 
+          success: true, 
+          message: "Importação de CSV finalizada com sucesso.",
+          imported: imported
+        });
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          message: "Falha ao processar o CSV.",
+          error: errorData
+        });
+      }
+    });
+  } catch (error) {
+    console.error('❌ Erro no upload CSV:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Erro ao processar upload do CSV" 
+    });
+  }
 });
 
 // --- Rota 4: Importar via Google Places API ---

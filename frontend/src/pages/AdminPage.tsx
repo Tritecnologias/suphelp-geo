@@ -290,6 +290,37 @@ const AdminPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Função para importar CSV
+  const handleCSVUpload = async (file: File) => {
+    try {
+      setLoading(true);
+      showMessage('Processando arquivo CSV...', 'info');
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/import-csv-upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        showMessage(`Importação concluída! ${data.imported || 0} lugares importados.`);
+        if (activeSection === 'dashboard') loadDashboard();
+      } else {
+        showMessage(data.message || 'Erro ao importar CSV', 'error');
+      }
+    } catch (error) {
+      console.error('Erro ao importar CSV:', error);
+      showMessage('Erro ao importar CSV', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Função para enriquecer contatos
   const enrichContacts = async () => {
     try {
@@ -979,6 +1010,7 @@ const AdminPage: React.FC = () => {
         {/* Import Section */}
         {activeSection === 'import' && (
           <div className="space-y-6">
+            {/* Importar via Google Places API */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-4">Importar via Google Places API</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1010,8 +1042,36 @@ const AdminPage: React.FC = () => {
                 className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
               >
                 <Upload size={16} className="inline mr-2" />
-                Importar
+                Importar via API
               </button>
+            </div>
+
+            {/* Importar via CSV */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Importar via Planilha CSV</h3>
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">
+                  Formato esperado do CSV:
+                </p>
+                <div className="bg-gray-50 p-3 rounded-lg font-mono text-xs">
+                  <div className="text-gray-700">name,address,category,lat,lon</div>
+                  <div className="text-gray-500">Padaria Central,Rua Principal 123,Padaria,-23.1858,-46.8978</div>
+                </div>
+              </div>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleCSVUpload(file);
+                  }
+                }}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+              />
+              <p className="mt-2 text-xs text-gray-500">
+                Selecione um arquivo CSV com as colunas: name, address, category, lat, lon
+              </p>
             </div>
           </div>
         )}
