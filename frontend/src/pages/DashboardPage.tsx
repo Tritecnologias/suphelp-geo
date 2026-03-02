@@ -31,6 +31,8 @@ const DashboardPage: React.FC = () => {
     places, 
     isLoading, 
     error, 
+    geocodeAddress,
+    searchNearby,
     searchByAddress, 
     searchAdvanced,
     clearResults,
