@@ -57,6 +57,7 @@ const DashboardPage: React.FC = () => {
   const [searchRadius, setSearchRadius] = useState(5000);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [concorrentes, setConcorrentes] = useState<string[]>([]);
   const [filters, setFilters] = useState({
     category: '',
     minRating: '',
@@ -265,6 +266,14 @@ const DashboardPage: React.FC = () => {
       prev.includes(category)
         ? prev.filter(c => c !== category)
         : [...prev, category]
+    );
+  };
+
+  const toggleConcorrente = (concorrenteId: string) => {
+    setConcorrentes(prev =>
+      prev.includes(concorrenteId)
+        ? prev.filter(c => c !== concorrenteId)
+        : [...prev, concorrenteId]
     );
   };
 
