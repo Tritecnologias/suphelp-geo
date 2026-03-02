@@ -310,11 +310,20 @@ const AdminPage: React.FC = () => {
       if (data.success) {
         const imported = data.imported || 0;
         const duplicates = data.duplicates || 0;
+        const errors = data.errors || 0;
         const total = data.total || 0;
-        let msg = `✅ Importação concluída! ${imported} ${imported === 1 ? 'lugar importado' : 'lugares importados'}.`;
-        if (duplicates > 0) msg += ` ${duplicates} duplicados ignorados.`;
-        if (total > 0) msg += ` (${total} linhas processadas)`;
-        showMessage(msg);
+        
+        if (imported === 0 && duplicates > 0) {
+          showMessage(`⚠️ Nenhum lugar novo importado. ${duplicates} já existiam no banco. (${total} linhas processadas)`, 'info');
+        } else if (imported === 0 && errors > 0) {
+          showMessage(`❌ Nenhum lugar importado. ${errors} linhas com erro. Verifique o formato do CSV.`, 'error');
+        } else {
+          let msg = `✅ ${imported} ${imported === 1 ? 'lugar importado' : 'lugares importados'} com sucesso!`;
+          if (duplicates > 0) msg += ` ${duplicates} duplicados ignorados.`;
+          if (errors > 0) msg += ` ${errors} erros.`;
+          msg += ` (${total} linhas processadas)`;
+          showMessage(msg);
+        }
         if (activeSection === 'dashboard') loadDashboard();
       } else {
         showMessage(`❌ ${data.message || 'Erro ao importar CSV'}`, 'error');
