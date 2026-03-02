@@ -54,19 +54,13 @@ const DashboardPage: React.FC = () => {
     hasPhone: false
   });
 
-  const categories = [
-    'Condomínio',
-    'Prédio Corporativo',
-    'Empresa',
-    'Hospital',
-    'Universidade',
-    'Academia',
-    'Prédio Residencial',
-    'Clube',
-    'Farmácia',
-    'Mercado',
-    'Restaurante',
-    'Padaria'
+  const categorias = [
+    { id: 'Condomínio', label: 'Condomínio', icon: Building2 },
+    { id: 'Prédio Corporativo', label: 'Prédio Corporativo', icon: Building },
+    { id: 'Empresa', label: 'Empresa', icon: Briefcase },
+    { id: 'Hospital', label: 'Hospital', icon: Hospital },
+    { id: 'Universidade', label: 'Universidade', icon: GraduationCap },
+    { id: 'Academia', label: 'Academia', icon: Dumbbell }
   ];
   
   const estados = [
@@ -448,45 +442,36 @@ const DashboardPage: React.FC = () => {
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         {/* Sidebar Esquerda */}
         <div className="w-full lg:w-[500px] bg-white shadow-lg overflow-y-auto flex-shrink-0 max-h-[calc(100vh-4rem)]">
-          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 pb-20">{/* pb-20 para espaço extra no final */}
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 gap-2 sm:gap-3">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 sm:p-4 rounded-xl border border-blue-200">
-                <div className="flex items-center gap-2 mb-1">
-                  <Search size={14} className="text-blue-600 sm:w-4 sm:h-4" />
-                  <p className="text-xs font-medium text-blue-700 uppercase">Buscas</p>
-                </div>
-                <p className="text-xl sm:text-2xl font-bold text-blue-900">{userStats.searches_used}</p>
-                <p className="text-xs text-blue-600">de {userStats.searches_limit}</p>
-              </div>
-
-              <div className="bg-gradient-to-br from-green-50 to-green-100 p-3 sm:p-4 rounded-xl border border-green-200">
-                <div className="flex items-center gap-2 mb-1">
-                  <MapPin size={14} className="text-green-600 sm:w-4 sm:h-4" />
-                  <p className="text-xs font-medium text-green-700 uppercase">Resultados</p>
-                </div>
-                <p className="text-xl sm:text-2xl font-bold text-green-900">{totalResults}</p>
-                <p className="text-xs text-green-600">encontrados</p>
-              </div>
+          <div className="p-6 space-y-6 pb-20">
+            {/* Título */}
+            <div>
+              <h2 className="text-lg text-slate-600 font-normal">
+                Filtre condomínios com potencial para implantação de lojas.
+              </h2>
             </div>
 
-            {/* Search Form */}
-            <div className="bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-200">
-              <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                <Filter size={16} className="text-blue-600 sm:w-[18px] sm:h-[18px]" />
-                <h2 className="text-base sm:text-lg font-bold text-slate-800">Filtros</h2>
+            {/* Card de Localização */}
+            <div className="bg-white rounded-xl border border-slate-200 p-5">
+              {/* Header da Seção */}
+              <div className="flex items-center gap-2 mb-5">
+                <Filter className="text-blue-600" size={20} />
+                <h3 className="text-base font-bold text-slate-800">Localização</h3>
               </div>
-              
-              <form onSubmit={handleSearch} className="space-y-3 sm:space-y-4">
+              <div className="flex items-center gap-2 mb-5">
+                <Filter className="text-blue-600" size={20} />
+                <h3 className="text-base font-bold text-slate-800">Localização</h3>
+              </div>
+
+              <form onSubmit={handleSearch} className="space-y-4">
                 {/* Estado */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="block text-sm font-bold text-slate-800 mb-2">
                     Estado
                   </label>
                   <select
                     value={searchState}
                     onChange={(e) => setSearchState(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-600"
                   >
                     <option value="">Selecione o estado</option>
                     {estados.map(uf => (
@@ -497,194 +482,149 @@ const DashboardPage: React.FC = () => {
 
                 {/* Cidade */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Cidade
-                  </label>
                   <input
                     type="text"
                     value={searchCity}
                     onChange={(e) => setSearchCity(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    placeholder="Digite a cidade (ex: São Paulo)"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="Selecione a cidade"
                   />
                 </div>
 
                 {/* Bairros */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    <label className="block text-sm font-bold text-slate-800 mb-2">
                       Bairro
                     </label>
                     <input
                       type="text"
                       value={searchNeighborhood}
                       onChange={(e) => setSearchNeighborhood(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                      placeholder="Ex: Centro"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                      placeholder="Ex: Centro..."
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Bairro 2
+                    <label className="block text-sm font-bold text-slate-800 mb-2">
+                      Bairro
                     </label>
-                    <input
-                      type="text"
+                    <select
                       value={searchNeighborhood2}
                       onChange={(e) => setSearchNeighborhood2(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                      placeholder="Ex: Jardim..."
-                    />
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-600"
+                    >
+                      <option value="">Ex: Selva o bairro</option>
+                      <option value="Centro">Centro</option>
+                      <option value="Jardim">Jardim</option>
+                      <option value="Vila">Vila</option>
+                    </select>
                   </div>
                 </div>
 
-                {/* Categorias */}
+                {/* Categoria */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-3">
-                    Categorias
+                  <label className="block text-sm font-bold text-slate-800 mb-3">
+                    Categoria
                   </label>
-                  <div className="flex flex-wrap gap-2">
-                    {categories.map(category => (
-                      <button
-                        key={category}
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          toggleCategory(category);
-                        }}
-                        className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all touch-manipulation active:scale-95 ${
-                          selectedCategories.includes(category)
-                            ? 'bg-blue-500 text-white shadow-md'
-                            : 'bg-white text-slate-700 border-2 border-slate-300 hover:border-blue-300 active:border-blue-400'
-                        }`}
-                      >
-                        {category}
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-3 gap-2">
+                    {categorias.map(cat => {
+                      const Icon = cat.icon;
+                      const isSelected = selectedCategories.includes(cat.id);
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => toggleCategory(cat.id)}
+                          className={`flex flex-col items-center gap-2 px-3 py-3 rounded-lg font-medium text-xs transition-all ${
+                            isSelected
+                              ? 'bg-blue-500 text-white shadow-md'
+                              : 'bg-slate-50 text-slate-700 border border-slate-200 hover:border-blue-300'
+                          }`}
+                        >
+                          <Icon size={24} />
+                          <span className="text-center leading-tight">{cat.label}</span>
+                          {isSelected && <span className="text-lg">✓</span>}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Raio de Busca */}
                 <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="block text-sm font-semibold text-slate-700">
+                  <div className="flex justify-between items-center mb-3">
+                    <label className="block text-sm font-bold text-slate-800">
                       Raio de Busca
                     </label>
-                    <span className="text-blue-600 font-bold text-sm">{searchRadius / 1000} km</span>
+                    <span className="text-blue-600 font-bold text-base">{searchRadius / 1000} km</span>
                   </div>
                   <input
                     type="range"
-                    min="1000"
+                    min="0"
                     max="20000"
                     step="1000"
                     value={searchRadius}
                     onChange={(e) => setSearchRadius(parseInt(e.target.value))}
                     className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
                   />
-                </div>
-
-                {/* Botões */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setShowAdvancedFilters(!showAdvancedFilters);
-                    }}
-                    className="bg-white border-2 border-slate-300 text-slate-700 px-4 py-3 rounded-lg font-semibold text-sm transition-all hover:bg-slate-50 active:bg-slate-100 touch-manipulation"
-                  >
-                    {showAdvancedFilters ? '▲ Ocultar Filtros' : '▼ Filtros Avançados'}
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-3 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95 touch-manipulation"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader className="animate-spin" size={16} />
-                        Buscando...
-                      </>
-                    ) : (
-                      'Buscar'
-                    )}
-                  </button>
-                </div>
-
-                {hasResults && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      clearResults();
-                    }}
-                    className="w-full bg-slate-500 hover:bg-slate-600 text-white px-4 py-2.5 rounded-lg text-sm transition-all active:bg-slate-700 touch-manipulation"
-                  >
-                    Limpar Resultados
-                  </button>
-                )}
-
-                {/* Filtros Avançados */}
-                {showAdvancedFilters && (
-                  <div className="bg-white p-3 sm:p-4 rounded-lg border-2 border-blue-200 space-y-3 animate-in slide-in-from-top duration-200">
-                    <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-                      <Filter size={16} className="text-blue-600" />
-                      <span className="text-blue-600">Filtros Avançados</span>
-                    </h3>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
-                          🏪 Categoria Específica
-                        </label>
-                        <select
-                          value={filters.category}
-                          onChange={(e) => setFilters({...filters, category: e.target.value})}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        >
-                          <option value="">Todas</option>
-                          <option value="restaurant">Restaurante</option>
-                          <option value="pharmacy">Farmácia</option>
-                          <option value="bank">Banco</option>
-                          <option value="hospital">Hospital</option>
-                          <option value="gas_station">Posto</option>
-                          <option value="supermarket">Supermercado</option>
-                        </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
-                          ⭐ Avaliação Mínima
-                        </label>
-                        <select
-                          value={filters.minRating}
-                          onChange={(e) => setFilters({...filters, minRating: e.target.value})}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        >
-                          <option value="">Qualquer</option>
-                          <option value="3">3+ estrelas</option>
-                          <option value="4">4+ estrelas</option>
-                          <option value="4.5">4.5+ estrelas</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-50 rounded">
-                          <input
-                            type="checkbox"
-                            checked={filters.hasPhone}
-                            onChange={(e) => setFilters({...filters, hasPhone: e.target.checked})}
-                            className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                          />
-                          <span className="text-sm text-slate-700">📞 Apenas com telefone</span>
-                        </label>
-                      </div>
-                    </div>
+                  <div className="flex justify-between text-xs text-slate-500 mt-1">
+                    <span>0 km</span>
+                    <span>20 km</span>
                   </div>
-                )}
+                </div>
+
+                {/* Concorrentes Próximos */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <MapPin className="text-blue-600" size={18} />
+                    <label className="block text-sm font-bold text-slate-800">
+                      Concorrentes próximos
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {concorrentesOptions.map(conc => {
+                      const Icon = conc.icon;
+                      const isSelected = concorrentes.includes(conc.id);
+                      return (
+                        <button
+                          key={conc.id}
+                          type="button"
+                          onClick={() => toggleConcorrente(conc.id)}
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-all bg-white border border-slate-200 hover:border-blue-300 text-slate-700"
+                        >
+                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                            isSelected ? 'bg-blue-500 border-blue-500' : 'border-slate-300'
+                          }`}>
+                            {isSelected && <span className="text-white text-xs font-bold">✓</span>}
+                          </div>
+                          <Icon size={18} />
+                          <span>{conc.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Botão Buscar */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-4 rounded-lg font-bold text-base transition-all shadow-lg hover:shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader className="animate-spin" size={20} />
+                      Buscando...
+                    </>
+                  ) : (
+                    <>
+                      <Search size={20} />
+                      Buscar
+                    </>
+                  )}
+                </button>
               </form>
             </div>
 
