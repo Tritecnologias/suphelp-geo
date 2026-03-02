@@ -7,6 +7,7 @@ export interface User {
   telefone?: string;
   empresa?: string;
   plano: 'basico' | 'profissional' | 'enterprise';
+  role?: 'user' | 'admin' | 'super_admin';
   status: 'pending' | 'active' | 'inactive';
   searches_used: number;
   searches_limit: number;
