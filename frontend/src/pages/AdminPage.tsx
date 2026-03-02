@@ -1098,12 +1098,17 @@ const AdminPage: React.FC = () => {
               <h3 className="text-lg font-semibold mb-4">Importar via Planilha CSV</h3>
               <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-2">
-                  Formato esperado do CSV:
+                  Formatos aceitos:
                 </p>
-                <div className="bg-gray-50 p-3 rounded-lg font-mono text-xs">
-                  <div className="text-gray-700">name,address,category,lat,lon</div>
-                  <div className="text-gray-500">Padaria Central,Rua Principal 123,Padaria,-23.1858,-46.8978</div>
+                <div className="bg-gray-50 p-3 rounded-lg font-mono text-xs space-y-1">
+                  <div className="text-gray-700 font-semibold">Formato simples:</div>
+                  <div className="text-gray-500">name,address,category,lat,lon</div>
+                  <div className="text-gray-700 font-semibold mt-2">Formato completo:</div>
+                  <div className="text-gray-500">Número,Nome,Endereço,Categoria,Telefone,Distância,Rating,Latitude,Longitude</div>
                 </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  O sistema detecta automaticamente as colunas. Aceita nomes em português ou inglês.
+                </p>
               </div>
               
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
