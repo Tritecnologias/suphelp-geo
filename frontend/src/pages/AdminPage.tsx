@@ -295,7 +295,7 @@ const AdminPage: React.FC = () => {
   const handleCSVUpload = async (file: File) => {
     try {
       setLoading(true);
-      showMessage('Processando arquivo CSV...', 'info');
+      showMessage('⏳ Processando arquivo CSV...', 'info');
 
       const formData = new FormData();
       formData.append('file', file);
@@ -308,14 +308,15 @@ const AdminPage: React.FC = () => {
       const data = await response.json();
       
       if (data.success) {
-        showMessage(`Importação concluída! ${data.imported || 0} lugares importados.`);
+        const imported = data.imported || 0;
+        showMessage(`✅ Importação concluída com sucesso! ${imported} ${imported === 1 ? 'lugar importado' : 'lugares importados'}.`);
         if (activeSection === 'dashboard') loadDashboard();
       } else {
-        showMessage(data.message || 'Erro ao importar CSV', 'error');
+        showMessage(`❌ ${data.message || 'Erro ao importar CSV'}`, 'error');
       }
     } catch (error) {
       console.error('Erro ao importar CSV:', error);
-      showMessage('Erro ao importar CSV', 'error');
+      showMessage('❌ Erro ao importar CSV. Verifique o formato do arquivo.', 'error');
     } finally {
       setLoading(false);
     }
@@ -1010,6 +1011,47 @@ const AdminPage: React.FC = () => {
         {/* Import Section */}
         {activeSection === 'import' && (
           <div className="space-y-6">
+            {/* Mensagem de Feedback */}
+            {message && (
+              <div className={`rounded-xl shadow-sm p-6 border-2 ${
+                message.includes('Erro') || message.includes('❌')
+                  ? 'bg-red-50 border-red-200' 
+                  : message.includes('Processando')
+                  ? 'bg-blue-50 border-blue-200'
+                  : 'bg-green-50 border-green-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {message.includes('Erro') || message.includes('❌') ? (
+                      <AlertCircle className="text-red-600" size={24} />
+                    ) : message.includes('Processando') ? (
+                      <RefreshCw className="text-blue-600 animate-spin" size={24} />
+                    ) : (
+                      <CheckCircle className="text-green-600" size={24} />
+                    )}
+                    <p className={`text-lg font-semibold ${
+                      message.includes('Erro') || message.includes('❌')
+                        ? 'text-red-800' 
+                        : message.includes('Processando')
+                        ? 'text-blue-800'
+                        : 'text-green-800'
+                    }`}>
+                      {message}
+                    </p>
+                  </div>
+                  {message.includes('✅') && (
+                    <button
+                      onClick={() => changeSection('places')}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                    >
+                      <Eye size={16} />
+                      Ver Lugares
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Importar via Google Places API */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-4">Importar via Google Places API</h3>
