@@ -1,0 +1,34 @@
+﻿Número;Nome;Endereço;Categoria;Telefone;Distância;Rating;Latitude;Longitude
+1;Boa Supermercados;R. Jorge Zolner, 95 - Box 5 - Centro, Jundiaí - SP, 13201-039;padaria, mercado;Não informado;0.16 km;Sem avaliação;-231.842.468;-46.888.946.399.999.900
+2;Farmavida Matriz- Loja 01;R. do Rosário, 821 - Centro, Jundiaí - SP, 13201-015;farmácia;(11) 95764-5391;0.17 km;4.3 ⭐;-23.184.935;-4.688.776
+3;Beatrice Boulangerie;R. Eduardo Tomanik, 193 - Centro, Jundiaí - SP, 13209-090;padaria, mercado;Não informado;0.24 km;Sem avaliação;-23.185.129;-46.891.496.499.999.900
+4;Drogaria São Paulo;Av. 9 de Julho, 1495 - Chácara Urbana, Jundiaí - SP, 13201-020;farmácia;(11) 93463-7440;0.28 km;3.6 ⭐;-23.186.329.000.000.000;-46.891.875.899.999.900
+5;Soul Good Bakery;R. Abílio Figueiredo, 264 - Anhangabaú, Jundiaí - SP, 13208-140;padaria, mercado;Não informado;0.66 km;Sem avaliação;-23.191.445.599.999.900;-468.908.463
+6;Teju Bakery;R. Prof. Giácomo Itria, 72 - Anhangabaú, Jundiaí - SP, 13208-070;padaria, mercado;Não informado;0.76 km;Sem avaliação;-231.884.896;-468.959.312
+7;Drogasil;Av. Jundiaí, 569 - LOJA 01 - Anhangabaú, Jundiaí - SP, 13208-051;farmácia;(11) 99868-4729;0.76 km;4.2 ⭐;-231.906.739;-46.894.345.799.999.900
+8;Dom Olívio Jundiaí;R. do Retiro, 925 - Vila Virginia, Jundiaí - SP, 13209-000;padaria, mercado;Não informado;0.92 km;Sem avaliação;-231.870.017;-46.898.057.099.999.900
+9;Parque do Colégio;R. do Retiro, 1354 - Jardim Paris, Jundiaí - SP, 13209-201;padaria, mercado;Não informado;1.09 km;Sem avaliação;-23.183.774;-46.899.660.999.999.900
+10;Drogasil;R. do Retiro, 1371 - Salão - Jardim Paris, Jundiaí - SP, 15992-503;farmácia;(11) 99674-7452;1.11 km;4.1 ⭐;-231.841.311;-468.999.847
+11;Atacadão Jundiaí;Av. Antônio Frederico Ozanan, S/N - Jardim Liberdade, Jundiaí - SP, 13215-485;padaria, mercado;Não informado;1.17 km;Sem avaliação;-231.777.387;-46.881.659.899.999.900
+12;Pão D'oro;Av. Antônio Segre, 700 - Pte. de Campinas, Jundiaí - SP, 13201-145;padaria, mercado;Não informado;1.29 km;Sem avaliação;-231.770.684;-46.897.692
+13;Tauste;Av. Antônio Segre, 79 - Jardim Brasil, Jundiaí - SP, 13201-155;padaria, mercado;Não informado;1.38 km;Sem avaliação;-231.769.327;-468.988.112
+14;Assaí Atacadista;R. XV de Novembro, 430 - Centro, Jundiaí - SP, 13201-005;padaria, mercado;Não informado;1.42 km;Sem avaliação;-231.910.858;-468.766.822
+15;Roldão Atacadista;Av. Antônio Frederico Ozanan, 3003 - Vila de Vito, Jundiaí - SP, 13215-010;padaria, mercado;Não informado;1.54 km;Sem avaliação;-23.190.280.899.999.900;-46.875.028.199.999.900
+16;Padaria Bom Jesus de Pirapora;R. Bom Jesus de Pirapora, 789 - Vianelo/Bonfiglioli, Jundiaí - SP, 13207-270;padaria, mercado;Não informado;1.57 km;Sem avaliação;-231.995.561;-46.886.122.199.999.900
+17;Mercadão Vila Arens;R. Prof. João Luiz de Campos, 210 - Jardim Sao Bento, Jundiaí - SP, 13202-451;padaria, mercado;Não informado;1.57 km;Sem avaliação;-231.975.119;-46.880.739.899.999.900
+18;Drogasil;Av. 9 de Julho, 3300 - Vianelo/Bonfiglioli, Jundiaí - SP, 13150-150;farmácia;(11) 97330-5850;1.75 km;4.1 ⭐;-232.011.613;-4.689.242
+19;Fort Atacadista;Av. Antônio Frederico Ozanan, 4490 - Jardim Liberdade, Jundiaí - SP, 13215-485;padaria, mercado;Não informado;1.90 km;Sem avaliação;-23.191.401.799.999.900;-468.717.269
+20;Carrefour Hipermercado;Av. Professora Maria do Carmo Guimarães Pellegrini, 120 - Moisés, Jundiaí - SP, 13210-816;padaria, mercado;Não informado;1.94 km;Sem avaliação;-231.831.838;-469.079.518
+21;Condomínio Brisas Bosque Itirapina;R. Antônio Maximiliano de Almeida, 76 - Cidade Luíza, Jundiaí - SP, 13214-120;Brisas Jundiaí;Não informado;2.21 km;Sem avaliação;-231.729.675;-46.905.900.599.999.900
+22;Padoka da Ká - Padaria e Confeitaria Tradicional em Jundiaí;Rua Bom Jesus de Pirapora, 1570, Jd Bonfiglioli - R. Bom Jesus de Pirapora, 1570 - Jardim Petropolis, Jundiaí - SP, 13207-605;padaria, mercado;Não informado;2.33 km;Sem avaliação;-23.206.479.299.999.900;-468.859.453
+23;Condomínio Portal de Jundiaí;R. Dr. Adriano de Oliveira, 287 - Vila Helena, Jundiaí - SP, 13206-703;Condomínio;Não informado;2.54 km;Sem avaliação;-232.073.997;-46.881.279.299.999.900
+24;Padaria Polotto;Av. Samuel Martins, 575 - Vila Arens/Vila Progresso, Jundiaí - SP, 13202-251;padaria, mercado;Não informado;2.95 km;Sem avaliação;-23.205.408;-46.869.859
+25;Bueno Pane - Padaria e Cafeteria Artesanal;Anexo ao HUB Uniancheta - Av. Odila Azalim, 575 - Vila Maringa, Jundiaí - SP, 13207-795;padaria, mercado;Não informado;3.13 km;Sem avaliação;-23.213.783.499.999.900;-468.919.601
+26;Veduta Residencial;Rod. João Cereser, km 65,5 - Cidade Santos Dumont, Jundiaí - SP, 13214-470;Condomínio;Não informado;3.33 km;Sem avaliação;-23.155.768;-468.859.053
+27;Boa Supermercados Av. Imigrantes;Av. dos Imigrantes Italianos, 1973 - Jardim Pacaembu, Jundiaí - SP, 13218-090;padaria, mercado;Não informado;3.37 km;Sem avaliação;-23.188.176.199.999.900;-46.856.397
+28;Pão D'Oro II;Av. Antônio Pincinato, 38 - Recanto Quarto Centenario, Jundiaí - SP, 13211-770;padaria, mercado;Não informado;3.49 km;Sem avaliação;-231.818.177;-469.230.533
+29;Portaria de Serviços Brisas Jundiaí;R. Nivrigildo Das Neves, 605 - Jardim Samambaia, Jundiaí - SP, 13211-620;Brisas Jundiaí;Não informado;3.72 km;Sem avaliação;-231.971.874;-469.233.165
+30;Brisas da Mata;R. Aristides Mariotti, 1500 - Recanto Quarto Centenario, Jundiaí - SP, 13211-640;Brisas Jundiaí;Não informado;3.75 km;Sem avaliação;-231.938.221;-46.924.760.899.999.900
+31;Residencial Terras de Jundiaí;R. Cap. Alberto Mendes Júnior, 31 - Vale Azul, Jundiaí - SP, 13218-624;Condomínio;Não informado;3.90 km;Sem avaliação;-231.581.887;-468.654.212
+32;Brisas Jundiaí;Av. das Brisas, 1280 - Jardim Samambaia, Jundiaí - SP, 13211-620;Brisas Jundiaí;Não informado;4.02 km;Sem avaliação;-23.205.050.999.999.900;-469.224.147
+33;Brisas do Lago Jundiaí;Jardim Samambaia, Jundiaí - SP, 13211-468, Brasil;Brisas Jundiaí;Não informado;4.03 km;Sem avaliação;-232.052.242;-469.224.083
