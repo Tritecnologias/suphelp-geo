@@ -246,6 +246,7 @@ const DashboardPage: React.FC = () => {
     // Adicionar filtros se houver
     if (selectedCategories.length > 0) {
       searchParams.category = selectedCategories.join(',');
+      console.log('🔍 Categorias selecionadas:', selectedCategories, '→ enviando:', searchParams.category);
     } else if (filters.category) {
       searchParams.category = filters.category;
     }
