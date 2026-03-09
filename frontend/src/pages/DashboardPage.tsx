@@ -510,36 +510,21 @@ const DashboardPage: React.FC = () => {
                   />
                 </div>
 
-                {/* Bairros */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-bold text-slate-800 mb-2">
-                      Bairro
-                    </label>
-                    <input
-                      type="text"
-                      value={searchNeighborhood}
-                      onChange={(e) => setSearchNeighborhood(e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                      placeholder="Ex: Centro..."
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-bold text-slate-800 mb-2">
-                      Bairro
-                    </label>
-                    <select
-                      value={searchNeighborhood2}
-                      onChange={(e) => setSearchNeighborhood2(e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-600"
-                    >
-                      <option value="">Ex: Selva o bairro</option>
-                      <option value="Centro">Centro</option>
-                      <option value="Jardim">Jardim</option>
-                      <option value="Vila">Vila</option>
-                    </select>
-                  </div>
+                {/* Bairro */}
+                <div>
+                  <label className="block text-sm font-bold text-slate-800 mb-2">
+                    Bairro
+                  </label>
+                  <select
+                    value={searchNeighborhood2}
+                    onChange={(e) => setSearchNeighborhood2(e.target.value)}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-600"
+                  >
+                    <option value="">Selecione o bairro</option>
+                    <option value="Centro">Centro</option>
+                    <option value="Jardim">Jardim</option>
+                    <option value="Vila">Vila</option>
+                  </select>
                 </div>
 
                 {/* Categoria */}
