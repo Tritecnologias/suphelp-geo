@@ -863,6 +863,8 @@ app.get('/api/places/nearby', async (req, res) => {
   try {
     const { lat, lng, radius = 5000, limit = 50, category, minRating, hasPhone } = req.query;
     
+    console.log(`🔍 Busca nearby recebida: lat=${lat}, lng=${lng}, radius=${radius}, category="${category}", minRating=${minRating}, hasPhone=${hasPhone}`);
+    
     // Validações
     if (!lat || !lng) {
       return res.status(400).json({ 
