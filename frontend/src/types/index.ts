@@ -109,6 +109,34 @@ export interface PlacesResponse {
   data: Place[];
 }
 
+export interface PlaceMetadata {
+  source: 'local' | 'google';
+  cached_at?: string;
+}
+
+export interface PlaceWithMetadata extends Place {
+  metadata: PlaceMetadata;
+}
+
+export interface HybridSearchSummary {
+  local: number;
+  google: number;
+  from_recent_cache: boolean;
+  radius_limited: boolean;
+}
+
+export interface HybridPlacesResponse {
+  center: {
+    lat: number;
+    lng: number;
+  };
+  radius_meters: number;
+  total: number;
+  summary: HybridSearchSummary;
+  data: PlaceWithMetadata[];
+  warning?: string;
+}
+
 export interface CMSConfig {
   [section: string]: {
     [key: string]: {

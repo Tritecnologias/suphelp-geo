@@ -30,6 +30,19 @@ GOOGLE_PLACES_API_KEY=sua_chave_google_places_aqui
 GOOGLE_MAPS_API_KEY=sua_chave_google_maps_aqui
 ```
 
+### Busca Híbrida (Local + Google Places)
+```env
+# Número mínimo de resultados locais antes de acionar Google Places API
+MIN_RESULTS_THRESHOLD=10
+
+# Raio máximo (em metros) para buscas no Google Places API
+GOOGLE_SEARCH_RADIUS_LIMIT=5000
+```
+
+**Descrição das variáveis:**
+- `MIN_RESULTS_THRESHOLD`: Define quantos resultados locais são necessários antes de buscar no Google Places. Valor padrão: 10. Use 0 para sempre buscar no Google (modo sempre híbrido).
+- `GOOGLE_SEARCH_RADIUS_LIMIT`: Limita o raio máximo de busca no Google Places para controlar custos. Valor padrão: 5000 metros (5 km).
+
 ## 🔐 Segurança
 
 ⚠️ **IMPORTANTE:** 
@@ -73,6 +86,26 @@ pm2 restart suphelp-backend
   - Places API (New)
   - Distance Matrix API
   - Geocoding API
+
+### Busca Híbrida
+A funcionalidade de busca híbrida prioriza o banco de dados local (grátis) e complementa com Google Places API (pago) apenas quando necessário:
+
+1. **MIN_RESULTS_THRESHOLD**: Controla quando acionar o Google Places
+   - Valor padrão: 10 resultados
+   - Se a busca local retornar menos resultados que o threshold, o sistema busca no Google
+   - Use 0 para sempre buscar no Google (modo sempre híbrido)
+   - Use valores maiores (ex: 20) para economizar mais na API
+
+2. **GOOGLE_SEARCH_RADIUS_LIMIT**: Limita o raio de busca no Google
+   - Valor padrão: 5000 metros (5 km)
+   - Buscas com raio maior que o limite usarão o limite configurado
+   - Ajuda a controlar custos evitando buscas muito amplas
+   - Recomendado: manter entre 3000-10000 metros
+
+**Estratégia de Cache:**
+- Resultados do Google são salvos automaticamente no banco local
+- Futuras buscas na mesma região usam dados locais (sem custo)
+- Sistema evita chamadas duplicadas em 24 horas para a mesma região
 
 ### Limites da API Google
 - **Places API:** $0.017 por requisição (Text Search)

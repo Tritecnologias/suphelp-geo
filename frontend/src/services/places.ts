@@ -1,6 +1,6 @@
 // Serviço de lugares
 import { apiClient } from '../config/api';
-import { Place, SearchParams, GeocodeResponse, PlacesResponse, ApiResponse } from '../types';
+import { Place, SearchParams, GeocodeResponse, PlacesResponse, HybridPlacesResponse, ApiResponse } from '../types';
 
 export class PlacesService {
   // Geocoding - converter endereço em coordenadas
@@ -21,6 +21,21 @@ export class PlacesService {
     if (params.hasPhone) queryParams.append('hasPhone', params.hasPhone.toString());
     
     return apiClient.get<PlacesResponse>(`/places/nearby?${queryParams.toString()}`);
+  }
+
+  // Busca híbrida (local + Google Places API)
+  async hybridSearch(params: SearchParams): Promise<HybridPlacesResponse> {
+    const queryParams = new URLSearchParams();
+    
+    if (params.lat) queryParams.append('lat', params.lat.toString());
+    if (params.lng) queryParams.append('lng', params.lng.toString());
+    if (params.radius) queryParams.append('radius', params.radius.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params.category) queryParams.append('category', params.category);
+    if (params.minRating) queryParams.append('minRating', params.minRating.toString());
+    if (params.hasPhone) queryParams.append('hasPhone', params.hasPhone.toString());
+    
+    return apiClient.get<HybridPlacesResponse>(`/places/hybrid-search?${queryParams.toString()}`);
   }
 
   // Busca avançada com filtros

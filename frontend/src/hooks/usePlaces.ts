@@ -1,7 +1,7 @@
 // Hook para gerenciar lugares
 import { useState, useCallback } from 'react';
 import { placesService } from '../services/places';
-import { Place, SearchParams, GeocodeResponse } from '../types';
+import { Place, SearchParams, GeocodeResponse, PlaceWithMetadata, HybridSearchSummary } from '../types';
 
 export const usePlaces = () => {
   const [places, setPlaces] = useState<Place[]>([]);
@@ -9,8 +9,11 @@ export const usePlaces = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchCenter, setSearchCenter] = useState<{ lat: number; lng: number } | null>(null);
   const [searchRadius, setSearchRadius] = useState<number>(5000);
+  const [hybridSummary, setHybridSummary] = useState<HybridSearchSummary | null>(null);
+  const [apiWarning, setApiWarning] = useState<string | null>(null);
 
   const clearError = () => setError(null);
+  const clearWarning = () => setApiWarning(null);
 
   // Geocoding
   const geocodeAddress = useCallback(async (address: string): Promise<GeocodeResponse | null> => {
@@ -54,6 +57,36 @@ export const usePlaces = () => {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao buscar lugares';
       setError(errorMessage);
       setPlaces([]);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Busca híbrida (local + Google Places API)
+  const hybridSearch = useCallback(async (params: SearchParams) => {
+    try {
+      setIsLoading(true);
+      clearError();
+      clearWarning();
+      
+      const response = await placesService.hybridSearch(params);
+      setPlaces(response.data);
+      setSearchCenter(response.center);
+      setSearchRadius(response.radius_meters);
+      setHybridSummary(response.summary);
+      
+      // Set warning if present
+      if (response.warning) {
+        setApiWarning(response.warning);
+      }
+      
+      return response;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao buscar lugares';
+      setError(errorMessage);
+      setPlaces([]);
+      setHybridSummary(null);
       return null;
     } finally {
       setIsLoading(false);
@@ -114,6 +147,8 @@ export const usePlaces = () => {
     setPlaces([]);
     setSearchCenter(null);
     setError(null);
+    setHybridSummary(null);
+    setApiWarning(null);
   }, []);
 
   // Exportar dados (simulado - implementar conforme necessário)
@@ -146,14 +181,18 @@ export const usePlaces = () => {
     error,
     searchCenter,
     searchRadius,
+    hybridSummary,
+    apiWarning,
     
     // Ações
     geocodeAddress,
     searchNearby,
+    hybridSearch,
     searchByAddress,
     searchAdvanced,
     clearResults,
     clearError,
+    clearWarning,
     exportToExcel,
     exportToPDF,
     

@@ -32,7 +32,6 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { usePlaces } from '../hooks/usePlaces';
 import { authService } from '../services/auth';
-import { authService } from '../services/auth';
 
 const DashboardPage: React.FC = () => {
   const { user, logout } = useAuth();
@@ -41,12 +40,14 @@ const DashboardPage: React.FC = () => {
     isLoading, 
     error, 
     geocodeAddress,
-    searchNearby,
+    hybridSearch,
     searchByAddress, 
     searchAdvanced,
     clearResults,
     hasResults,
-    totalResults 
+    totalResults,
+    hybridSummary,
+    apiWarning
   } = usePlaces();
   const [searchAddress, setSearchAddress] = useState('');
   const [searchCity, setSearchCity] = useState('');
@@ -258,7 +259,7 @@ const DashboardPage: React.FC = () => {
       searchParams.hasPhone = true;
     }
 
-    await searchNearby(searchParams);
+    await hybridSearch(searchParams);
   };
 
   const toggleCategory = (category: string) => {
@@ -640,6 +641,55 @@ const DashboardPage: React.FC = () => {
               </div>
             )}
 
+            {/* API Warning Message */}
+            {apiWarning && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-center gap-2">
+                <span className="text-lg">⚠️</span>
+                <div>
+                  <h3 className="font-semibold text-yellow-800 text-sm">Aviso</h3>
+                  <p className="text-yellow-700 text-xs">{apiWarning}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Hybrid Search Summary */}
+            {hybridSummary && hasResults && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-800 text-sm mb-3 flex items-center gap-2">
+                  <Activity size={16} />
+                  Resumo da Busca
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white rounded-lg p-3 border border-blue-100">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-xs text-slate-600">Banco Local</span>
+                    </div>
+                    <p className="text-xl font-bold text-slate-800">{hybridSummary.local}</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 border border-blue-100">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                      <span className="text-xs text-slate-600">Google Places</span>
+                    </div>
+                    <p className="text-xl font-bold text-slate-800">{hybridSummary.google}</p>
+                  </div>
+                </div>
+                {hybridSummary.radius_limited && (
+                  <div className="mt-3 flex items-center gap-2 text-xs text-blue-700">
+                    <Target size={14} />
+                    <span>Raio de busca foi limitado para otimizar custos</span>
+                  </div>
+                )}
+                {hybridSummary.from_recent_cache && (
+                  <div className="mt-2 flex items-center gap-2 text-xs text-blue-700">
+                    <Clock size={14} />
+                    <span>Usando cache recente (últimas 24h)</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Export Buttons */}
             {hasResults && (
               <div className="grid grid-cols-2 gap-2">
@@ -670,38 +720,57 @@ const DashboardPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                  {places.map((place, index) => (
-                    <div
-                      key={place.id}
-                      onClick={() => handlePlaceClick(place)}
-                      className="p-3 bg-slate-50 rounded-lg hover:bg-blue-50 cursor-pointer transition-all border border-slate-200 hover:border-blue-300"
-                    >
-                      <div className="flex items-start gap-2">
-                        <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
-                          {index + 1}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-slate-800 text-sm truncate">{place.name}</h4>
-                          <p className="text-xs text-slate-600 truncate">{place.address}</p>
-                          <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">
-                              {place.category}
-                            </span>
-                            {place.distance_km && (
-                              <span className="text-xs text-green-600 font-semibold">
-                                📍 {place.distance_km} km
+                  {places.map((place, index) => {
+                    const placeWithMetadata = place as any; // Cast to access metadata
+                    const isFromGoogle = placeWithMetadata.metadata?.source === 'google';
+                    
+                    return (
+                      <div
+                        key={place.id}
+                        onClick={() => handlePlaceClick(place)}
+                        className="p-3 bg-slate-50 rounded-lg hover:bg-blue-50 cursor-pointer transition-all border border-slate-200 hover:border-blue-300"
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                            {index + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-bold text-slate-800 text-sm truncate">{place.name}</h4>
+                              {placeWithMetadata.metadata && (
+                                <span 
+                                  className={`px-2 py-0.5 rounded text-xs font-semibold flex-shrink-0 ${
+                                    isFromGoogle 
+                                      ? 'bg-orange-100 text-orange-700 border border-orange-300' 
+                                      : 'bg-green-100 text-green-700 border border-green-300'
+                                  }`}
+                                  title={isFromGoogle ? 'Resultado do Google Places API' : 'Resultado do banco local'}
+                                >
+                                  {isFromGoogle ? '🌐 Google' : '💾 Local'}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-600 truncate">{place.address}</p>
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                              <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">
+                                {place.category}
                               </span>
-                            )}
-                            {place.rating && (
-                              <span className="text-xs text-yellow-600">
-                                ⭐ {place.rating}
-                              </span>
-                            )}
+                              {place.distance_km && (
+                                <span className="text-xs text-green-600 font-semibold">
+                                  📍 {place.distance_km} km
+                                </span>
+                              )}
+                              {place.rating && (
+                                <span className="text-xs text-yellow-600">
+                                  ⭐ {place.rating}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
