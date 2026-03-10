@@ -16,6 +16,9 @@ export class PlacesService {
     if (params.lng) queryParams.append('lng', params.lng.toString());
     if (params.radius) queryParams.append('radius', params.radius.toString());
     if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params.category) queryParams.append('category', params.category);
+    if (params.minRating) queryParams.append('minRating', params.minRating.toString());
+    if (params.hasPhone) queryParams.append('hasPhone', params.hasPhone.toString());
     
     return apiClient.get<PlacesResponse>(`/places/nearby?${queryParams.toString()}`);
   }

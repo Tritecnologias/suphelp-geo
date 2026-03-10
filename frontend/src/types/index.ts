@@ -86,6 +86,8 @@ export interface SearchParams {
   radius?: number;
   category?: string;
   limit?: number;
+  minRating?: number;
+  hasPhone?: boolean;
 }
 
 export interface GeocodeResponse {
