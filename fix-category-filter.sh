@@ -1,19 +1,18 @@
 #!/bin/bash
-# Corrige o bug do filtro de categoria no backend
+# Script para corrigir o bug do filtro de categoria no backend
 
-cd ~/suphelp-geo/backend/src
+echo "🔧 Corrigindo placeholders SQL no filtro de categoria..."
 
-# Backup
-cp server.js server.js.backup
+# Fazer backup
+cp backend/src/server.js backend/src/server.js.backup
 
-# Corrige os placeholders SQL
-sed -i 's/category ILIKE \${paramIndex}/category ILIKE $${paramIndex}/g' server.js
-sed -i 's/rating >= \${paramCount}/rating >= $${paramCount}/g' server.js
-sed -i 's/LIMIT \${paramCount}/LIMIT $${paramCount}/g' server.js
+# Corrigir a linha 924: adicionar $ antes do paramIndex
+sed -i 's/category ILIKE ${paramIndex}/category ILIKE $${paramIndex}/g' backend/src/server.js
 
-echo "✅ Correções aplicadas!"
-echo "Verificando mudanças:"
-grep -n "ILIKE" server.js | head -5
+echo "✅ Correção aplicada!"
+echo ""
+echo "📝 Verificando a mudança:"
+grep -n "category ILIKE" backend/src/server.js | head -5
 
-pm2 restart suphelp-geo
-echo "✅ Backend reiniciado!"
+echo ""
+echo "🔄 Agora execute: pm2 restart suphelp-geo"
