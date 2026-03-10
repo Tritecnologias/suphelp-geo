@@ -52,7 +52,6 @@ const DashboardPage: React.FC = () => {
   const [searchCity, setSearchCity] = useState('');
   const [searchState, setSearchState] = useState('');
   const [searchNeighborhood, setSearchNeighborhood] = useState('');
-  const [searchNeighborhood2, setSearchNeighborhood2] = useState('');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchRadius, setSearchRadius] = useState(5000);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -516,16 +515,13 @@ const DashboardPage: React.FC = () => {
                   <label className="block text-sm font-bold text-slate-800 mb-2">
                     Bairro
                   </label>
-                  <select
-                    value={searchNeighborhood2}
-                    onChange={(e) => setSearchNeighborhood2(e.target.value)}
+                  <input
+                    type="text"
+                    value={searchNeighborhood}
+                    onChange={(e) => setSearchNeighborhood(e.target.value)}
+                    placeholder="Digite o bairro (opcional)"
                     className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-600"
-                  >
-                    <option value="">Selecione o bairro</option>
-                    <option value="Centro">Centro</option>
-                    <option value="Jardim">Jardim</option>
-                    <option value="Vila">Vila</option>
-                  </select>
+                  />
                 </div>
 
                 {/* Categoria */}
