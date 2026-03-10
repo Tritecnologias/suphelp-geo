@@ -957,6 +957,62 @@ app.get('/api/places/nearby', async (req, res) => {
   }
 });
 
+// --- Rota 7.1: Busca Híbrida (Local + Google Places API) ---
+app.get('/api/places/hybrid-search', async (req, res) => {
+  try {
+    const { lat, lng, radius = 5000, limit = 50, category, minRating, hasPhone } = req.query;
+    
+    console.log(`🔍 Busca híbrida recebida: lat=${lat}, lng=${lng}, radius=${radius}, category="${category}", minRating=${minRating}, hasPhone=${hasPhone}`);
+    
+    // Validações de parâmetros obrigatórios
+    if (!lat || !lng) {
+      return res.status(400).json({ 
+        error: "Parâmetros obrigatórios: lat, lng" 
+      });
+    }
+    
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    const radiusMeters = parseFloat(radius);
+    
+    if (isNaN(latitude) || isNaN(longitude) || isNaN(radiusMeters)) {
+      return res.status(400).json({ 
+        error: "Coordenadas ou raio inválidos" 
+      });
+    }
+    
+    // Importar e instanciar HybridSearchService
+    const HybridSearchService = require('./services/hybridSearchService');
+    const hybridSearchService = new HybridSearchService({
+      pool,
+      googleApiKey: process.env.GOOGLE_PLACES_API_KEY
+    });
+    
+    // Chamar serviço de busca híbrida
+    const result = await hybridSearchService.search({
+      lat: latitude,
+      lng: longitude,
+      radius: radiusMeters,
+      category,
+      minRating,
+      hasPhone,
+      limit
+    });
+    
+    console.log(`✅ Busca híbrida concluída: ${result.total} resultados (local: ${result.summary.local}, google: ${result.summary.google})`);
+    
+    // Retornar resposta formatada
+    res.json(result);
+    
+  } catch (err) {
+    console.error('❌ Erro na busca híbrida:', err);
+    res.status(500).json({ 
+      error: "Erro ao executar busca híbrida",
+      details: err.message 
+    });
+  }
+});
+
 // --- Rota 8: Busca Avançada com Filtros ---
 app.get('/api/places/search', async (req, res) => {
   try {
