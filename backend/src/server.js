@@ -423,6 +423,72 @@ app.get('/api/admin/list', authenticateAdmin, async (req, res) => {
   }
 });
 
+// --- Rota: Editar Administrador (apenas super_admin) ---
+app.put('/api/admin/:id', authenticateAdmin, async (req, res) => {
+  try {
+    if (req.admin.role !== 'super_admin') {
+      return res.status(403).json({ error: 'Apenas super_admin pode editar administradores' });
+    }
+
+    const { id } = req.params;
+    const { nome, email, role, status, senha } = req.body;
+
+    // Não permite editar a si mesmo por esta rota
+    if (parseInt(id) === req.admin.id) {
+      return res.status(400).json({ error: 'Use o perfil para editar seus próprios dados' });
+    }
+
+    const target = await pool.query('SELECT id FROM admins WHERE id = $1', [id]);
+    if (target.rows.length === 0) {
+      return res.status(404).json({ error: 'Administrador não encontrado' });
+    }
+
+    let query = 'UPDATE admins SET nome=$1, email=$2, role=$3, status=$4, updated_at=CURRENT_TIMESTAMP';
+    const params = [nome, email, role, status];
+
+    if (senha && senha.length >= 6) {
+      const hash = await bcrypt.hash(senha, 10);
+      query += ', password_hash=$5 WHERE id=$6';
+      params.push(hash, id);
+    } else {
+      query += ' WHERE id=$5';
+      params.push(id);
+    }
+
+    await pool.query(query, params);
+    res.json({ success: true, message: 'Administrador atualizado com sucesso' });
+  } catch (err) {
+    console.error('Erro ao editar admin:', err);
+    res.status(500).json({ error: 'Erro ao editar administrador' });
+  }
+});
+
+// --- Rota: Excluir Administrador (apenas super_admin) ---
+app.delete('/api/admin/:id', authenticateAdmin, async (req, res) => {
+  try {
+    if (req.admin.role !== 'super_admin') {
+      return res.status(403).json({ error: 'Apenas super_admin pode excluir administradores' });
+    }
+
+    const { id } = req.params;
+
+    if (parseInt(id) === req.admin.id) {
+      return res.status(400).json({ error: 'Você não pode excluir a si mesmo' });
+    }
+
+    const target = await pool.query('SELECT id, role FROM admins WHERE id = $1', [id]);
+    if (target.rows.length === 0) {
+      return res.status(404).json({ error: 'Administrador não encontrado' });
+    }
+
+    await pool.query('DELETE FROM admins WHERE id = $1', [id]);
+    res.json({ success: true, message: 'Administrador excluído com sucesso' });
+  } catch (err) {
+    console.error('Erro ao excluir admin:', err);
+    res.status(500).json({ error: 'Erro ao excluir administrador' });
+  }
+});
+
 // --- Rota 8: Perfil do Administrador (Protegida) ---
 app.get('/api/admin/profile', authenticateAdmin, async (req, res) => {
   try {

@@ -62,6 +62,9 @@ const AdminPage: React.FC = () => {
     logo: null as File | null
   });
   const [admins, setAdmins] = useState<Admin[]>([]);
+  const [currentAdmin, setCurrentAdmin] = useState<Admin | null>(null);
+  const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null);
+  const [editForm, setEditForm] = useState({ nome: '', email: '', role: 'admin', status: 'active', senha: '' });
   const [recentPlaces, setRecentPlaces] = useState<Place[]>([]);
   const [searchResults, setSearchResults] = useState<Place[]>([]);
 
@@ -366,11 +369,51 @@ const AdminPage: React.FC = () => {
   const loadAdmins = async () => {
     try {
       setLoading(true);
-      const adminsList = await adminService.listAdmins();
+      const [adminsList, profile] = await Promise.all([
+        adminService.listAdmins(),
+        adminService.getProfile()
+      ]);
       setAdmins(adminsList);
+      setCurrentAdmin(profile);
     } catch (error) {
       console.error('Erro ao carregar admins:', error);
       showMessage('Erro ao carregar administradores', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para editar administrador
+  const startEditAdmin = (admin: Admin) => {
+    setEditingAdmin(admin);
+    setEditForm({ nome: admin.nome, email: admin.email, role: admin.role, status: admin.status, senha: '' });
+  };
+
+  const saveEditAdmin = async () => {
+    if (!editingAdmin) return;
+    try {
+      setLoading(true);
+      await adminService.updateAdmin(editingAdmin.id, editForm);
+      showMessage('Administrador atualizado com sucesso!');
+      setEditingAdmin(null);
+      loadAdmins();
+    } catch (error: any) {
+      showMessage(error.message || 'Erro ao atualizar administrador', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para excluir administrador
+  const deleteAdmin = async (admin: Admin) => {
+    if (!confirm(`Excluir o administrador "${admin.nome}"? Esta ação não pode ser desfeita.`)) return;
+    try {
+      setLoading(true);
+      await adminService.deleteAdmin(admin.id);
+      showMessage('Administrador excluído com sucesso!');
+      loadAdmins();
+    } catch (error: any) {
+      showMessage(error.message || 'Erro ao excluir administrador', 'error');
     } finally {
       setLoading(false);
     }
@@ -1253,6 +1296,69 @@ const AdminPage: React.FC = () => {
                 </div>
               )}
 
+              {/* Edit Admin Modal */}
+              {editingAdmin && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+                    <h4 className="font-semibold text-lg mb-4">Editar Administrador</h4>
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        placeholder="Nome completo"
+                        value={editForm.nome}
+                        onChange={(e) => setEditForm({...editForm, nome: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                      <input
+                        type="email"
+                        placeholder="Email"
+                        value={editForm.email}
+                        onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                      <input
+                        type="password"
+                        placeholder="Nova senha (deixe vazio para não alterar)"
+                        value={editForm.senha}
+                        onChange={(e) => setEditForm({...editForm, senha: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                      <select
+                        value={editForm.role}
+                        onChange={(e) => setEditForm({...editForm, role: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="admin">Administrador</option>
+                        <option value="super_admin">Super Administrador</option>
+                      </select>
+                      <select
+                        value={editForm.status}
+                        onChange={(e) => setEditForm({...editForm, status: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="active">Ativo</option>
+                        <option value="inactive">Inativo</option>
+                      </select>
+                    </div>
+                    <div className="flex gap-3 mt-5">
+                      <button
+                        onClick={saveEditAdmin}
+                        disabled={loading}
+                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+                      >
+                        Salvar
+                      </button>
+                      <button
+                        onClick={() => setEditingAdmin(null)}
+                        className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Admins Table */}
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -1265,6 +1371,9 @@ const AdminPage: React.FC = () => {
                       <th className="text-left py-3 px-4">Status</th>
                       <th className="text-left py-3 px-4">Último Login</th>
                       <th className="text-left py-3 px-4">Criado em</th>
+                      {currentAdmin?.role === 'super_admin' && (
+                        <th className="text-left py-3 px-4">Ações</th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -1297,6 +1406,28 @@ const AdminPage: React.FC = () => {
                         <td className="py-3 px-4 text-sm text-gray-600">
                           {new Date(admin.created_at).toLocaleString('pt-BR')}
                         </td>
+                        {currentAdmin?.role === 'super_admin' && (
+                          <td className="py-3 px-4">
+                            {admin.id !== currentAdmin.id && (
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => startEditAdmin(admin)}
+                                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                  title="Editar"
+                                >
+                                  <Edit size={15} />
+                                </button>
+                                <button
+                                  onClick={() => deleteAdmin(admin)}
+                                  className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                  title="Excluir"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>

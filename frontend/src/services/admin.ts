@@ -11,6 +11,11 @@ export class AdminService {
     return response.admins;
   }
 
+  // Perfil do admin logado
+  async getProfile(): Promise<Admin> {
+    return apiClient.get<Admin>('/admin/profile');
+  }
+
   // Criar administrador
   async createAdmin(adminData: {
     nome: string;
@@ -27,6 +32,22 @@ export class AdminService {
     novaSenha: string;
   }): Promise<ApiResponse<any>> {
     return apiClient.put<ApiResponse<any>>('/admin/change-password', passwordData);
+  }
+
+  // Editar administrador (super_admin only)
+  async updateAdmin(id: number, data: {
+    nome: string;
+    email: string;
+    role: string;
+    status: string;
+    senha?: string;
+  }): Promise<ApiResponse<any>> {
+    return apiClient.put<ApiResponse<any>>(`/admin/${id}`, data);
+  }
+
+  // Excluir administrador (super_admin only)
+  async deleteAdmin(id: number): Promise<ApiResponse<any>> {
+    return apiClient.delete<ApiResponse<any>>(`/admin/${id}`);
   }
 
   // === USER MANAGEMENT (Mock - implementar no backend) ===
