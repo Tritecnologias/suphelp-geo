@@ -215,17 +215,16 @@ const DashboardPage: React.FC = () => {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Montar endereço completo
-    let fullAddress = '';
-    if (searchCity) fullAddress += searchCity;
-    if (searchState) fullAddress += (fullAddress ? ', ' : '') + searchState;
-    if (searchNeighborhood) fullAddress += (fullAddress ? ', ' : '') + searchNeighborhood;
-    if (searchKeyword) fullAddress += (fullAddress ? ', ' : '') + searchKeyword;
-    
-    if (!fullAddress.trim()) {
-      alert('Digite pelo menos a cidade para buscar');
+    // Montar endereço completo - cidade é obrigatória
+    if (!searchCity.trim()) {
+      alert('Digite a cidade para buscar');
       return;
     }
+
+    let fullAddress = searchCity.trim();
+    if (searchNeighborhood) fullAddress = searchNeighborhood.trim() + ', ' + fullAddress;
+    if (searchState) fullAddress += ', ' + searchState;
+    if (searchKeyword) fullAddress += ', ' + searchKeyword;
 
     // SEMPRE fazer busca por raio (geocode + nearby)
     // Primeiro geocodifica o endereço
