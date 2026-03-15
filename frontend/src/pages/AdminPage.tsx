@@ -370,26 +370,26 @@ const AdminPage: React.FC = () => {
     try {
       setLoading(true);
 
-      // Ler role do token JWT diretamente (mais confiável)
+      const adminsList = await adminService.listAdmins();
+      setAdmins(adminsList);
+
+      // Identificar o admin logado pela lista (usando email do token)
       const token = localStorage.getItem('token');
       if (token) {
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
-          setCurrentAdmin({ 
-            id: payload.id, 
-            nome: payload.nome || '', 
-            email: payload.email || '', 
-            role: payload.role || 'admin', 
-            status: 'active', 
-            created_at: '' 
-          });
+          console.log('[AdminPage] Token payload:', payload);
+          // Buscar na lista de admins pelo email para pegar o role correto
+          const me = adminsList.find(a => a.email === payload.email);
+          if (me) {
+            setCurrentAdmin(me);
+          } else {
+            setCurrentAdmin({ id: payload.id, nome: '', email: payload.email || '', role: payload.role || 'admin', status: 'active', created_at: '' });
+          }
         } catch (e) {
           console.error('Erro ao decodificar token:', e);
         }
       }
-
-      const adminsList = await adminService.listAdmins();
-      setAdmins(adminsList);
     } catch (error) {
       console.error('Erro ao carregar admins:', error);
       showMessage('Erro ao carregar administradores', 'error');
