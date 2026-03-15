@@ -426,17 +426,16 @@ app.get('/api/admin/list', authenticateAdmin, async (req, res) => {
 // --- Rota: Editar Administrador (apenas super_admin) ---
 app.put('/api/admin/:id', authenticateAdmin, async (req, res) => {
   try {
-    if (req.admin.role !== 'super_admin') {
+    // Verificar role real na tabela admins pelo email do token
+    const callerResult = await pool.query('SELECT role FROM admins WHERE email = $1', [req.admin.email]);
+    const callerRole = callerResult.rows[0]?.role;
+
+    if (callerRole !== 'super_admin') {
       return res.status(403).json({ error: 'Apenas super_admin pode editar administradores' });
     }
 
     const { id } = req.params;
     const { nome, email, role, status, senha } = req.body;
-
-    // Não permite editar a si mesmo por esta rota
-    if (parseInt(id) === req.admin.id) {
-      return res.status(400).json({ error: 'Use o perfil para editar seus próprios dados' });
-    }
 
     const target = await pool.query('SELECT id FROM admins WHERE id = $1', [id]);
     if (target.rows.length === 0) {
@@ -466,17 +465,17 @@ app.put('/api/admin/:id', authenticateAdmin, async (req, res) => {
 // --- Rota: Excluir Administrador (apenas super_admin) ---
 app.delete('/api/admin/:id', authenticateAdmin, async (req, res) => {
   try {
-    if (req.admin.role !== 'super_admin') {
+    // Verificar role real na tabela admins pelo email do token
+    const callerResult = await pool.query('SELECT role FROM admins WHERE email = $1', [req.admin.email]);
+    const callerRole = callerResult.rows[0]?.role;
+
+    if (callerRole !== 'super_admin') {
       return res.status(403).json({ error: 'Apenas super_admin pode excluir administradores' });
     }
 
     const { id } = req.params;
 
-    if (parseInt(id) === req.admin.id) {
-      return res.status(400).json({ error: 'Você não pode excluir a si mesmo' });
-    }
-
-    const target = await pool.query('SELECT id, role FROM admins WHERE id = $1', [id]);
+    const target = await pool.query('SELECT id FROM admins WHERE id = $1', [id]);
     if (target.rows.length === 0) {
       return res.status(404).json({ error: 'Administrador não encontrado' });
     }
