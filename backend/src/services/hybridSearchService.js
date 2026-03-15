@@ -130,7 +130,14 @@ class HybridSearchService {
       console.log(`[HybridSearch] Google Places API retornou ${googleResults.length} resultados em ${responseTime}ms`);
       
       // 5. Parse e merge (Requirement 2.5)
-      const parsedResults = parseMany(googleResults);
+      // Usar a categoria buscada para os resultados do Google quando não há mapeamento
+      const parsedResults = parseMany(googleResults).map(place => ({
+        ...place,
+        // Se a categoria ficou como 'Estabelecimento' e há uma categoria buscada, usar a categoria buscada
+        category: (place.category === 'Estabelecimento' && category)
+          ? category.split(',')[0].trim()
+          : place.category
+      }));
       const mergedResults = this.mergeAndDeduplicate(localResults, parsedResults);
       
       // 6. Log e cache (async) (Requirement 5.1)
@@ -143,6 +150,9 @@ class HybridSearchService {
       });
       
       this.cacheWriter.cacheResults(parsedResults);
+      
+      // Salvar no search_cache para evitar chamadas repetidas
+      this.saveSearchCache(latitude, longitude, radiusMeters, mergedResults.length);
       
       // 7. Verificar se raio foi limitado
       const radiusLimited = this.googlePlacesService.isRadiusLimited(radiusMeters);
@@ -344,6 +354,23 @@ class HybridSearchService {
     };
   }
   
+  /**
+   * Salva registro no search_cache após busca no Google
+   * @private
+   */
+  async saveSearchCache(lat, lng, radius, resultCount) {
+    setImmediate(async () => {
+      try {
+        await this.pool.query(`
+          INSERT INTO search_cache (lat, lng, radius, results_count, status, created_at)
+          VALUES ($1, $2, $3, $4, 'completed', NOW())
+        `, [lat, lng, radius, resultCount]);
+      } catch (err) {
+        // Ignorar erros de cache silenciosamente
+      }
+    });
+  }
+
   /**
    * Mapeia categoria local para tipo do Google Places
    * 
