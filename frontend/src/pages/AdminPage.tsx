@@ -369,12 +369,27 @@ const AdminPage: React.FC = () => {
   const loadAdmins = async () => {
     try {
       setLoading(true);
-      const [adminsList, profile] = await Promise.all([
-        adminService.listAdmins(),
-        adminService.getProfile()
-      ]);
+
+      // Ler role do token JWT diretamente (mais confiável)
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          setCurrentAdmin({ 
+            id: payload.id, 
+            nome: payload.nome || '', 
+            email: payload.email || '', 
+            role: payload.role || 'admin', 
+            status: 'active', 
+            created_at: '' 
+          });
+        } catch (e) {
+          console.error('Erro ao decodificar token:', e);
+        }
+      }
+
+      const adminsList = await adminService.listAdmins();
       setAdmins(adminsList);
-      setCurrentAdmin(profile);
     } catch (error) {
       console.error('Erro ao carregar admins:', error);
       showMessage('Erro ao carregar administradores', 'error');
