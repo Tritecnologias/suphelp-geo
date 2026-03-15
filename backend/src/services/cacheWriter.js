@@ -97,8 +97,7 @@ class CacheWriter {
           website = COALESCE(website, $2),
           rating = COALESCE(rating, $3),
           user_ratings_total = COALESCE(user_ratings_total, $4),
-          category = CASE WHEN category = 'Estabelecimento' OR category IS NULL THEN $5 ELSE category END,
-          updated_at = CURRENT_TIMESTAMP
+          category = CASE WHEN category = 'Estabelecimento' OR category IS NULL THEN $5 ELSE category END
         WHERE google_place_id = $6
       `, [
         place.phone || null, place.website || null,

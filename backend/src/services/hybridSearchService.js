@@ -95,14 +95,15 @@ class HybridSearchService {
     }
     
     // 3. Verificar cache recente (Requirement 9.1, 9.2)
+    // Só pula o Google se o cache existe E há resultados locais suficientes
     const recentCache = await this.checkRecentCache({
       lat: latitude,
       lng: longitude,
       radius: radiusMeters
     });
     
-    if (recentCache) {
-      console.log(`[HybridSearch] Cache recente encontrado, usando apenas resultados locais`);
+    if (recentCache && localResults.length > 0) {
+      console.log(`[HybridSearch] Cache recente encontrado com ${localResults.length} resultados locais`);
       return this.formatResponse({
         lat: latitude,
         lng: longitude,
@@ -112,6 +113,10 @@ class HybridSearchService {
         fromRecentCache: true,
         radiusLimited: false
       });
+    }
+    
+    if (recentCache && localResults.length === 0) {
+      console.log(`[HybridSearch] Cache recente encontrado mas sem resultados locais - chamando Google novamente`);
     }
     
     // 4. Chamar Google Places API (Requirement 2.2)
@@ -361,12 +366,23 @@ class HybridSearchService {
   async saveSearchCache(lat, lng, radius, resultCount) {
     setImmediate(async () => {
       try {
-        await this.pool.query(`
-          INSERT INTO search_cache (lat, lng, radius, results_count, status, created_at)
-          VALUES ($1, $2, $3, $4, 'completed', NOW())
-        `, [lat, lng, radius, resultCount]);
+        // Verificar se já existe entrada recente (últimos 5 minutos) para evitar duplicatas
+        const existing = await this.pool.query(`
+          SELECT id FROM search_cache
+          WHERE ABS(lat - $1) < 0.001 AND ABS(lng - $2) < 0.001
+            AND radius = $3 AND created_at > NOW() - INTERVAL '5 minutes'
+          LIMIT 1
+        `, [lat, lng, radius]);
+
+        if (existing.rows.length === 0) {
+          await this.pool.query(`
+            INSERT INTO search_cache (lat, lng, radius, results_count, status, created_at)
+            VALUES ($1, $2, $3, $4, 'completed', NOW())
+          `, [lat, lng, radius, resultCount]);
+          console.log(`[HybridSearch] Cache salvo: lat=${lat}, lng=${lng}, radius=${radius}, results=${resultCount}`);
+        }
       } catch (err) {
-        // Ignorar erros de cache silenciosamente
+        console.error('[HybridSearch] Erro ao salvar search_cache:', err.message);
       }
     });
   }
