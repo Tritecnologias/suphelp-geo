@@ -164,10 +164,10 @@ app.post('/api/auth/register', async (req, res) => {
       'demo': 999999
     };
 
-    // Insere usuário
+    // Insere usuário (criado pelo admin já fica ativo)
     const result = await pool.query(`
       INSERT INTO users (nome, email, senha_hash, plano, searches_limit, status)
-      VALUES ($1, $2, $3, $4, $5, 'pending')
+      VALUES ($1, $2, $3, $4, $5, 'active')
       RETURNING id, nome, email, plano, status, created_at
     `, [nome, email, senhaHash, plano, limits[plano] || 100]);
 
@@ -218,7 +218,7 @@ app.post('/api/auth/login', async (req, res) => {
     const user = result.rows[0];
 
     // Verifica senha
-    const senhaValida = await bcrypt.compare(senha, user.password_hash);
+    const senhaValida = await bcrypt.compare(senha, user.senha_hash);
 
     if (!senhaValida) {
       return res.status(401).json({ 
