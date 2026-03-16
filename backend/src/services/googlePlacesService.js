@@ -49,8 +49,108 @@ class GooglePlacesService {
 
   /**
    * Executa requisição na Places API (New) com timeout de 5 segundos
+   * Se não há tipo definido, usa Text Search com keyword para maior precisão
    */
   executeNewApiRequest(location, radius, type, keyword) {
+    // Se não há tipo mas há keyword, usar Text Search API para maior precisão
+    if (!type && keyword) {
+      return this.executeTextSearchRequest(location, radius, keyword);
+    }
+    return this.executeNearbySearchRequest(location, radius, type, keyword);
+  }
+
+  /**
+   * Text Search API - mais precisa para categorias sem tipo direto (ex: Condomínio)
+   */
+  executeTextSearchRequest(location, radius, keyword) {
+    return new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => reject(new Error('TIMEOUT')), this.timeout);
+
+      // Usar a primeira categoria como query principal
+      const query = keyword.split(',')[0].trim();
+
+      const body = {
+        textQuery: query,
+        locationBias: {
+          circle: {
+            center: { latitude: location.lat, longitude: location.lng },
+            radius: radius
+          }
+        },
+        maxResultCount: 20,
+        languageCode: 'pt-BR'
+      };
+
+      const postData = JSON.stringify(body);
+
+      const fieldMask = [
+        'places.id',
+        'places.displayName',
+        'places.formattedAddress',
+        'places.location',
+        'places.types',
+        'places.rating',
+        'places.userRatingCount',
+        'places.nationalPhoneNumber',
+        'places.websiteUri'
+      ].join(',');
+
+      const options = {
+        hostname: 'places.googleapis.com',
+        path: '/v1/places:searchText',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': this.apiKey,
+          'X-Goog-FieldMask': fieldMask,
+          'Content-Length': Buffer.byteLength(postData)
+        }
+      };
+
+      const request = https.request(options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => {
+          clearTimeout(timeoutId);
+          try {
+            const json = JSON.parse(data);
+            if (json.error) {
+              reject(new Error(json.error.status || 'UNKNOWN_ERROR'));
+              return;
+            }
+            const results = (json.places || []).map(place => ({
+              place_id: place.id,
+              name: place.displayName?.text || '',
+              formatted_address: place.formattedAddress || '',
+              geometry: {
+                location: {
+                  lat: place.location?.latitude,
+                  lng: place.location?.longitude
+                }
+              },
+              types: place.types || [],
+              rating: place.rating,
+              user_ratings_total: place.userRatingCount,
+              formatted_phone_number: place.nationalPhoneNumber,
+              website: place.websiteUri
+            }));
+            resolve(results);
+          } catch (err) {
+            reject(new Error('PARSE_ERROR'));
+          }
+        });
+      });
+
+      request.on('error', (err) => { clearTimeout(timeoutId); reject(err); });
+      request.write(postData);
+      request.end();
+    });
+  }
+
+  /**
+   * Nearby Search API - para categorias com tipo direto (hospital, gym, etc.)
+   */
+  executeNearbySearchRequest(location, radius, type, keyword) {
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         reject(new Error('TIMEOUT'));

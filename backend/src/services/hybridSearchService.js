@@ -397,8 +397,9 @@ class HybridSearchService {
   mapCategoryToGoogleType(category) {
     if (!category) return null;
     
+    // Apenas categorias com mapeamento direto e preciso no Google Places
+    // Condomínio e Prédio Corporativo NÃO têm tipo direto - usar keyword search
     const categoryMap = {
-      'Condomínio': 'lodging',
       'Hospital': 'hospital',
       'Universidade': 'university',
       'Escola': 'school',
@@ -409,7 +410,13 @@ class HybridSearchService {
       'Restaurante': 'restaurant'
     };
     
-    return categoryMap[category] || null;
+    // Para múltiplas categorias, pegar a primeira que tem mapeamento
+    const categories = category.split(',').map(c => c.trim());
+    for (const cat of categories) {
+      if (categoryMap[cat]) return categoryMap[cat];
+    }
+    
+    return null; // Sem tipo = busca geral por proximidade
   }
   
   /**
