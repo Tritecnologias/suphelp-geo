@@ -693,24 +693,52 @@ const DashboardPage: React.FC = () => {
             )}
 
             {/* Export Buttons */}
-            {hasResults && (
-              <div className="grid grid-cols-2 gap-2">
-                <button 
-                  onClick={handleExportExcel}
-                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all"
-                >
-                  <Download size={14} className="sm:w-4 sm:h-4" />
-                  <span>Excel</span>
-                </button>
-                <button 
-                  onClick={handleExportPDF}
-                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all"
-                >
-                  <FileText size={14} className="sm:w-4 sm:h-4" />
-                  <span>PDF</span>
-                </button>
-              </div>
-            )}
+            {hasResults && (() => {
+              const isDemo = user?.plano === 'demo';
+              return isDemo ? (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      disabled
+                      className="flex items-center justify-center gap-2 bg-slate-200 text-slate-400 px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm cursor-not-allowed"
+                      title="Disponível apenas em planos pagos"
+                    >
+                      <Download size={14} className="sm:w-4 sm:h-4" />
+                      <span>Excel</span>
+                    </button>
+                    <button
+                      disabled
+                      className="flex items-center justify-center gap-2 bg-slate-200 text-slate-400 px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm cursor-not-allowed"
+                      title="Disponível apenas em planos pagos"
+                    >
+                      <FileText size={14} className="sm:w-4 sm:h-4" />
+                      <span>PDF</span>
+                    </button>
+                  </div>
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+                    <p className="text-amber-800 text-xs font-semibold">🔒 Assine para exportar os dados</p>
+                    <p className="text-amber-600 text-xs mt-0.5">Exporte em Excel e PDF com um plano pago</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={handleExportExcel}
+                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all"
+                  >
+                    <Download size={14} className="sm:w-4 sm:h-4" />
+                    <span>Excel</span>
+                  </button>
+                  <button
+                    onClick={handleExportPDF}
+                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all"
+                  >
+                    <FileText size={14} className="sm:w-4 sm:h-4" />
+                    <span>PDF</span>
+                  </button>
+                </div>
+              );
+            })()}
 
             {/* Results List */}
             {hasResults && (

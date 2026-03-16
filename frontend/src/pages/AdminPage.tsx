@@ -65,6 +65,8 @@ const AdminPage: React.FC = () => {
   const [currentAdmin, setCurrentAdmin] = useState<Admin | null>(null);
   const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null);
   const [editForm, setEditForm] = useState({ nome: '', email: '', role: 'admin', status: 'active', senha: '' });
+  const [showCreateUser, setShowCreateUser] = useState(false);
+  const [newUser, setNewUser] = useState({ nome: '', email: '', senha: '', plano: 'demo' });
   const [recentPlaces, setRecentPlaces] = useState<Place[]>([]);
   const [searchResults, setSearchResults] = useState<Place[]>([]);
 
@@ -452,6 +454,34 @@ const AdminPage: React.FC = () => {
     } catch (error: any) {
       console.error('Erro ao criar admin:', error);
       showMessage(error.message || 'Erro ao criar administrador', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para criar usuário
+  const createUser = async () => {
+    try {
+      if (!newUser.nome || !newUser.email || !newUser.senha) {
+        showMessage('Preencha todos os campos obrigatórios', 'error');
+        return;
+      }
+      setLoading(true);
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: newUser.nome, email: newUser.email, senha: newUser.senha, plano: newUser.plano })
+      });
+      const data = await response.json();
+      if (data.success) {
+        showMessage(`Usuário criado com sucesso! (plano: ${newUser.plano})`);
+        setShowCreateUser(false);
+        setNewUser({ nome: '', email: '', senha: '', plano: 'demo' });
+      } else {
+        showMessage(data.error || 'Erro ao criar usuário', 'error');
+      }
+    } catch (error: any) {
+      showMessage(error.message || 'Erro ao criar usuário', 'error');
     } finally {
       setLoading(false);
     }
@@ -1249,6 +1279,7 @@ const AdminPage: React.FC = () => {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">👥 Administradores do Sistema</h3>
+                <div className="flex gap-2">
                 <button
                   onClick={() => setShowCreateAdmin(true)}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -1256,7 +1287,70 @@ const AdminPage: React.FC = () => {
                   <UserPlus size={16} className="inline mr-2" />
                   Novo Administrador
                 </button>
+                <button
+                  onClick={() => setShowCreateUser(true)}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  <UserPlus size={16} className="inline mr-2" />
+                  Criar Usuário
+                </button>
               </div>
+              </div>
+
+              {/* Create User Form */}
+              {showCreateUser && (
+                <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                  <h4 className="font-medium mb-4">Criar Novo Usuário</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Nome completo"
+                      value={newUser.nome}
+                      onChange={(e) => setNewUser({...newUser, nome: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                    <input
+                      type="password"
+                      placeholder="Senha"
+                      value={newUser.senha}
+                      onChange={(e) => setNewUser({...newUser, senha: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                    <select
+                      value={newUser.plano}
+                      onChange={(e) => setNewUser({...newUser, plano: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="demo">Demo (buscas ilimitadas, sem exportação)</option>
+                      <option value="basico">Básico (100 buscas)</option>
+                      <option value="profissional">Profissional (1000 buscas)</option>
+                      <option value="enterprise">Enterprise (ilimitado)</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-4 mt-4">
+                    <button
+                      onClick={createUser}
+                      disabled={loading}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                    >
+                      Criar
+                    </button>
+                    <button
+                      onClick={() => setShowCreateUser(false)}
+                      className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Create Admin Form */}
               {showCreateAdmin && (

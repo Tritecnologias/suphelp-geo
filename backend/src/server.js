@@ -160,7 +160,8 @@ app.post('/api/auth/register', async (req, res) => {
     const limits = {
       'basico': 100,
       'profissional': 1000,
-      'enterprise': 999999
+      'enterprise': 999999,
+      'demo': 999999
     };
 
     // Insere usuário

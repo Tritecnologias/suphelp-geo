@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Busca Híbrida</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #0891b2;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #0891b2;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9fafb;
+            border-left: 4px solid #0891b2;
+        }
+        button {
+            background: #0891b2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0e7490;
+        }
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #e2e8f0;
+        }
+        .success {
+            border-left: 4px solid #10b981;
+        }
+        .error {
+            border-left: 4px solid #ef4444;
+        }
+        .warning {
+            border-left: 4px solid #f59e0b;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 2px;
+        }
+        .badge-local {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-google {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0891b2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .stat-card {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0891b2;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste de Busca Híbrida</h1>
+        <p>Este teste valida a funcionalidade de busca híbrida (Local + Google Places API)</p>
+    </div>
+
+    <div class="container">
+        <h2>📍 Teste 1: Busca em Jundiaí (Dados Locais)</h2>
+        <p>Deve retornar apenas resultados locais, SEM chamar Google Places API</p>
+        <button onclick="testJundiai()">Executar Teste 1</button>
+        <div id="result1"></div>
+    </div>
+
+    <div class="container">
+        <h2>🌐 Teste 2: Busca em São Paulo (Fallback Google)</h2>
+        <p>Deve chamar Google Places API e combinar resultados</p>
+        <button onclick="testSaoPaulo()">Executar Teste 2</button>
+        <div id="result2"></div>
+    </div>
+
+    <div class="container">
+        <h2>🔍 Teste 3: Busca com Filtros</h2>
+        <p>Testa filtros de categoria, rating e telefone</p>
+        <button onclick="testFilters()">Executar Teste 3</button>
+        <div id="result3"></div>
+    </div>
+
+    <div class="container">
+        <h2>⚠️ Teste 4: Tratamento de Erros</h2>
+        <p>Testa comportamento com coordenadas inválidas</p>
+        <button onclick="testErrors()">Executar Teste 4</button>
+        <div id="result4"></div>
+    </div>
+
+    <div class="container">
+        <h2>📊 Verificar Logs no Banco</h2>
+        <p>Após executar os testes, verifique os logs no banco de dados:</p>
+        <pre>-- Ver logs de chamadas à API
+SELECT * FROM search_cache 
+ORDER BY created_at DESC 
+LIMIT 10;
+
+-- Ver lugares cacheados do Google
+SELECT id, name, address, google_place_id, created_at 
+FROM places 
+WHERE google_place_id IS NOT NULL 
+ORDER BY created_at DESC 
+LIMIT 10;</pre>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        async function testJundiai() {
+            const resultDiv = document.getElementById('result1');
+            resultDiv.innerHTML = '<div class="loading"></div> Executando...';
+
+            try {
+                const response = await fetch(`${API_BASE}/places/hybrid-search?lat=-23.1858&lng=-46.8978&radius=5000&limit=20`);
+                const data = await response.json();
+
+                const html = `
+                    <div class="result success">
+                        <h3>✅ Teste 1 - Sucesso</h3>
+                        <div class="stats">
+                            <div class="stat-card">
+                                <div class="stat-value">${data.total}</div>
+                                <div class="stat-label">Total de Resultados</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${data.summary.local}</div>
+                                <div class="stat-label">Resultados Locais</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${data.summary.google}</div>
+                                <div class="stat-label">Resultados Google</div>
+                            </div>
+                        </div>
+                        
+                        ${data.summary.from_recent_cache ? '<p>🕐 <strong>Usando cache recente (últimas 24h)</strong></p>' : ''}
+                        ${data.warning ? `<p class="warning">⚠️ ${data.warning}</p>` : ''}
+                        
+                        <h4>Primeiros 5 resultados:</h4>
+                        ${data.data.slice(0, 5).map(place => `
+                            <div style="margin: 10px 0; padding: 10px; background: #f9fafb; border-radius: 5px;">
+                                <strong>${place.name}</strong>
+                                <span class="badge badge-${place.metadata.source === 'local' ? 'local' : 'google'}">
+                                    ${place.metadata.source === 'local' ? '💾 Local' : '🌐 Google'}
+                                </span>
+                                <br>
+                                <small>${place.address}</small>
+                                <br>
+                                <small>📍 ${place.distance_km} km | ${place.category}</small>
+                            </div>
+                        `).join('')}
+                        
+                        <details>
+                            <summary>Ver JSON completo</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Erro no Teste 1</h3>
+                        <p>${error.message}</p>
+                        <p><strong>Verifique se o servidor está rodando:</strong></p>
+                        <pre>cd backend && npm start</pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function testSaoPaulo() {
+            const resultDiv = document.getElementById('result2');
+            resultDiv.innerHTML = '<div class="loading"></div> Executando...';
+
+            try {
+                const response = await fetch(`${API_BASE}/places/hybrid-search?lat=-23.5505&lng=-46.6333&radius=5000&limit=20`);
+                const data = await response.json();
+
+                const html = `
+                    <div class="result ${data.summary.google > 0 ? 'success' : 'warning'}">
+                        <h3>${data.summary.google > 0 ? '✅' : '⚠️'} Teste 2 - ${data.summary.google > 0 ? 'Sucesso' : 'Aviso'}</h3>
+                        <div class="stats">
+                            <div class="stat-card">
+                                <div class="stat-value">${data.total}</div>
+                                <div class="stat-label">Total de Resultados</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${data.summary.local}</div>
+                                <div class="stat-label">Resultados Locais</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${data.summary.google}</div>
+                                <div class="stat-label">Resultados Google</div>
+                            </div>
+                        </div>
+                        
+                        ${data.summary.radius_limited ? '<p>🎯 <strong>Raio foi limitado para otimizar custos</strong></p>' : ''}
+                        ${data.summary.from_recent_cache ? '<p>🕐 <strong>Usando cache recente (últimas 24h)</strong></p>' : ''}
+                        ${data.warning ? `<p class="warning">⚠️ ${data.warning}</p>` : ''}
+                        
+                        ${data.summary.google > 0 ? `
+                            <p>✅ <strong>API do Google foi chamada com sucesso!</strong></p>
+                            <p>Os resultados do Google foram salvos no banco local para futuras buscas.</p>
+                        ` : `
+                            <p>⚠️ <strong>API do Google não foi chamada</strong></p>
+                            <p>Possíveis motivos: resultados locais suficientes, cache recente, ou erro na API.</p>
+                        `}
+                        
+                        <h4>Primeiros 5 resultados:</h4>
+                        ${data.data.slice(0, 5).map(place => `
+                            <div style="margin: 10px 0; padding: 10px; background: #f9fafb; border-radius: 5px;">
+                                <strong>${place.name}</strong>
+                                <span class="badge badge-${place.metadata.source === 'local' ? 'local' : 'google'}">
+                                    ${place.metadata.source === 'local' ? '💾 Local' : '🌐 Google'}
+                                </span>
+                                <br>
+                                <small>${place.address}</small>
+                                <br>
+                                <small>📍 ${place.distance_km} km | ${place.category}</small>
+                            </div>
+                        `).join('')}
+                        
+                        <details>
+                            <summary>Ver JSON completo</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Erro no Teste 2</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testFilters() {
+            const resultDiv = document.getElementById('result3');
+            resultDiv.innerHTML = '<div class="loading"></div> Executando...';
+
+            try {
+                const response = await fetch(`${API_BASE}/places/hybrid-search?lat=-23.1858&lng=-46.8978&radius=5000&category=Hospital&minRating=4.0&hasPhone=true&limit=10`);
+                const data = await response.json();
+
+                const html = `
+                    <div class="result success">
+                        <h3>✅ Teste 3 - Sucesso</h3>
+                        <p><strong>Filtros aplicados:</strong></p>
+                        <ul>
+                            <li>Categoria: Hospital</li>
+                            <li>Rating mínimo: 4.0</li>
+                            <li>Apenas com telefone</li>
+                        </ul>
+                        
+                        <div class="stats">
+                            <div class="stat-card">
+                                <div class="stat-value">${data.total}</div>
+                                <div class="stat-label">Resultados Filtrados</div>
+                            </div>
+                        </div>
+                        
+                        <h4>Resultados:</h4>
+                        ${data.data.length > 0 ? data.data.map(place => `
+                            <div style="margin: 10px 0; padding: 10px; background: #f9fafb; border-radius: 5px;">
+                                <strong>${place.name}</strong>
+                                <span class="badge badge-${place.metadata.source === 'local' ? 'local' : 'google'}">
+                                    ${place.metadata.source === 'local' ? '💾 Local' : '🌐 Google'}
+                                </span>
+                                <br>
+                                <small>${place.address}</small>
+                                <br>
+                                <small>
+                                    📍 ${place.distance_km} km | 
+                                    ${place.category} | 
+                                    ${place.rating ? `⭐ ${place.rating}` : 'Sem rating'} | 
+                                    ${place.phone ? `📞 ${place.phone}` : 'Sem telefone'}
+                                </small>
+                            </div>
+                        `).join('') : '<p>Nenhum resultado encontrado com esses filtros.</p>'}
+                        
+                        <details>
+                            <summary>Ver JSON completo</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Erro no Teste 3</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testErrors() {
+            const resultDiv = document.getElementById('result4');
+            resultDiv.innerHTML = '<div class="loading"></div> Executando...';
+
+            try {
+                const response = await fetch(`${API_BASE}/places/hybrid-search?lat=invalid&lng=invalid&radius=5000`);
+                const data = await response.json();
+
+                const html = `
+                    <div class="result ${response.ok ? 'warning' : 'success'}">
+                        <h3>${response.ok ? '⚠️' : '✅'} Teste 4 - ${response.ok ? 'Resposta Inesperada' : 'Erro Tratado Corretamente'}</h3>
+                        <p><strong>Status HTTP:</strong> ${response.status}</p>
+                        <p><strong>Mensagem:</strong> ${data.error || data.message || 'Sem mensagem de erro'}</p>
+                        
+                        ${!response.ok ? `
+                            <p>✅ <strong>Validação funcionando corretamente!</strong></p>
+                            <p>O sistema rejeitou coordenadas inválidas como esperado.</p>
+                        ` : `
+                            <p>⚠️ <strong>Sistema aceitou coordenadas inválidas</strong></p>
+                            <p>Isso pode indicar um problema na validação.</p>
+                        `}
+                        
+                        <details>
+                            <summary>Ver resposta completa</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result success">
+                        <h3>✅ Teste 4 - Erro Tratado</h3>
+                        <p>O sistema rejeitou a requisição inválida corretamente.</p>
+                        <p><strong>Erro:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
