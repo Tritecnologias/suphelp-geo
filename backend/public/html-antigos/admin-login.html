@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Administrativo - SupHelp Geo</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .admin-login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .admin-login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .admin-login-header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .admin-login-header p {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .admin-badge {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn-admin-login {
+            width: 100%;
+            background: #667eea;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-admin-login:hover {
+            background: #5a6fd8;
+        }
+        
+        .btn-admin-login:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-login-container">
+        <div class="admin-login-card">
+            <div class="admin-login-header">
+                <div class="admin-badge">🔐 ÁREA ADMINISTRATIVA</div>
+                <h1>🗺️ SupHelp Geo</h1>
+                <p>Acesso restrito a administradores</p>
+            </div>
+            
+            <form id="adminLoginForm">
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+                
+                <div class="form-group">
+                    <label for="email">Email do Administrador</label>
+                    <input type="email" id="email" name="email" required 
+                           placeholder="admin@suphelp.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" name="senha" required 
+                           placeholder="Digite sua senha">
+                </div>
+                
+                <button type="submit" class="btn-admin-login" id="loginBtn">
+                    Entrar no Painel Admin
+                </button>
+                
+                <div class="loading" id="loading">
+                    <p>🔄 Verificando credenciais...</p>
+                </div>
+            </form>
+            
+            <div class="back-link">
+                <a href="/">← Voltar ao site principal</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+        
+        document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const loginBtn = document.getElementById('loginBtn');
+            const loading = document.getElementById('loading');
+            
+            // Reset UI
+            errorDiv.style.display = 'none';
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Verificando...';
+            loading.style.display = 'block';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, senha })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Salva token no localStorage
+                    localStorage.setItem('adminToken', data.token);
+                    localStorage.setItem('adminData', JSON.stringify(data.admin));
+                    
+                    // Redireciona para painel admin
+                    window.location.href = '/admin.html';
+                } else {
+                    errorDiv.textContent = data.error || 'Erro ao fazer login';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Erro no login:', error);
+                errorDiv.textContent = 'Erro de conexão. Tente novamente.';
+                errorDiv.style.display = 'block';
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Entrar no Painel Admin';
+                loading.style.display = 'none';
+            }
+        });
+        
+        // Verifica se já está logado
+        window.onload = () => {
+            const token = localStorage.getItem('adminToken');
+            if (token) {
+                // Verifica se token é válido
+                fetch(`${API_URL}/api/admin/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/admin.html';
+                    } else {
+                        localStorage.removeItem('adminToken');
+                        localStorage.removeItem('adminData');
+                    }
+                })
+                .catch(() => {
+                    localStorage.removeItem('adminToken');
+                    localStorage.removeItem('adminData');
+                });
+            }
+        };
+    </script>
+</body>
+</html>

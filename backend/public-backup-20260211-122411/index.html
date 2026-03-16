@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SupHelp Geo - Geolocalização Inteligente</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <img src="images/logo.png" alt="SupHelp Geo" class="logo-img">
+                <span class="logo-text">SupHelp Geo</span>
+            </div>
+            <nav class="nav">
+                <a href="#features">Recursos</a>
+                <a href="#plans">Planos</a>
+                <a href="mailto:comercial@suphelp.com.br" class="btn-contact">📧 Fale Conosco</a>
+                <a href="login.html">Login</a>
+                <a href="cadastro.html" class="btn-primary">Começar Grátis</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Encontre Estabelecimentos Próximos em Segundos</h1>
+                <p class="hero-subtitle">Sistema inteligente de geolocalização para encontrar farmácias, padarias, mercados e muito mais. Exporte dados em Excel e PDF.</p>
+                <div class="hero-buttons">
+                    <a href="cadastro.html" class="btn-hero">Começar Agora</a>
+                    <a href="#demo" class="btn-secondary">Ver Demo</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <h3>10.000+</h3>
+                        <p>Estabelecimentos</p>
+                    </div>
+                    <div class="stat">
+                        <h3>500+</h3>
+                        <p>Clientes Ativos</p>
+                    </div>
+                    <div class="stat">
+                        <h3>99.9%</h3>
+                        <p>Uptime</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Recursos Poderosos</h2>
+            <p class="section-subtitle">Tudo que você precisa para análise geográfica</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📍</div>
+                    <h3>Busca por Endereço</h3>
+                    <p>Digite qualquer endereço e encontre estabelecimentos próximos automaticamente</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Exportação Excel</h3>
+                    <p>Exporte todos os dados em formato CSV compatível com Excel e Google Sheets</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📄</div>
+                    <h3>Relatórios PDF</h3>
+                    <p>Gere relatórios profissionais em PDF prontos para impressão</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Busca por Raio</h3>
+                    <p>Defina o raio de busca em metros e encontre tudo ao redor</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📞</div>
+                    <h3>Dados Completos</h3>
+                    <p>Telefone, endereço, avaliações e muito mais</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Resultados Rápidos</h3>
+                    <p>Busca instantânea com tecnologia PostGIS</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo">
+        <div class="container">
+            <h2 class="section-title">Veja Como Funciona</h2>
+            <div class="demo-content">
+                <div class="demo-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h3>Digite o Endereço</h3>
+                        <p>Informe o endereço ou local que deseja buscar</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h3>Defina o Raio</h3>
+                        <p>Escolha a distância em metros (ex: 5km)</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h3>Visualize e Exporte</h3>
+                        <p>Veja os resultados e exporte para Excel ou PDF</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Plans Section -->
+    <section id="plans" class="plans">
+        <div class="container">
+            <h2 class="section-title">Escolha Seu Plano</h2>
+            <p class="section-subtitle">Planos flexíveis para todas as necessidades</p>
+            
+            <div class="plans-grid">
+                <!-- Plano Básico -->
+                <div class="plan-card">
+                    <div class="plan-header">
+                        <h3>Básico</h3>
+                        <div class="plan-price">
+                            <span class="currency">R$</span>
+                            <span class="amount">49</span>
+                            <span class="period">/mês</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li>✅ 100 buscas por mês</li>
+                        <li>✅ Exportação Excel</li>
+                        <li>✅ Exportação PDF</li>
+                        <li>✅ Suporte por email</li>
+                        <li>❌ API Access</li>
+                        <li>❌ Relatórios personalizados</li>
+                    </ul>
+                    <a href="cadastro.html?plan=basico" class="btn-plan">Começar</a>
+                </div>
+
+                <!-- Plano Profissional -->
+                <div class="plan-card featured">
+                    <div class="plan-badge">Mais Popular</div>
+                    <div class="plan-header">
+                        <h3>Profissional</h3>
+                        <div class="plan-price">
+                            <span class="currency">R$</span>
+                            <span class="amount">149</span>
+                            <span class="period">/mês</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li>✅ 1.000 buscas por mês</li>
+                        <li>✅ Exportação Excel</li>
+                        <li>✅ Exportação PDF</li>
+                        <li>✅ Suporte prioritário</li>
+                        <li>✅ API Access</li>
+                        <li>✅ Relatórios personalizados</li>
+                    </ul>
+                    <a href="cadastro.html?plan=profissional" class="btn-plan">Começar</a>
+                </div>
+
+                <!-- Plano Enterprise -->
+                <div class="plan-card">
+                    <div class="plan-header">
+                        <h3>Enterprise</h3>
+                        <div class="plan-price">
+                            <span class="currency">R$</span>
+                            <span class="amount">499</span>
+                            <span class="period">/mês</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li>✅ Buscas ilimitadas</li>
+                        <li>✅ Exportação Excel</li>
+                        <li>✅ Exportação PDF</li>
+                        <li>✅ Suporte 24/7</li>
+                        <li>✅ API Access completo</li>
+                        <li>✅ Relatórios personalizados</li>
+                        <li>✅ Integração customizada</li>
+                        <li>✅ Treinamento dedicado</li>
+                    </ul>
+                    <a href="cadastro.html?plan=enterprise" class="btn-plan">Começar</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <h2>Pronto para Começar?</h2>
+            <p>Crie sua conta gratuitamente e teste por 7 dias</p>
+            <a href="cadastro.html" class="btn-cta">Criar Conta Grátis</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🗺️ SupHelp Geo</h3>
+                    <p>Geolocalização inteligente para seu negócio</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Produto</h4>
+                    <a href="#features">Recursos</a>
+                    <a href="#plans">Planos</a>
+                    <a href="#">Documentação</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Empresa</h4>
+                    <a href="#">Sobre</a>
+                    <a href="mailto:comercial@suphelp.com.br">📧 Fale Conosco</a>
+                    <a href="#">Suporte</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <a href="#">Termos de Uso</a>
+                    <a href="#">Privacidade</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 SupHelp Geo. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Botão Flutuante Fale Conosco -->
+    <div class="floating-contact">
+        <a href="mailto:comercial@suphelp.com.br?subject=Interesse no SupHelp Geo&body=Olá! Tenho interesse em conhecer mais sobre o SupHelp Geo." 
+           class="floating-btn" 
+           title="Fale Conosco - comercial@suphelp.com.br">
+            <span class="floating-icon">💬</span>
+            <span class="floating-text">Fale Conosco</span>
+        </a>
+    </div>
+</body>
+</html>
