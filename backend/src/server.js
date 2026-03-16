@@ -504,6 +504,56 @@ app.get('/api/users', authenticateAdmin, async (req, res) => {
   }
 });
 
+// --- Rota: Editar Usuário (Protegida - admin) ---
+app.put('/api/users/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nome, email, plano, status, searches_limit, senha } = req.body;
+
+    const target = await pool.query('SELECT id FROM users WHERE id = $1', [id]);
+    if (target.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    const limits = { 'basico': 100, 'profissional': 1000, 'enterprise': 999999, 'demo': 999999 };
+    const newLimit = searches_limit !== undefined ? searches_limit : (limits[plano] || 100);
+
+    let query = 'UPDATE users SET nome=$1, email=$2, plano=$3, status=$4, searches_limit=$5';
+    const params = [nome, email, plano, status, newLimit];
+
+    if (senha && senha.length >= 6) {
+      const hash = await bcrypt.hash(senha, 10);
+      query += ', password_hash=$6 WHERE id=$7';
+      params.push(hash, id);
+    } else {
+      query += ' WHERE id=$6';
+      params.push(id);
+    }
+
+    await pool.query(query, params);
+    res.json({ success: true, message: 'Usuário atualizado com sucesso' });
+  } catch (err) {
+    console.error('Erro ao editar usuário:', err);
+    res.status(500).json({ error: 'Erro ao editar usuário' });
+  }
+});
+
+// --- Rota: Excluir Usuário (Protegida - admin) ---
+app.delete('/api/users/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const target = await pool.query('SELECT id FROM users WHERE id = $1', [id]);
+    if (target.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+    await pool.query('DELETE FROM users WHERE id = $1', [id]);
+    res.json({ success: true, message: 'Usuário excluído com sucesso' });
+  } catch (err) {
+    console.error('Erro ao excluir usuário:', err);
+    res.status(500).json({ error: 'Erro ao excluir usuário' });
+  }
+});
+
 // --- Rota 8: Perfil do Administrador (Protegida) ---
 app.get('/api/admin/profile', authenticateAdmin, async (req, res) => {
   try {
