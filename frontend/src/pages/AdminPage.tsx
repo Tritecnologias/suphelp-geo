@@ -67,6 +67,7 @@ const AdminPage: React.FC = () => {
   const [editForm, setEditForm] = useState({ nome: '', email: '', role: 'admin', status: 'active', senha: '' });
   const [showCreateUser, setShowCreateUser] = useState(false);
   const [newUser, setNewUser] = useState({ nome: '', email: '', senha: '', plano: 'demo' });
+  const [users, setUsers] = useState<any[]>([]);
   const [recentPlaces, setRecentPlaces] = useState<Place[]>([]);
   const [searchResults, setSearchResults] = useState<Place[]>([]);
 
@@ -129,6 +130,7 @@ const AdminPage: React.FC = () => {
         setStats({ total, withPhone, withRating, categories: uniqueCategories.length });
         setCategories(uniqueCategories);
       }
+      await loadUsers();
     } catch (error) {
       console.error('Erro ao carregar dashboard:', error);
       showMessage('Erro ao carregar dashboard', 'error');
@@ -459,6 +461,20 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  // Função para carregar usuários
+  const loadUsers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/users', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (data.success) setUsers(data.users);
+    } catch (error) {
+      console.error('Erro ao carregar usuários:', error);
+    }
+  };
+
   // Função para criar usuário
   const createUser = async () => {
     try {
@@ -477,6 +493,7 @@ const AdminPage: React.FC = () => {
         showMessage(`Usuário criado com sucesso! (plano: ${newUser.plano})`);
         setShowCreateUser(false);
         setNewUser({ nome: '', email: '', senha: '', plano: 'demo' });
+        loadUsers();
       } else {
         showMessage(data.error || 'Erro ao criar usuário', 'error');
       }
@@ -831,6 +848,63 @@ const AdminPage: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+            </div>
+
+            {/* Users Table */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">👤 Usuários Cadastrados</h3>
+                <span className="text-sm text-gray-500">{users.length} usuário(s)</span>
+              </div>
+              {users.length === 0 ? (
+                <p className="text-gray-500 text-sm text-center py-4">Nenhum usuário cadastrado ainda.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4">Nome</th>
+                        <th className="text-left py-3 px-4">Email</th>
+                        <th className="text-left py-3 px-4">Plano</th>
+                        <th className="text-left py-3 px-4">Status</th>
+                        <th className="text-left py-3 px-4">Buscas</th>
+                        <th className="text-left py-3 px-4">Criado em</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map(u => (
+                        <tr key={u.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-4 font-medium">{u.nome}</td>
+                          <td className="py-3 px-4 text-sm text-gray-600">{u.email}</td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              u.plano === 'demo' ? 'bg-orange-100 text-orange-800' :
+                              u.plano === 'enterprise' ? 'bg-purple-100 text-purple-800' :
+                              u.plano === 'profissional' ? 'bg-blue-100 text-blue-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {u.plano}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              u.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {u.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            {u.searches_used} / {u.searches_limit === 999999 ? '∞' : u.searches_limit}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-600">
+                            {new Date(u.created_at).toLocaleDateString('pt-BR')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         )}

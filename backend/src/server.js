@@ -489,6 +489,21 @@ app.delete('/api/admin/:id', authenticateAdmin, async (req, res) => {
   }
 });
 
+// --- Rota: Listar Usuários (Protegida - admin) ---
+app.get('/api/users', authenticateAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, nome, email, plano, status, searches_used, searches_limit, created_at
+      FROM users
+      ORDER BY created_at DESC
+    `);
+    res.json({ success: true, users: result.rows });
+  } catch (err) {
+    console.error('Erro ao listar usuários:', err);
+    res.status(500).json({ error: 'Erro ao listar usuários' });
+  }
+});
+
 // --- Rota 8: Perfil do Administrador (Protegida) ---
 app.get('/api/admin/profile', authenticateAdmin, async (req, res) => {
   try {
