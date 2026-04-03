@@ -234,12 +234,15 @@ const DashboardPage: React.FC = () => {
       return; // Erro já foi tratado pelo hook
     }
 
+    console.log(`📍 Geocode: "${fullAddress}" → lat=${geocodeResult.data.lat}, lng=${geocodeResult.data.lng}, formatted="${geocodeResult.data.formatted_address}"`);
+
     // Depois busca lugares próximos com filtros
     const searchParams: any = {
       lat: geocodeResult.data.lat,
       lng: geocodeResult.data.lng,
       radius: searchRadius,
-      limit: 100
+      limit: 100,
+      address: geocodeResult.data.formatted_address
     };
 
     // Adicionar filtros se houver

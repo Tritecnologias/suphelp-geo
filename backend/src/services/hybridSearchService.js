@@ -83,6 +83,7 @@ class HybridSearchService {
     
     // 2. Verificar threshold (Requirement 2.1, 4.1, 4.2)
     if (localResults.length >= this.threshold) {
+      console.log(`[HybridSearch] Threshold atingido com ${localResults.length} resultados locais - NÃO chamando Google`);
       return this.formatResponse({
         lat: latitude,
         lng: longitude,
