@@ -1689,6 +1689,45 @@ app.post('/api/upload/logo', authenticateAdmin, upload.single('logo'), (req, res
 //   serveDynamicPage(pool, req, res);
 // });
 
+// --- Rota TEMPORÁRIA: Diagnóstico do banco (remover depois) ---
+app.get('/api/debug/places-stats', async (req, res) => {
+  try {
+    const stats = {};
+    
+    // Total de places
+    const total = await pool.query('SELECT COUNT(*) as count FROM places');
+    stats.total_places = parseInt(total.rows[0].count);
+    
+    // Distribuição geográfica
+    const geo = await pool.query(`
+      SELECT ROUND(ST_Y(location)::numeric, 2) as lat, ROUND(ST_X(location)::numeric, 2) as lng, COUNT(*) as count
+      FROM places WHERE location IS NOT NULL
+      GROUP BY lat, lng ORDER BY count DESC LIMIT 15
+    `);
+    stats.geo_distribution = geo.rows;
+    
+    // Categorias
+    const cats = await pool.query(`
+      SELECT category, COUNT(*) as count FROM places GROUP BY category ORDER BY count DESC LIMIT 15
+    `);
+    stats.categories = cats.rows;
+    
+    // Search cache
+    const cache = await pool.query('SELECT * FROM search_cache ORDER BY created_at DESC LIMIT 10');
+    stats.search_cache = cache.rows;
+    
+    // Amostra de endereços
+    const addresses = await pool.query(`
+      SELECT address, COUNT(*) as count FROM places GROUP BY address ORDER BY count DESC LIMIT 15
+    `);
+    stats.top_addresses = addresses.rows;
+    
+    res.json(stats);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // --- Servir build do React (se existir) ou frontend antigo ---
 
 // Verificar se existe build do React
